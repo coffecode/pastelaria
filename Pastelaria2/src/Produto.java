@@ -1,4 +1,6 @@
 
+
+
 public class Produto {
 
 	private String nome;
@@ -21,13 +23,12 @@ public class Produto {
 		return quantidade;
 	}
 
-	public void setQuantidade(int quantidade) {
-		this.quantidade = quantidade;
+	public void setQuantidade(int quantidade, int tipo) {
+		
+		
+		this.quantidade =+ quantidade;
 	}
 
-	
-	
-	
 	public Double getPreco() {
 		return preco;
 	}
