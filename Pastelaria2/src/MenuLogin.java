@@ -16,7 +16,7 @@ public class MenuLogin extends JFrame
 		login.setLayout(null);
 		
 		LabelUsername = new JLabel("Usuário:");
-		LabelUsername.setBounds(15,20,70,30); // Coluna, Linha, Largura, Altura
+		LabelUsername.setBounds(15,20,70,30); // Coluna, Linha, Largura, Altura!
 		login.add(LabelUsername);
 		
 		CampoUsername = new JTextField();
