@@ -59,7 +59,7 @@ public class MenuLogin extends JFrame
 	{
 		public void actionPerformed(ActionEvent e)
 		{
-			if(e.getSource() == Confere) 	// Ve se o botão apertado é aquele que queremos
+			if(e.getSource() == Confere) 	// Ve se o botão apertado é aquele que queremos.
 			{
 				if(CampoUsername.getText().equals(CampoPassword.getText()))
 				{
