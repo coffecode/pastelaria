@@ -8,11 +8,12 @@ public class MenuLogin extends JFrame
 	private JTextField CampoUsername;
 	private JPasswordField CampoPassword;
 	private JButton Confere;
+	private JPanel Painel;
 	
 	public MenuLogin()
 	{
 		setTitle("Faça o seu Login");
-		Container login = getContentPane();
+		JPanel login = new JPanel();
 		login.setLayout(null);
 		
 		LabelUsername = new JLabel("Usuário:");
@@ -39,6 +40,8 @@ public class MenuLogin extends JFrame
 		Creditos.setFont(new Font("Verdana", Font.PLAIN, 10));
 		Creditos.setBounds(15, 170, 200, 15);
 		login.add(Creditos);
+		
+		add(login);
 		
 		setSize(280,220);							// Largura, Altura
 		setLocationRelativeTo(null);				// Abre no centro da tela
