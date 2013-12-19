@@ -1,10 +1,13 @@
 public class Mesa {
-	int nMesa;   //Cada mesa terá o seu numero
-	double valorNaoPago;
-	double ValorPago;
-	double valorTotalGasto; //valorTotalGasto = valorPago + valorNaoPago
+	
+	private int numero;   //Cada mesa terá o seu numero
+	private double valorNaoPago;
+	private double ValorPago;
+	private double valorTotalGasto; //valorTotalGasto = valorPago + valorNaoPago
+	
+	
 	public Mesa(int numero){
-		this.nMesa = numero;
+		this.numero = numero;
 		
 		this.valorNaoPago = 0;
 		this.ValorPago = 0;
