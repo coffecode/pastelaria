@@ -36,10 +36,10 @@ public class Produto {
 			break;
 
 		case 1:
-			this.quantidade =+ quantidade;
+			this.quantidade += quantidade;
 			break;
 		case 2:
-			this.quantidade =- quantidade;
+			this.quantidade -= quantidade;
 			break;
 		case 3:
 			this.quantidade = this.quantidade* quantidade;
