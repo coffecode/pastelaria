@@ -25,8 +25,8 @@ public class MenuPrincipal implements MouseListener
 		menuPainel = new JPanel();
 		footerPainel = new JPanel();
 		
-		janela.setSize(800,600);							// Largura, Altura
-		janela.setLocationRelativeTo(null);					// Abre no centro da tela
+		janela.setSize(800,600);
+		janela.setLocationRelativeTo(null);
 		janela.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		principalPainel1.setLayout(new BoxLayout(principalPainel1, BoxLayout.Y_AXIS));
