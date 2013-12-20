@@ -23,7 +23,7 @@ public class Venda {
 		public void adicionarProduto(String nome, int quantidade) {
 			this.produtos[this.quantidadeProdutos] = new Produto();
 			this.produtos[this.quantidadeProdutos].setNome(nome);
-			this.produtos[this.quantidadeProdutos].setQuantidade(quantidade);
+			this.produtos[this.quantidadeProdutos].setQuantidade(quantidade, 0);
 			this.preco +=  this.produtos[this.quantidadeProdutos].getPreco()  * quantidade;
 			
 			this.quantidadeProdutos++;
@@ -53,10 +53,23 @@ public class Venda {
 			}else{
 				//Caso a quantidade de itens a serem excluidos seja menor,
 				//apenas diminuo isso na sua quantidade
-				this.produtos[produtoId].setQuantidade(-quantidade);
+				this.produtos[produtoId].setQuantidade(quantidade, 2);
 				
 			}
-			
-			
 		}
+		
+		public void aumentaQuantidadeProduto(String nome) {
+			int produtoId =0;
+			
+			//Salvo o offset do produto no array, usando o nome para pesquisar no array
+			for(int i=0; i<this.quantidadeProdutos; i++){
+				if(this.produtos[i].getNome().equals(nome)){
+					produtoId = i;
+					break;
+				}
+			}
+			
+			this.produtos[produtoId].setQuantidade(1, 1);
+		}
+		
 }

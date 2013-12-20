@@ -24,9 +24,32 @@ public class Produto {
 	}
 
 	public void setQuantidade(int quantidade, int tipo) {
+		//O = Substitue
+		//1 = Soma
+		//2 = subtrai
+		//3 = multiplica
+		//4 = divide
 		
-		
-		this.quantidade =+ quantidade;
+		switch (tipo) {
+		case 0:
+			this.quantidade = quantidade;
+			break;
+
+		case 1:
+			this.quantidade =+ quantidade;
+			break;
+		case 2:
+			this.quantidade =- quantidade;
+			break;
+		case 3:
+			this.quantidade = this.quantidade* quantidade;
+			break;
+		case 4:
+			this.quantidade = this.quantidade/ quantidade;
+			break;	
+		default:
+			break;
+		}
 	}
 
 	public Double getPreco() {
