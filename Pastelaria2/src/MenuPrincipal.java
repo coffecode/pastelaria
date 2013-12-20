@@ -42,8 +42,8 @@ public class MenuPrincipal
 		int linhas  = 0;
 		int quebra_linhas = 0;
 		
-		mesas = new JButton[36];
-		for(int i = 0; i < 36; i++)
+		mesas = new JButton[60];
+		for(int i = 0; i < 60; i++)
 		{
 			String nomeMesa = "Mesa ";
 			mesas[i] = new JButton(nomeMesa + (i+1));
@@ -125,8 +125,8 @@ public class MenuPrincipal
 		janela.setVisible(true);
 	}
 	
-	public static void main(String[] args)
+	/*public static void main(String[] args)
 	{
 		MenuPrincipal Principal = new MenuPrincipal();
-	}	
+	}	*/
 }
