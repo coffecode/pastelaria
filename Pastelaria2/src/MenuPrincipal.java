@@ -18,7 +18,7 @@ public class MenuPrincipal implements MouseListener
 	{
 		qntdMesas = 60;
 		
-		janela = new JFrame("Pastelaço - Controle de Caixa");
+		janela = new JFrame("Pastelaço - Controle de Caixa");//
 		principalPainel1 = new JPanel();
 		mesasPainel1 = new JPanel();
 		mesasPainel = new JPanel();
