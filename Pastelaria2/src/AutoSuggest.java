@@ -7,7 +7,7 @@ public class AutoSuggest extends JPanel
 {
     private final JTextField tf;
     private final JComboBox combo = new JComboBox();
-    private final Vector<String> v = new Vector<String>();
+    private final Vector<String> v = new Vector<String>();//
     public AutoSuggest()
     {
         super(new BorderLayout());
