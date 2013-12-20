@@ -110,8 +110,8 @@ public class MenuPrincipal
 		
 		footerPainel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Legenda"));
 		footerPainel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		footerPainel.setMaximumSize(new Dimension(800, 48));
-		footerPainel.setMinimumSize(new Dimension(800, 48));
+		footerPainel.setMaximumSize(new Dimension(800, 45));
+		footerPainel.setMinimumSize(new Dimension(800, 45));
 		
 		legenda = new JLabel("Desenvolvido por CodeCoffe (C) - 2013");
 		legenda.setFont(new Font("Verdana", Font.PLAIN, 14));
@@ -125,8 +125,8 @@ public class MenuPrincipal
 		janela.setVisible(true);
 	}
 	
-	/*public static void main(String[] args)
+	public static void main(String[] args)
 	{
 		MenuPrincipal Principal = new MenuPrincipal();
-	}	*/
+	}
 }
