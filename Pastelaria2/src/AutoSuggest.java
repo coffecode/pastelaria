@@ -3,7 +3,7 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 
-public class AutoSuggest extends JPanel
+public class AutoSuggest extends JPanel//
 {
     private final JTextField tf;
     private final JComboBox combo = new JComboBox();

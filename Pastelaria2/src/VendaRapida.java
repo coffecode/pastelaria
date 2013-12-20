@@ -17,7 +17,7 @@ public class VendaRapida
 	
 	public VendaRapida()
 	{
-		janela = new JFrame("Pastelaço - Venda Rápida");//
+		janela = new JFrame("Pastelaço - Venda Rápida");
 		principalPainel1 = new JPanel();
 		adicionarPainel = new JPanel();
 		
