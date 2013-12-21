@@ -16,13 +16,13 @@ public class Query
 	{		
         try {
     		Class.forName("com.mysql.jdbc.Driver");
-    		this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/testdb", "testuser", "test623");
+    		this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/pastelaria", "adminpuc", "puc");	// URL, user, senha
     		this.st = this.con.prepareStatement(query);
     		
     		this.resultado = this.st.executeQuery();
 
         } catch (SQLException ex) {
-            Logger lgr = Logger.getLogger(Version.class.getName());
+            Logger lgr = Logger.getLogger(Query.class.getName());
             lgr.log(Level.SEVERE, ex.getMessage(), ex);
         } catch (ClassNotFoundException e) {
 			e.printStackTrace();
@@ -45,10 +45,10 @@ public class Query
 		return false;
 	}
 	
-	public String getString(int index)
+	public String getString(String coluna)
 	{
 		try {
-			return this.resultado.getString(index);
+			return this.resultado.getString(coluna);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -70,7 +70,7 @@ public class Query
             }
 
         } catch (SQLException ex) {
-            Logger lgr = Logger.getLogger(Version.class.getName());
+            Logger lgr = Logger.getLogger(Query.class.getName());
             lgr.log(Level.WARNING, ex.getMessage(), ex);
         }		
 	}

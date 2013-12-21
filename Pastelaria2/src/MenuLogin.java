@@ -64,20 +64,32 @@ public class MenuLogin extends JFrame implements ActionListener
 	{
 		if(e.getSource() == Confere) 	// Ve se o botão apertado é aquele que queremos.
 		{
-			if(CampoUsername.getText().equals(CampoPassword.getText()))
-			{					
-				Query teste = new Query();
-				teste.executaQuery("SELECT VERSION()");
-				if(teste.next())
+			String formatacao;
+			Query teste = new Query();
+			formatacao = "SELECT password FROM funcionarios WHERE username = '" + CampoUsername.getText() + "';";
+			
+			teste.executaQuery(formatacao);
+			if(teste.next())
+			{
+				if(teste.getString("password").equals(CampoPassword.getText()))
 				{
-					JOptionPane.showMessageDialog(null, teste.getString(1));
+					JOptionPane.showMessageDialog(null, "Usuario logado com sucesso!");
 				}
-				teste.fechaConexao();
+				else
+				{
+					JOptionPane.showMessageDialog(null, "Senha incorreta!");
+				}
 			}
 			else
 			{
-				dispose();		// Fecha o JFrame
+				JOptionPane.showMessageDialog(null, "Usuario nao encontrado!");
 			}
+			teste.fechaConexao();
+			
+			//else
+			//{
+				//dispose();		// Fecha o JFrame
+			//}
 		}
 	}	
 }
