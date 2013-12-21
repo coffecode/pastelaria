@@ -1,8 +1,12 @@
 import java.awt.*;
-import javax.swing.*;
-import java.awt.event.*;
 
-public class MenuLogin extends JFrame
+import javax.swing.*;
+
+import java.awt.event.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class MenuLogin extends JFrame implements ActionListener
 {
 	private JLabel LabelUsername, LabelPassword, Creditos;
 	private JTextField CampoUsername;
@@ -46,9 +50,7 @@ public class MenuLogin extends JFrame
 		setSize(280,220);							// Largura, Altura
 		setLocationRelativeTo(null);				// Abre no centro da tela
 		
-		Botao_Entrar entrar = new Botao_Entrar();
-		Confere.addActionListener(entrar);
-		
+		Confere.addActionListener(this);
 		getRootPane().setDefaultButton(Confere);	// Ao apertar ENTER acione o botão
 	}
 	
@@ -58,20 +60,23 @@ public class MenuLogin extends JFrame
 		Principal.setVisible(true);					// Mostrando o Frame
 	}
 	
-	private class Botao_Entrar implements ActionListener
+	public void actionPerformed(ActionEvent e)
 	{
-		public void actionPerformed(ActionEvent e)
+		if(e.getSource() == Confere) 	// Ve se o botão apertado é aquele que queremos.
 		{
-			if(e.getSource() == Confere) 	// Ve se o botão apertado é aquele que queremos.
+			if(CampoUsername.getText().equals(CampoPassword.getText()))
+			{					
+				Query teste = new Query();
+				teste.executaQuery("SELECT VERSION()");
+				if(teste.next())
+				{
+					JOptionPane.showMessageDialog(null, teste.getString(1));
+				}
+				teste.fechaConexao();
+			}
+			else
 			{
-				if(CampoUsername.getText().equals(CampoPassword.getText()))
-				{
-					JOptionPane.showMessageDialog(null, "Username = Password!");
-				}
-				else
-				{
-					dispose();		// Fecha o JFrame
-				}
+				dispose();		// Fecha o JFrame
 			}
 		}
 	}	

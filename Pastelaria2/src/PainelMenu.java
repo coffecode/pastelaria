@@ -6,7 +6,7 @@ import javax.swing.border.EtchedBorder;
 import java.awt.event.*;
 
 
-public class PainelMenu extends JPanel implements MouseListener 
+public class PainelMenu extends JPanel implements MouseListener
 {
 	private JButton vendaRapida, consulta, fiados, produtos, funcionarios;
 	
