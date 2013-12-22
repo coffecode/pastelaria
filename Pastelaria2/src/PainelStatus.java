@@ -2,6 +2,8 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.SimpleDateFormat;
@@ -9,16 +11,20 @@ import java.util.Calendar;
 import java.util.Date;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 
-public class PainelStatus extends JPanel implements Runnable {
+public class PainelStatus extends JPanel implements Runnable, MouseListener {
 
     protected TimerThread timerThread;
     static private JLabel leftLabel;
+    private JButton bSair;
     
     public PainelStatus(String nomeFuncionario)
     {
@@ -44,6 +50,13 @@ public class PainelStatus extends JPanel implements Runnable {
         leftLabel = new JLabel("-");
         leftLabel.setFont(new Font("sans-serif", Font.PLAIN, 12));
         statusBar.setLeftComponent(leftLabel);
+        
+        ImageIcon iconeSair = new ImageIcon("imgs/sair.png");
+        bSair = new JButton(iconeSair);
+        bSair.addMouseListener(this);
+        bSair.setBorder(BorderFactory.createEmptyBorder());
+        bSair.setContentAreaFilled(false);        
+        statusBar.setLeftComponent(bSair);
 
         final JLabel dateLabel = new JLabel();
         dateLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -104,4 +117,43 @@ public class PainelStatus extends JPanel implements Runnable {
             this.isRunning = isRunning;
         }
     }
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		if(e.getSource() == bSair) // apenas teste
+		{
+			int opcao = JOptionPane.showConfirmDialog(null, "Você tem certeza que quer sair?", "Logout",JOptionPane.YES_NO_OPTION);
+			
+			if(opcao == JOptionPane.YES_OPTION)
+			{
+				MenuPrincipal.DeletarPrincipal();
+				MenuLogin LoginNovo = new MenuLogin();
+				LoginNovo.setVisible(true);	
+			}	
+		}
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -3,7 +3,7 @@ import javax.swing.*;
 
 public class MenuPrincipal
 {
-	private JFrame janela;
+	private static JFrame janela;
 	private static JPanel principalPainel1;
 	
 	private static PainelMenu menuPainel;
@@ -38,6 +38,11 @@ public class MenuPrincipal
 		
 		janela.add(principalPainel1);
 		janela.setVisible(true);
+	}
+	
+	static public void DeletarPrincipal()
+	{
+		janela.dispose();
 	}
 
 	static public void AbrirPrincipal(int modelo)
