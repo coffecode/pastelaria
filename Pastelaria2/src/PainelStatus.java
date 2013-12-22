@@ -120,7 +120,7 @@ public class PainelStatus extends JPanel implements Runnable, MouseListener {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		if(e.getSource() == bSair) // apenas teste
+		if(e.getSource() == bSair)
 		{
 			int opcao = JOptionPane.showConfirmDialog(null, "Você tem certeza que quer sair?", "Logout",JOptionPane.YES_NO_OPTION);
 			
