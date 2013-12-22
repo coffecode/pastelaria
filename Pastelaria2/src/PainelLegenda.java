@@ -1,7 +1,7 @@
 import java.awt.*;
+
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
-import java.awt.event.*;
 
 public class PainelLegenda extends JPanel
 {
@@ -15,7 +15,7 @@ public class PainelLegenda extends JPanel
 		setMinimumSize(new Dimension(800, 45));
 		
 		leg = new JLabel("Desenvolvido por CodeCoffe (C) - 2013");
-		leg.setFont(new Font("Verdana", Font.PLAIN, 14));
+		leg.setFont(new Font("sans-serif", Font.BOLD, 12));
 		
 		add(leg);
 	}

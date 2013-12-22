@@ -1,10 +1,6 @@
 import java.awt.*;
-
 import javax.swing.*;
-
 import java.awt.event.*;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class MenuLogin extends JFrame implements ActionListener
 {
@@ -56,8 +52,8 @@ public class MenuLogin extends JFrame implements ActionListener
 	
 	public static void main(String[] args)
 	{
-		MenuLogin Principal = new MenuLogin();
-		Principal.setVisible(true);					// Mostrando o Frame
+		MenuLogin login = new MenuLogin();
+		login.setVisible(true);					// Mostrando o Frame
 	}
 	
 	public void actionPerformed(ActionEvent e)
@@ -66,14 +62,16 @@ public class MenuLogin extends JFrame implements ActionListener
 		{
 			String formatacao;
 			Query teste = new Query();
-			formatacao = "SELECT password FROM funcionarios WHERE username = '" + CampoUsername.getText() + "';";
+			formatacao = "SELECT password, level, nome FROM funcionarios WHERE username = '" + CampoUsername.getText() + "';";
 			
 			teste.executaQuery(formatacao);
 			if(teste.next())
 			{
 				if(teste.getString("password").equals(CampoPassword.getText()))
 				{
-					JOptionPane.showMessageDialog(null, "Usuario logado com sucesso!");
+					dispose();		// Fecha o JFrame
+					MenuPrincipal principal = new MenuPrincipal(teste.getInt("level"), teste.getString("nome"));
+					teste.fechaConexao();
 				}
 				else
 				{
@@ -84,12 +82,6 @@ public class MenuLogin extends JFrame implements ActionListener
 			{
 				JOptionPane.showMessageDialog(null, "Usuario nao encontrado!");
 			}
-			teste.fechaConexao();
-			
-			//else
-			//{
-				//dispose();		// Fecha o JFrame
-			//}
 		}
 	}	
 }

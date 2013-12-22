@@ -1,56 +1,57 @@
 import java.awt.*;
-
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
-
 import java.awt.event.*;
 
 
 public class PainelMenu extends JPanel implements MouseListener
 {
 	private JButton vendaRapida, consulta, fiados, produtos, funcionarios;
+	private int funcionario;
 	
-	public PainelMenu()
+	public PainelMenu(int level)
 	{
-		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Menu"));
-		setLayout(new FlowLayout(FlowLayout.CENTER, 6, 5));
-		setMaximumSize(new Dimension(800, 100));
-		setMinimumSize(new Dimension(800, 100));
+		this.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Menu"));
+		this.setLayout(new FlowLayout(FlowLayout.CENTER, 6, 5));
+		this.setMaximumSize(new Dimension(800, 100));
+		this.setMinimumSize(new Dimension(800, 100));
 		
-		vendaRapida = new JButton("Venda Rápida");
+		this.vendaRapida = new JButton("Venda Rápida");
 		ImageIcon iconeRapida = new ImageIcon("imgs/vrapida.png");
-		vendaRapida.setIcon(iconeRapida);
-		vendaRapida.setPreferredSize(new Dimension(180, 60));
-		vendaRapida.addMouseListener(this);
-		add(vendaRapida);
+		this.vendaRapida.setIcon(iconeRapida);
+		this.vendaRapida.setPreferredSize(new Dimension(180, 60));
+		this.vendaRapida.addMouseListener(this);
+		this.add(vendaRapida);
 		
-		produtos = new JButton("Produtos");
-		produtos.setPreferredSize(new Dimension(140, 60));
+		this.produtos = new JButton("Produtos");
+		this.produtos.setPreferredSize(new Dimension(140, 60));
 		ImageIcon iconeProdutos = new ImageIcon("imgs/produtos.png");
-		produtos.setIcon(iconeProdutos);
-		produtos.addMouseListener(this);
-		add(produtos);
+		this.produtos.setIcon(iconeProdutos);
+		this.produtos.addMouseListener(this);
+		this.add(produtos);
 		
-		funcionarios = new JButton("Funcionários");
-		funcionarios.setPreferredSize(new Dimension(170, 60));
+		this.funcionarios = new JButton("Funcionários");
+		this.funcionarios.setPreferredSize(new Dimension(170, 60));
 		ImageIcon iconeFuncionarios = new ImageIcon("imgs/funcionarios.png");
-		funcionarios.setIcon(iconeFuncionarios);
-		funcionarios.addMouseListener(this);
-		add(funcionarios);		
+		this.funcionarios.setIcon(iconeFuncionarios);
+		this.funcionarios.addMouseListener(this);
+		this.add(funcionarios);		
 		
-		consulta = new JButton("Vendas");
-		consulta.setPreferredSize(new Dimension(130, 60));
+		this.consulta = new JButton("Vendas");
+		this.consulta.setPreferredSize(new Dimension(130, 60));
 		ImageIcon iconeVendas = new ImageIcon("imgs/consultar.png");
-		consulta.setIcon(iconeVendas);
-		consulta.addMouseListener(this);
-		add(consulta);
+		this.consulta.setIcon(iconeVendas);
+		this.consulta.addMouseListener(this);
+		this.add(consulta);
 		
-		fiados = new JButton("Fiados");
-		fiados.setPreferredSize(new Dimension(130, 60));
+		this.fiados = new JButton("Fiados");
+		this.fiados.setPreferredSize(new Dimension(130, 60));
 		ImageIcon iconeFiados = new ImageIcon("imgs/fiados.png");
-		fiados.setIcon(iconeFiados);
-		fiados.addMouseListener(this);
-		add(fiados);			
+		this.fiados.setIcon(iconeFiados);
+		this.fiados.addMouseListener(this);
+		this.add(fiados);
+		
+		this.funcionario = level;
 	}
 	
 	
@@ -61,6 +62,31 @@ public class PainelMenu extends JPanel implements MouseListener
 		{
 			MenuPrincipal.AbrirPrincipal(0);
 		}
+		else if(e.getSource() == produtos)
+		{
+			if(this.funcionario > 1)
+				MenuPrincipal.AbrirPrincipal(1);
+			else
+				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
+		}
+		else if(e.getSource() == funcionarios)
+		{
+			if(this.funcionario > 1)
+				MenuPrincipal.AbrirPrincipal(2);
+			else
+				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
+		}
+		else if(e.getSource() == consulta)
+		{
+			if(this.funcionario > 1)
+				MenuPrincipal.AbrirPrincipal(3);
+			else
+				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
+		}
+		else if(e.getSource() == fiados)
+		{
+			MenuPrincipal.AbrirPrincipal(4);
+		}		
 	}
 
 	@Override

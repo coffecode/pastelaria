@@ -56,6 +56,17 @@ public class Query
 		}
 	}
 	
+	public int getInt(String coluna)
+	{
+		try {
+			return this.resultado.getInt(coluna);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return 0;
+		}
+	}	
+	
 	public void fechaConexao()
 	{
         try {
