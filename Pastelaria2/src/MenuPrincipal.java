@@ -12,6 +12,7 @@ public class MenuPrincipal
 	private static PainelVenda menuVendaMesa;
 	private static PainelStatus menuStatus;
 	
+	
 	public MenuPrincipal(int level, String nome)
 	{
 		janela = new JFrame("Pastelaço - Controle de Caixa");//
@@ -62,7 +63,10 @@ public class MenuPrincipal
 			principalPainel1.removeAll();
 			principalPainel1.add(menuStatus);
 			principalPainel1.add(menuPainel);
-			principalPainel1.add(menuVendaMesa);
+			
+			PainelProdutos menuProdutos = new PainelProdutos();
+			
+			principalPainel1.add(menuProdutos);
 			principalPainel1.revalidate();
 			principalPainel1.repaint();
 		}
