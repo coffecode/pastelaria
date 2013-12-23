@@ -29,6 +29,23 @@ public class Query
 		}
 	}
 	
+	public void executaUpdate(String query)
+	{		
+        try {
+    		Class.forName("com.mysql.jdbc.Driver");
+    		this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/pastelaria", "adminpuc", "puc");	// URL, user, senha
+    		this.st = this.con.prepareStatement(query);
+    		
+    		this.st.executeUpdate();
+
+        } catch (SQLException ex) {
+            Logger lgr = Logger.getLogger(Query.class.getName());
+            lgr.log(Level.SEVERE, ex.getMessage(), ex);
+        } catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+	}	
+	
 	public boolean next()
 	{
 		try {
