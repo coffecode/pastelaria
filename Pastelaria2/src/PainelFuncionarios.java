@@ -260,10 +260,15 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 
 		  public Object getCellEditorValue() {
 		    if (isPushed) {
-		      // 
-		      // 
-		      JOptionPane.showMessageDialog(button, label + ": Ouch!");
-		      // System.out.println(label + ": Ouch!");
+		      if(tabelaFuncionarios.getSelectedRowCount() == 1)	//verifico se somente uma linha está selecionada  
+		      {
+		          String pega = (String) tabelaFuncionarios.getValueAt(tabelaFuncionarios.getSelectedRow(), 1);
+		          String formatacao;
+		          Query envia = new Query();
+		          formatacao = "DELETE FROM funcionarios WHERE `username` = '" + pega + "';";
+		          envia.executaUpdate(formatacao);
+		          MenuPrincipal.AbrirPrincipal(2);
+		       }
 		    }
 		    isPushed = false;
 		    return new String(label);
