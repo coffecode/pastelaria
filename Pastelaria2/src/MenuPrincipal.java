@@ -53,8 +53,10 @@ public class MenuPrincipal
 			principalPainel1.removeAll();
 			principalPainel1.add(menuStatus);
 			principalPainel1.add(menuPainel);
-			principalPainel1.add(menuMesas);
-			principalPainel1.add(menuFooter);
+			
+			PainelVendaRapida menuVendaRapida = new PainelVendaRapida();
+			
+			principalPainel1.add(menuVendaRapida);
 			principalPainel1.revalidate();
 			principalPainel1.repaint();
 		}

@@ -148,7 +148,7 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		adicionar.addActionListener(this);
 		
 		gbc.anchor = GridBagConstraints.WEST;
-		gbc.fill = GridBagConstraints.HORIZONTAL;;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		
 		gbc.gridx = 1;	// colunas
 		gbc.gridy = 1;	// linhas
