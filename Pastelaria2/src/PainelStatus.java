@@ -25,6 +25,7 @@ public class PainelStatus extends JPanel implements Runnable, MouseListener {
     protected TimerThread timerThread;
     static private JLabel leftLabel;
     private JButton bSair;
+    static private String nomeFun = "André Alves";
     
     public PainelStatus(String nomeFuncionario)
     {
@@ -35,6 +36,12 @@ public class PainelStatus extends JPanel implements Runnable, MouseListener {
     static public void setNome(String nomeFuncionario)
     {
     	leftLabel.setText("Olá, " + nomeFuncionario + ".");
+    	nomeFun = nomeFuncionario;
+    }
+    
+    static public String pegaNome()
+    {
+    	return nomeFun;
     }
     
     @Override

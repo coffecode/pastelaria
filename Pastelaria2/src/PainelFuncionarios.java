@@ -28,7 +28,18 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		setMinimumSize(new Dimension(800, 480));		// Horizontal , Vertical
 		setMaximumSize(new Dimension(800, 480));
 		
-		tabela = new DefaultTableModel();
+		//instance table model
+		tabela = new DefaultTableModel() {
+
+		    @Override
+		    public boolean isCellEditable(int row, int column) {
+		       if(column == 4)
+		    	   return true;
+		       
+		       return false;
+		    }
+		};
+		
 		tabela.addColumn("Nome");
 		tabela.addColumn("Usuário");
 		tabela.addColumn("Senha");
@@ -41,24 +52,39 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		
 		while(pega.next())
 		{
-			Vector<Serializable> linha = new Vector<Serializable>();
-			
-			linha.add(pega.getString("nome"));
-			linha.add(pega.getString("username"));
-			linha.add(pega.getString("password"));
-			
-			if(pega.getInt("level") < 2)
-				linha.add("Funcionário");
-			else
-				linha.add("Gerente");
-			
-			linha.add("Deletar");
-			
-			tabela.addRow(linha);
-			linhas++;
+			if(pega.getInt("level") != 3)
+			{
+				Vector<Serializable> linha = new Vector<Serializable>();
+				
+				linha.add(pega.getString("nome"));
+				linha.add(pega.getString("username"));
+				linha.add(pega.getString("password"));
+				
+				if(pega.getInt("level") < 2)
+					linha.add("Funcionário");
+				else
+					linha.add("Gerente");
+				
+				linha.add("Deletar");
+				
+				tabela.addRow(linha);
+				linhas++;				
+			}
 		}
 		
-		tabelaFuncionarios = new JTable();
+		tabelaFuncionarios = new JTable() {
+		    Color alternate = new Color(141, 182, 205);
+		    
+		    @Override
+		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+		        Component stamp = super.prepareRenderer(renderer, row, column);
+		        if (row % 2 == 0 && column != 4)
+		            stamp.setBackground(alternate);
+		        else
+		            stamp.setBackground(this.getBackground());
+		        return stamp;
+		    }				
+		};
 		
 		tabelaFuncionarios.setModel(tabela);
 		tabelaFuncionarios.getColumnModel().getColumn(0).setMinWidth(180);
@@ -66,17 +92,21 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		tabelaFuncionarios.getColumnModel().getColumn(3).setMinWidth(140);
 		tabelaFuncionarios.getColumnModel().getColumn(3).setMaxWidth(140);
 		
+		tabelaFuncionarios.getColumnModel().getColumn(4).setMinWidth(60);
+		tabelaFuncionarios.getColumnModel().getColumn(4).setMaxWidth(60);		
+		
 		tabelaFuncionarios.setRowHeight(30);
 		
 		DefaultTableCellRenderer centraliza = new DefaultTableCellRenderer();
 		centraliza.setHorizontalAlignment( JLabel.CENTER );
+		
 		tabelaFuncionarios.getColumn("Nome").setCellRenderer(centraliza);
 		tabelaFuncionarios.getColumn("Usuário").setCellRenderer(centraliza);
 		tabelaFuncionarios.getColumn("Senha").setCellRenderer(centraliza);
 		tabelaFuncionarios.getColumn("Nível").setCellRenderer(centraliza);
 		tabelaFuncionarios.getColumn("Deletar").setCellRenderer(centraliza);
 		tabelaFuncionarios.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
-		tabelaFuncionarios.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));
+		tabelaFuncionarios.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));		
 		
 		if(linhas > 8)
 			tabelaFuncionarios.setPreferredScrollableViewportSize(new Dimension(700, 112));
@@ -226,13 +256,13 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 			  setIcon(new ImageIcon("imgs/delete.png"));
 			  
 		    if (isSelected) {
-		      setForeground(table.getSelectionForeground());
-		      setBackground(table.getSelectionBackground());
+		    		setForeground(table.getSelectionForeground());
+		    		setBackground(table.getSelectionBackground());
 		    } else {
-		      setForeground(table.getForeground());
-		      setBackground(UIManager.getColor("Button.background"));
+			      setForeground(table.getSelectionForeground());
+			      setBackground(table.getSelectionBackground());
 		    }
-		    setText((value == null) ? "" : value.toString());
+		    //setText((value == null) ? "" : value.toString());
 		    return this;
 		  }
 		}
@@ -262,14 +292,14 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		  public Component getTableCellEditorComponent(JTable table, Object value,
 		      boolean isSelected, int row, int column) {
 			  if (isSelected) {
-		      button.setForeground(table.getSelectionForeground());
-		      button.setBackground(table.getSelectionBackground());
+				  button.setForeground(table.getSelectionForeground());
+				  button.setBackground(table.getSelectionBackground());
 		    } else {
-		      button.setForeground(table.getForeground());
-		      button.setBackground(table.getBackground());
+		    	button.setForeground(table.getForeground());
+		    	button.setBackground(table.getBackground());
 		    }
 		    label = (value == null) ? "" : value.toString();
-		    button.setText(label);
+		    //button.setText(label);
 		    button.setIcon(new ImageIcon("imgs/delete.png"));
 		    isPushed = true;
 		    return button;
@@ -279,12 +309,21 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		    if (isPushed) {
 		      if(tabelaFuncionarios.getSelectedRowCount() == 1)	//verifico se somente uma linha está selecionada  
 		      {
-		          String pega = (String) tabelaFuncionarios.getValueAt(tabelaFuncionarios.getSelectedRow(), 1);
-		          String formatacao;
-		          Query envia = new Query();
-		          formatacao = "DELETE FROM funcionarios WHERE `username` = '" + pega + "';";
-		          envia.executaUpdate(formatacao);
-		          MenuPrincipal.AbrirPrincipal(2);
+		    	  String pegauser = (String) tabelaFuncionarios.getValueAt(tabelaFuncionarios.getSelectedRow(), 0);
+		    	  
+		    	  if(pegauser.equals(PainelStatus.pegaNome()))
+		    	  {
+		    		  JOptionPane.showMessageDialog(null, "Você não pode deletar sua própria conta.");
+		    	  }
+		    	  else
+		    	  {  		  
+			          String pega = (String) tabelaFuncionarios.getValueAt(tabelaFuncionarios.getSelectedRow(), 1);
+			          String formatacao;
+			          Query envia = new Query();
+			          formatacao = "DELETE FROM funcionarios WHERE `username` = '" + pega + "';";
+			          envia.executaUpdate(formatacao);
+			          MenuPrincipal.AbrirPrincipal(2);	    		  
+		    	  }
 		       }
 		    }
 		    isPushed = false;
