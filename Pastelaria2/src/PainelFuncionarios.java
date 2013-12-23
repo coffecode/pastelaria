@@ -2,6 +2,7 @@ import java.awt.*;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
@@ -61,7 +62,19 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		
 		tabelaFuncionarios.setModel(tabela);
 		tabelaFuncionarios.getColumnModel().getColumn(0).setMinWidth(180);
-		tabelaFuncionarios.getColumnModel().getColumn(3).setMinWidth(160);
+		tabelaFuncionarios.getColumnModel().getColumn(0).setMaxWidth(180);
+		tabelaFuncionarios.getColumnModel().getColumn(3).setMinWidth(140);
+		tabelaFuncionarios.getColumnModel().getColumn(3).setMaxWidth(140);
+		
+		tabelaFuncionarios.setRowHeight(30);
+		
+		DefaultTableCellRenderer centraliza = new DefaultTableCellRenderer();
+		centraliza.setHorizontalAlignment( JLabel.CENTER );
+		tabelaFuncionarios.getColumn("Nome").setCellRenderer(centraliza);
+		tabelaFuncionarios.getColumn("Usuário").setCellRenderer(centraliza);
+		tabelaFuncionarios.getColumn("Senha").setCellRenderer(centraliza);
+		tabelaFuncionarios.getColumn("Nível").setCellRenderer(centraliza);
+		tabelaFuncionarios.getColumn("Deletar").setCellRenderer(centraliza);
 		tabelaFuncionarios.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
 		tabelaFuncionarios.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));
 		
@@ -209,6 +222,9 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 
 		  public Component getTableCellRendererComponent(JTable table, Object value,
 		      boolean isSelected, boolean hasFocus, int row, int column) {
+			  
+			  setIcon(new ImageIcon("imgs/delete.png"));
+			  
 		    if (isSelected) {
 		      setForeground(table.getSelectionForeground());
 		      setBackground(table.getSelectionBackground());
@@ -245,7 +261,7 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 
 		  public Component getTableCellEditorComponent(JTable table, Object value,
 		      boolean isSelected, int row, int column) {
-		    if (isSelected) {
+			  if (isSelected) {
 		      button.setForeground(table.getSelectionForeground());
 		      button.setBackground(table.getSelectionBackground());
 		    } else {
@@ -254,6 +270,7 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		    }
 		    label = (value == null) ? "" : value.toString();
 		    button.setText(label);
+		    button.setIcon(new ImageIcon("imgs/delete.png"));
 		    isPushed = true;
 		    return button;
 		  }
