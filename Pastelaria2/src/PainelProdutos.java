@@ -78,7 +78,7 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		    @Override
 		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
 		        Component stamp = super.prepareRenderer(renderer, row, column);
-		        if (row % 2 == 0 && column != 4)
+		        if (row % 2 == 0 && column != 3)
 		            stamp.setBackground(alternate);
 		        else
 		            stamp.setBackground(this.getBackground());
@@ -87,14 +87,14 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		};
 		
 		tabelaProdutos.setModel(tabela);
-		tabelaProdutos.getColumnModel().getColumn(0).setMinWidth(180);
-		tabelaProdutos.getColumnModel().getColumn(0).setMaxWidth(180);
-		tabelaProdutos.getColumnModel().getColumn(1).setMinWidth(140);
-		tabelaProdutos.getColumnModel().getColumn(1).setMaxWidth(140);
-		tabelaProdutos.getColumnModel().getColumn(2).setMinWidth(140);
-		tabelaProdutos.getColumnModel().getColumn(2).setMaxWidth(140);
-		tabelaProdutos.getColumnModel().getColumn(3).setMinWidth(60);
-		tabelaProdutos.getColumnModel().getColumn(3).setMaxWidth(60);		
+		tabelaProdutos.getColumnModel().getColumn(0).setMinWidth(240);
+		tabelaProdutos.getColumnModel().getColumn(0).setMaxWidth(240);
+		tabelaProdutos.getColumnModel().getColumn(1).setMinWidth(240);
+		tabelaProdutos.getColumnModel().getColumn(1).setMaxWidth(240);
+		tabelaProdutos.getColumnModel().getColumn(2).setMinWidth(240);
+		tabelaProdutos.getColumnModel().getColumn(2).setMaxWidth(240);
+		tabelaProdutos.getColumnModel().getColumn(3).setMinWidth(62);
+		tabelaProdutos.getColumnModel().getColumn(3).setMaxWidth(62);		
 		
 		tabelaProdutos.setRowHeight(30);
 		
@@ -170,7 +170,7 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		
 		addPainel.add(campoTipo, gbc);
 		
-		gbc.gridx = 1;	// colunas
+		gbc.gridx = 2;	// colunas
 		gbc.gridy = 3;	// linhas			
 		
 		
@@ -276,7 +276,7 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		    button.setOpaque(true);
 		    button.addActionListener(new ActionListener() {
 		      public void actionPerformed(ActionEvent e) {
-		        fireEditingStopped();
+		       // fireEditingStopped();
 		      }
 		    });
 		  }
