@@ -25,7 +25,7 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 	{
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Gerenciar Funcionários"));
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		setMinimumSize(new Dimension(800, 480));		// Horizontal , Vertical
+		setMinimumSize(new Dimension(800, 480));		// Horizontal , Vertical,
 		setMaximumSize(new Dimension(800, 480));
 		
 		//instance table model
