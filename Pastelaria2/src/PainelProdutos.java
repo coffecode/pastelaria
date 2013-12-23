@@ -6,11 +6,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
-
 import java.awt.event.*;
 import java.io.Serializable;
 import java.util.Vector;
-
 
 public class PainelProdutos extends JPanel implements MouseListener, ActionListener{
 
@@ -18,12 +16,18 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 	private JTable tabelaProdutos;
 	private JLabel adicionarNome, adicionarPreco;
 	private JTextField campoNome, campoPreco;
+	private JComboBox campoTipo;
 	private JButton adicionar;
 	private JPanel addPainel;
 	
 	@SuppressWarnings("null")
 	PainelProdutos()
 	{
+		
+		
+		
+		
+		
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Gerenciar Produtos"));
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setMinimumSize(new Dimension(800, 480));		// Horizontal , Vertical
@@ -43,11 +47,11 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		
 		tabela.addColumn("Nome");
 		tabela.addColumn("Preco");
-		
+		tabela.addColumn("Tipo");
 		tabela.addColumn("Deletar");
 		
 		Query pega = new Query();
-		pega.executaQuery("SELECT * FROM produtos");
+		pega.executaQuery("SELECT * FROM produtos ORDER BY nome ");
 		int linhas = 0;
 		
 		while(pega.next())
@@ -57,7 +61,12 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 				
 			linha.add(pega.getString("nome"));
 			linha.add(pega.getString("preco"));	
-				
+			if(pega.getInt("tipo") < 2)
+				linha.add("Produto");
+			else
+				linha.add("Adicional");
+			linha.add("Deletar");
+
 			tabela.addRow(linha);
 			linhas++;				
 			
@@ -80,11 +89,12 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		tabelaProdutos.setModel(tabela);
 		tabelaProdutos.getColumnModel().getColumn(0).setMinWidth(180);
 		tabelaProdutos.getColumnModel().getColumn(0).setMaxWidth(180);
-		tabelaProdutos.getColumnModel().getColumn(3).setMinWidth(140);
-		tabelaProdutos.getColumnModel().getColumn(3).setMaxWidth(140);
-		
-		tabelaProdutos.getColumnModel().getColumn(4).setMinWidth(60);
-		tabelaProdutos.getColumnModel().getColumn(4).setMaxWidth(60);		
+		tabelaProdutos.getColumnModel().getColumn(1).setMinWidth(140);
+		tabelaProdutos.getColumnModel().getColumn(1).setMaxWidth(140);
+		tabelaProdutos.getColumnModel().getColumn(2).setMinWidth(140);
+		tabelaProdutos.getColumnModel().getColumn(2).setMaxWidth(140);
+		tabelaProdutos.getColumnModel().getColumn(3).setMinWidth(60);
+		tabelaProdutos.getColumnModel().getColumn(3).setMaxWidth(60);		
 		
 		tabelaProdutos.setRowHeight(30);
 		
@@ -93,6 +103,7 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		
 		tabelaProdutos.getColumn("Nome").setCellRenderer(centraliza);
 		tabelaProdutos.getColumn("Preco").setCellRenderer(centraliza);
+		tabelaProdutos.getColumn("Tipo").setCellRenderer(centraliza);
 		tabelaProdutos.getColumn("Deletar").setCellRenderer(centraliza);
 		tabelaProdutos.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
 		tabelaProdutos.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));		
@@ -114,7 +125,10 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(5,5,5,5);  //top padding
 		
-		
+		String[] tiposProdutos = { "Produto", "Adicional" };
+		campoTipo = new JComboBox(tiposProdutos);
+		campoTipo.setSelectedIndex(0);
+		campoTipo.setPreferredSize(new Dimension(150, 30));
 		
 		adicionarNome = new JLabel("Nome: ");
 		adicionarPreco = new JLabel("Preço: ");
@@ -151,6 +165,11 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		
 		addPainel.add(campoPreco, gbc);
 		
+		gbc.gridx = 3;
+		gbc.gridy = 1;
+		
+		addPainel.add(campoTipo, gbc);
+		
 		gbc.gridx = 1;	// colunas
 		gbc.gridy = 3;	// linhas			
 		
@@ -166,7 +185,12 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 	
 		if(e.getSource() == adicionar)
 		{
+			int tipo = 0;
 			
+			if(campoTipo.getSelectedItem() == "Adicional")
+				tipo = 2;
+			else
+				tipo = 1;	
 			
 			if("".equals(campoNome.getText().trim()) || "".equals(campoPreco.getText().trim()))
 			{
@@ -176,13 +200,13 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 			{
 				String formatacao;
 				Query envia = new Query();
-				formatacao = "INSERT INTO funcionarios(nome, preco) VALUES('"
+				formatacao = "INSERT INTO produtos(nome, preco, tipo) VALUES('"
 				+ campoNome.getText() +
-				"', '" + campoPreco.getText() + "');";
+				"', " + campoPreco.getText() + ", "+tipo+");";
 				
 				envia.executaUpdate(formatacao);
 				
-				MenuPrincipal.AbrirPrincipal(2);
+				MenuPrincipal.AbrirPrincipal(1);
 			}
 		}
 	}
@@ -277,15 +301,15 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		    if (isPushed) {
 		      if(tabelaProdutos.getSelectedRowCount() == 1)	//verifico se somente uma linha está selecionada  
 		      {
-		    	  String pegauser = (String) tabelaProdutos.getValueAt(tabelaProdutos.getSelectedRow(), 0);
 		    	  
 		    	  
-		    	   String pega = (String) tabelaProdutos.getValueAt(tabelaProdutos.getSelectedRow(), 1);
+		    	  
+		    	   String pega = (String) tabelaProdutos.getValueAt(tabelaProdutos.getSelectedRow(), 0);
 			       String formatacao;
 			       Query envia = new Query();
 			       formatacao = "DELETE FROM produtos WHERE `nome` = '" + pega + "';";
 			       envia.executaUpdate(formatacao);
-			       MenuPrincipal.AbrirPrincipal(2);	    		  
+			       MenuPrincipal.AbrirPrincipal(1);	    		  
 		    	  
 		       }
 		    }
