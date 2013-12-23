@@ -4,37 +4,43 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 
 import java.awt.event.*;
+import java.util.ArrayList;
 
-public class PainelVendaRapida extends JPanel implements MouseListener
+public class PainelVendaRapida extends JPanel implements ActionListener
 {
-	private JPanel painelTotal, rapidaPainel;
-	private JLabel total, quantidade, labelProduto, labelValor, labelCodigo;
+	private JPanel painelTotal, rapidaPainel, adicionaisPainel, adicionaisPainel1;
+	private JLabel labelQuantidade, labelProduto, labelValor, labelCodigo;
+	private JButton adicionarADC, adicionarProduto;
 	static private JTextField campoValor;
+	private JTextField campoQuantidade;
 	private AutoSuggest addProduto;
 	
+	static private ArrayList<AutoSuggest> addAdicional = new ArrayList<>();
+	static private ArrayList<JButton> addRemover = new ArrayList<>();	
+	
 	PainelVendaRapida()
-	{
-		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Venda Rápida"));
+	{		
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		setMinimumSize(new Dimension(800, 480));		// Horizontal , Vertical
-		setMaximumSize(new Dimension(800, 480));
+		setMinimumSize(new Dimension(800, 600));		// Horizontal , Vertical
+		setMaximumSize(new Dimension(800, 600));
 		
 		painelTotal = new JPanel();
-		painelTotal.setLayout(new BoxLayout(painelTotal, BoxLayout.X_AXIS));
-		painelTotal.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "painelTotal"));
+		painelTotal.setLayout(new GridBagLayout());
+		painelTotal.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Venda Rápida"));
+		painelTotal.setMinimumSize(new Dimension(800, 250));		// Horizontal , Vertical
+		painelTotal.setMaximumSize(new Dimension(800, 250));		
 		
 		rapidaPainel = new JPanel();
 		rapidaPainel.setLayout(new GridBagLayout());
-		rapidaPainel.setMinimumSize(new Dimension(800, 200));
-		rapidaPainel.setMaximumSize(new Dimension(800, 200));
-		rapidaPainel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "rapidaPainel"));
+		
+		rapidaPainel.setMinimumSize(new Dimension(600, 100));
+		rapidaPainel.setMaximumSize(new Dimension(600, 100));
 		
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(5,5,5,5);  //top padding
 		
 		gbc.anchor = GridBagConstraints.WEST;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		
+		gbc.fill = GridBagConstraints.HORIZONTAL;		
 		
 		labelProduto = new JLabel("Produto:");
 		addProduto = new AutoSuggest();
@@ -42,6 +48,18 @@ public class PainelVendaRapida extends JPanel implements MouseListener
 		labelValor = new JLabel("Preço:");
 		campoValor = new JTextField(5);
 		campoValor.setEditable(false);
+		
+		adicionarADC = new JButton("");
+		ImageIcon iconeADC = new ImageIcon("imgs/plus1.png");
+		adicionarADC.setIcon(iconeADC);
+		adicionarADC.setPreferredSize(new Dimension(25, 22));
+		adicionarADC.setBorder(BorderFactory.createEmptyBorder());
+		adicionarADC.setContentAreaFilled(false);  		
+		adicionarADC.addActionListener(this);
+		
+		labelQuantidade = new JLabel("Qntd:");
+		campoQuantidade = new JTextField(2);
+		campoQuantidade.setText("1");
 		
 		gbc.gridx = 1;	// colunas
 		gbc.gridy = 1;	// linhas
@@ -60,8 +78,72 @@ public class PainelVendaRapida extends JPanel implements MouseListener
 		
 		rapidaPainel.add(campoValor, gbc);
 		
-		painelTotal.add(rapidaPainel);
-		add(painelTotal);
+		gbc.gridx = 5;	// colunas
+		
+		rapidaPainel.add(labelQuantidade, gbc);
+		
+		gbc.gridx = 6;	// colunas
+		
+		rapidaPainel.add(campoQuantidade, gbc);
+		
+		gbc.gridx = 7;	// colunas
+		
+		rapidaPainel.add(adicionarADC, gbc);
+		
+		adicionaisPainel1 = new JPanel();
+		adicionaisPainel1.setLayout(new GridBagLayout());
+		adicionaisPainel1.setMinimumSize(new Dimension(360, 120));
+		adicionaisPainel1.setMaximumSize(new Dimension(360, 120));	
+		
+		adicionaisPainel = new JPanel();
+		adicionaisPainel.setLayout(new GridBagLayout());
+		adicionaisPainel.setMinimumSize(new Dimension(360, 120));
+		adicionaisPainel.setMaximumSize(new Dimension(360, 120));
+		
+		for(int i = 0; i < addAdicional.size(); i++)
+		{
+			gbc.gridx = 1;		// coluna
+			gbc.gridy = i;	// linha
+			
+			gbc.gridx++;		// coluna
+			adicionaisPainel.add(addAdicional.get(i), gbc);
+			
+			gbc.gridx++;		// coluna
+			adicionaisPainel.add(addRemover.get(i), gbc);
+		}
+		
+		JScrollPane scroll = new JScrollPane(adicionaisPainel);
+		scroll.setMinimumSize(new Dimension(360,120));
+		scroll.setMaximumSize(new Dimension(360,120));
+		scroll.setPreferredSize(new Dimension(360,120));
+		scroll.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Adicionais"));
+		
+		adicionaisPainel1.add(scroll);
+		
+		
+		gbc.insets = new Insets(0,0,0,0);  //top padding
+		
+		gbc.gridx = 1;	// colunas
+		gbc.gridy = 1;	// linhas			
+		painelTotal.add(rapidaPainel, gbc);		
+		
+		gbc.gridx = 1;	// colunas
+		gbc.gridy = 2;	// linhas		
+		painelTotal.add(adicionaisPainel1, gbc);
+		
+		adicionarProduto = new JButton("Adicionar Produto");
+		ImageIcon iconePlus = new ImageIcon("imgs/plus2.png");
+		adicionarProduto.setIcon(iconePlus);
+		adicionarProduto.setPreferredSize(new Dimension(140, 40));
+		
+		gbc.gridx = 1;	// colunas
+		gbc.gridy = 3;	// linhas
+		
+		gbc.insets = new Insets(8,190,8,190);  //top padding
+		
+		painelTotal.add(adicionarProduto, gbc);
+		
+		add(painelTotal);	
 	}
 	
 	static public void updateCampo(String valor)
@@ -82,29 +164,20 @@ public class PainelVendaRapida extends JPanel implements MouseListener
 	}
 
 	@Override
-	public void mouseClicked(MouseEvent e)
-	{
-
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e)
-	{
-
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		PainelLegenda.AtualizaLegenda("Desenvolvido por CodeCoffe (C) - 2013");
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		if(e.getSource() == adicionarADC)
+		{
+			JButton botao = new JButton("");
+			ImageIcon iconeRemove = new ImageIcon("imgs/remove.png");
+			botao.setIcon(iconeRemove);
+			botao.setBorder(BorderFactory.createEmptyBorder());
+			botao.setContentAreaFilled(false);      			
+			
+			addAdicional.add(new AutoSuggest());
+			addRemover.add(botao);
+			
+			MenuPrincipal.AbrirPrincipal(0);
+		}
 	}
 }

@@ -12,7 +12,6 @@ public class MenuPrincipal
 	private static PainelVenda menuVendaMesa;
 	private static PainelStatus menuStatus;
 	
-	
 	public MenuPrincipal(int level, String nome)
 	{
 		janela = new JFrame("Pastelaço - Controle de Caixa");//
