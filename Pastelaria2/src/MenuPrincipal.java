@@ -14,7 +14,7 @@ public class MenuPrincipal
 	
 	public MenuPrincipal(int level, String nome)
 	{
-		janela = new JFrame("PastelaÃ§o - Controle de Caixa");//
+		janela = new JFrame("Pastelaço - Controle de Caixa v1.00");
 		principalPainel1 = new JPanel();
 		
 		menuPainel = new PainelMenu(level);
@@ -45,7 +45,7 @@ public class MenuPrincipal
 		janela.dispose();
 	}
 
-	static public void AbrirPrincipal(int modelo)
+	static public void AbrirPrincipal(int modelo, boolean refresh)
 	{
 		if(modelo == 0)			// Abre o menu principal
 		{
@@ -53,12 +53,13 @@ public class MenuPrincipal
 			principalPainel1.add(menuStatus);
 			principalPainel1.add(menuPainel);
 			
-			PainelVendaRapida menuVendaRapida = new PainelVendaRapida();
+			PainelVendaRapida menuVendaRapida = new PainelVendaRapida(refresh);
 			
 			principalPainel1.add(menuVendaRapida);
 			principalPainel1.revalidate();
 			principalPainel1.repaint();
-		}
+		}	
+		
 		if(modelo == 1)			// Abre o menu de vendas da mesa
 		{
 			principalPainel1.removeAll();

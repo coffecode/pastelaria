@@ -12,11 +12,11 @@ public class MenuLogin extends JFrame implements ActionListener
 	
 	public MenuLogin()
 	{
-		setTitle("Fa√ßa o seu Login");
+		setTitle("Login");
 		JPanel login = new JPanel();
 		login.setLayout(null);
 		
-		LabelUsername = new JLabel("Usu√°rio:");
+		LabelUsername = new JLabel("Usu·rio:");
 		LabelUsername.setBounds(15,20,70,30); // Coluna, Linha, Largura, Altura!
 		login.add(LabelUsername);
 		
@@ -36,9 +36,9 @@ public class MenuLogin extends JFrame implements ActionListener
 		Confere.setBounds(100,110,85,40);
 		login.add(Confere);
 		
-		Creditos = new JLabel("Desenvolvido por CodeCoffe (C) - 2013");
+		Creditos = new JLabel("Desenvolvido por CodeCoffe - 2013");
 		Creditos.setFont(new Font("Verdana", Font.PLAIN, 10));
-		Creditos.setBounds(15, 170, 200, 15);
+		Creditos.setBounds(15, 165, 200, 15);
 		login.add(Creditos);
 		
 		add(login);
@@ -80,7 +80,7 @@ public class MenuLogin extends JFrame implements ActionListener
 			}
 			else
 			{
-				JOptionPane.showMessageDialog(null, "Usuario nao encontrado!");
+				JOptionPane.showMessageDialog(null, "Usu·rio n„o encontrado!");
 			}
 		}
 	}	

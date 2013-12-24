@@ -214,7 +214,7 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 				
 				envia.executaUpdate(formatacao);
 				
-				MenuPrincipal.AbrirPrincipal(2);
+				MenuPrincipal.AbrirPrincipal(2, false);
 			}
 		}
 	}
@@ -322,7 +322,7 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 			          Query envia = new Query();
 			          formatacao = "DELETE FROM funcionarios WHERE `username` = '" + pega + "';";
 			          envia.executaUpdate(formatacao);
-			          MenuPrincipal.AbrirPrincipal(2);	    		  
+			          MenuPrincipal.AbrirPrincipal(2, false);	    		  
 		    	  }
 		       }
 		    }

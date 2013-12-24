@@ -23,11 +23,6 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 	@SuppressWarnings("null")
 	PainelProdutos()
 	{
-		
-		
-		
-		
-		
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Gerenciar Produtos"));
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setMinimumSize(new Dimension(800, 480));		// Horizontal , Vertical
@@ -56,7 +51,6 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		
 		while(pega.next())
 		{
-			
 			Vector<Serializable> linha = new Vector<Serializable>();
 				
 			linha.add(pega.getString("nome"));
@@ -68,8 +62,7 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 			linha.add("Deletar");
 
 			tabela.addRow(linha);
-			linhas++;				
-			
+			linhas++;
 		}
 		
 		tabelaProdutos = new JTable() {
@@ -131,13 +124,12 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		campoTipo.setPreferredSize(new Dimension(150, 30));
 		
 		adicionarNome = new JLabel("Nome: ");
-		adicionarPreco = new JLabel("Preço: ");
+		adicionarPreco = new JLabel("Pre�o: ");
 		
 		campoNome = new JTextField();
 		campoNome.setPreferredSize(new Dimension(150, 30));
 		campoPreco = new JTextField();
 		campoPreco.setPreferredSize(new Dimension(150, 30));
-		
 	
 		ImageIcon iconePlus = new ImageIcon("imgs/plus2.png");
 		adicionar = new JButton("Adicionar");
@@ -173,12 +165,10 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		gbc.gridx = 2;	// colunas
 		gbc.gridy = 3;	// linhas			
 		
-		
 		addPainel.add(adicionar, gbc);
 		
 		add(addPainel);
 	}
-				
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -206,7 +196,7 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 				
 				envia.executaUpdate(formatacao);
 				
-				MenuPrincipal.AbrirPrincipal(1);
+				MenuPrincipal.AbrirPrincipal(1, false);
 			}
 		}
 	}
@@ -301,16 +291,12 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		    if (isPushed) {
 		      if(tabelaProdutos.getSelectedRowCount() == 1)	//verifico se somente uma linha está selecionada  
 		      {
-		    	  
-		    	  
-		    	  
 		    	   String pega = (String) tabelaProdutos.getValueAt(tabelaProdutos.getSelectedRow(), 0);
 			       String formatacao;
 			       Query envia = new Query();
 			       formatacao = "DELETE FROM produtos WHERE `nome` = '" + pega + "';";
 			       envia.executaUpdate(formatacao);
-			       MenuPrincipal.AbrirPrincipal(1);	    		  
-		    	  
+			       MenuPrincipal.AbrirPrincipal(1, false);
 		       }
 		    }
 		    isPushed = false;
@@ -326,5 +312,4 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		    super.fireEditingStopped();
 		  }
 		}
-	
 }

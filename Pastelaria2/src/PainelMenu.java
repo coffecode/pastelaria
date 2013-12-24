@@ -16,10 +16,10 @@ public class PainelMenu extends JPanel implements MouseListener
 		this.setMaximumSize(new Dimension(800, 100));
 		this.setMinimumSize(new Dimension(800, 100));
 		
-		this.vendaRapida = new JButton("Venda RÃ¡pida");
+		this.vendaRapida = new JButton("Venda Rápida");
 		ImageIcon iconeRapida = new ImageIcon("imgs/vrapida.png");
 		this.vendaRapida.setIcon(iconeRapida);
-		this.vendaRapida.setPreferredSize(new Dimension(180, 60));
+		this.vendaRapida.setPreferredSize(new Dimension(170, 60));
 		this.vendaRapida.addMouseListener(this);
 		this.add(vendaRapida);
 		
@@ -30,7 +30,7 @@ public class PainelMenu extends JPanel implements MouseListener
 		this.produtos.addMouseListener(this);
 		this.add(produtos);
 		
-		this.funcionarios = new JButton("FuncionÃ¡rios");
+		this.funcionarios = new JButton("Funcionários");
 		this.funcionarios.setPreferredSize(new Dimension(170, 60));
 		ImageIcon iconeFuncionarios = new ImageIcon("imgs/funcionarios.png");
 		this.funcionarios.setIcon(iconeFuncionarios);
@@ -60,32 +60,32 @@ public class PainelMenu extends JPanel implements MouseListener
 	{
 		if(e.getSource() == vendaRapida) // apenas teste
 		{
-			MenuPrincipal.AbrirPrincipal(0);
+			MenuPrincipal.AbrirPrincipal(0, true);
 		}
 		else if(e.getSource() == produtos)
 		{
 			if(this.funcionario > 1)
-				MenuPrincipal.AbrirPrincipal(1);
+				MenuPrincipal.AbrirPrincipal(1, false);
 			else
-				JOptionPane.showMessageDialog(null, "VocÃª nÃ£o tem permissÃ£o para ver isso.");
+				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}
 		else if(e.getSource() == funcionarios)
 		{
 			if(this.funcionario > 1)
-				MenuPrincipal.AbrirPrincipal(2);
+				MenuPrincipal.AbrirPrincipal(2, false);
 			else
-				JOptionPane.showMessageDialog(null, "VocÃª nÃ£o tem permissÃ£o para ver isso.");
+				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}
 		else if(e.getSource() == consulta)
 		{
 			if(this.funcionario > 1)
-				MenuPrincipal.AbrirPrincipal(3);
+				MenuPrincipal.AbrirPrincipal(3, false);
 			else
-				JOptionPane.showMessageDialog(null, "VocÃª nÃ£o tem permissÃ£o para ver isso.");
+				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}
 		else if(e.getSource() == fiados)
 		{
-			MenuPrincipal.AbrirPrincipal(4);
+			MenuPrincipal.AbrirPrincipal(4, false);
 		}		
 	}
 

@@ -11,14 +11,14 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 	private JPanel painelTotal, rapidaPainel, adicionaisPainel, adicionaisPainel1;
 	private JLabel labelQuantidade, labelProduto, labelValor, labelCodigo;
 	private JButton adicionarADC, adicionarProduto;
-	static private JTextField campoValor;
-	private JTextField campoQuantidade;
-	private AutoSuggest addProduto;
+	static private JTextField campoValor = new JTextField(5);
+	static private JTextField campoQuantidade = new JTextField("1", 2);
+	static private AutoSuggest addProduto = new AutoSuggest();
 	
 	static private ArrayList<AutoSuggest> addAdicional = new ArrayList<>();
 	static private ArrayList<JButton> addRemover = new ArrayList<>();	
 	
-	PainelVendaRapida()
+	PainelVendaRapida(boolean refresh)
 	{		
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setMinimumSize(new Dimension(800, 600));		// Horizontal , Vertical
@@ -26,7 +26,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		
 		painelTotal = new JPanel();
 		painelTotal.setLayout(new GridBagLayout());
-		painelTotal.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Venda RÃ¡pida"));
+		painelTotal.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Venda Rápida"));
 		painelTotal.setMinimumSize(new Dimension(800, 250));		// Horizontal , Vertical
 		painelTotal.setMaximumSize(new Dimension(800, 250));		
 		
@@ -40,13 +40,24 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		gbc.insets = new Insets(5,5,5,5);  //top padding
 		
 		gbc.anchor = GridBagConstraints.WEST;
-		gbc.fill = GridBagConstraints.HORIZONTAL;		
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		
+		if(refresh)
+		{
+			campoValor = new JTextField(5);
+			campoQuantidade = new JTextField("1", 2);
+			addProduto = new AutoSuggest();
+			
+			addAdicional = new ArrayList<>();
+			addRemover = new ArrayList<>();				
+		}
+		
+		campoValor = new JTextField(5);
+		campoQuantidade = new JTextField("1", 2);	
 		
 		labelProduto = new JLabel("Produto:");
-		addProduto = new AutoSuggest();
 		
-		labelValor = new JLabel("PreÃ§o:");
-		campoValor = new JTextField(5);
+		labelValor = new JLabel("Preço:");
 		campoValor.setEditable(false);
 		
 		adicionarADC = new JButton("");
@@ -58,8 +69,6 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		adicionarADC.addActionListener(this);
 		
 		labelQuantidade = new JLabel("Qntd:");
-		campoQuantidade = new JTextField(2);
-		campoQuantidade.setText("1");
 		
 		gbc.gridx = 1;	// colunas
 		gbc.gridy = 1;	// linhas
@@ -177,7 +186,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 			addAdicional.add(new AutoSuggest());
 			addRemover.add(botao);
 			
-			MenuPrincipal.AbrirPrincipal(0);
+			MenuPrincipal.AbrirPrincipal(0, false);
 		}
 	}
 }
