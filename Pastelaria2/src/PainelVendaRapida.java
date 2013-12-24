@@ -11,12 +11,13 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 	private JPanel painelTotal, rapidaPainel, adicionaisPainel, adicionaisPainel1;
 	private JLabel labelQuantidade, labelProduto, labelValor, labelCodigo;
 	private JButton adicionarADC, adicionarProduto;
+	
 	static private JTextField campoValor = new JTextField(5);
 	static private JTextField campoQuantidade = new JTextField("1", 2);
 	static private AutoSuggest addProduto = new AutoSuggest();
 	
 	static private ArrayList<AutoSuggest> addAdicional = new ArrayList<>();
-	static private ArrayList<JButton> addRemover = new ArrayList<>();	
+	static private ArrayList<JButton> addRemover = new ArrayList<>();
 	
 	PainelVendaRapida(boolean refresh)
 	{		
@@ -47,16 +48,13 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 			campoValor = new JTextField(5);
 			campoQuantidade = new JTextField("1", 2);
 			addProduto = new AutoSuggest();
+			campoValor = new JTextField(5);
 			
 			addAdicional = new ArrayList<>();
-			addRemover = new ArrayList<>();				
+			addRemover = new ArrayList<>();
 		}
 		
-		campoValor = new JTextField(5);
-		campoQuantidade = new JTextField("1", 2);	
-		
 		labelProduto = new JLabel("Produto:");
-		
 		labelValor = new JLabel("Preço:");
 		campoValor.setEditable(false);
 		
@@ -109,26 +107,28 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		adicionaisPainel.setMinimumSize(new Dimension(360, 120));
 		adicionaisPainel.setMaximumSize(new Dimension(360, 120));
 		
-		for(int i = 0; i < addAdicional.size(); i++)
+		if(addAdicional.size() > 0)
 		{
-			gbc.gridx = 1;		// coluna
-			gbc.gridy = i;	// linha
+			for(int i = 0; i < addAdicional.size(); i++)
+			{
+				gbc.gridx = 1;		// coluna
+				gbc.gridy = i;	// linha
+				
+				gbc.gridx++;		// coluna
+				adicionaisPainel.add(addAdicional.get(i), gbc);
+				
+				gbc.gridx++;		// coluna
+				adicionaisPainel.add(addRemover.get(i), gbc);
+			}
 			
-			gbc.gridx++;		// coluna
-			adicionaisPainel.add(addAdicional.get(i), gbc);
+			JScrollPane scroll = new JScrollPane(adicionaisPainel);
+			scroll.setMinimumSize(new Dimension(360,120));
+			scroll.setMaximumSize(new Dimension(360,120));
+			scroll.setPreferredSize(new Dimension(360,120));
+			scroll.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Adicionais"));
 			
-			gbc.gridx++;		// coluna
-			adicionaisPainel.add(addRemover.get(i), gbc);
+			adicionaisPainel1.add(scroll);			
 		}
-		
-		JScrollPane scroll = new JScrollPane(adicionaisPainel);
-		scroll.setMinimumSize(new Dimension(360,120));
-		scroll.setMaximumSize(new Dimension(360,120));
-		scroll.setPreferredSize(new Dimension(360,120));
-		scroll.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Adicionais"));
-		
-		adicionaisPainel1.add(scroll);
-		
 		
 		gbc.insets = new Insets(0,0,0,0);  //top padding
 		
@@ -174,19 +174,37 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
+		boolean flag = false;
+		
 		if(e.getSource() == adicionarADC)
 		{
-			JButton botao = new JButton("");
+			JButton botao = new JButton();
 			ImageIcon iconeRemove = new ImageIcon("imgs/remove.png");
 			botao.setIcon(iconeRemove);
 			botao.setBorder(BorderFactory.createEmptyBorder());
-			botao.setContentAreaFilled(false);      			
+			botao.setContentAreaFilled(false);
+			botao.addActionListener(this);
 			
 			addAdicional.add(new AutoSuggest());
 			addRemover.add(botao);
-			
 			MenuPrincipal.AbrirPrincipal(0, false);
 		}
+		
+		if(addRemover.size() > 0)
+		{
+			for(int i = 0; i < addRemover.size(); i++)
+			{
+				if(e.getSource() == addRemover.get(i))
+				{
+					addAdicional.remove(i);
+					addRemover.remove(i);
+					flag = true;
+					break;
+				}
+			}
+		}
+		
+		if(flag)
+			MenuPrincipal.AbrirPrincipal(0, false);
 	}
 }
