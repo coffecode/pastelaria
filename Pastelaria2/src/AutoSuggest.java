@@ -135,4 +135,9 @@ public class AutoSuggest extends JPanel implements ActionListener
         String produtoNome = (String)cb.getSelectedItem();
         PainelVendaRapida.updateCampo(produtoNome);
 	}
+	
+	public String getSelecionado()
+	{
+		return (String)combo.getSelectedItem();
+	}
 }

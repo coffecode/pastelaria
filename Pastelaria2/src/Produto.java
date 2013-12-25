@@ -1,26 +1,77 @@
+import java.util.ArrayList;
 
-
-
-public class Produto {
-
+public class Produto
+{
 	private String nome;
+	private double preco;
+	private double totalProduto;
+	private int quantidade;
+	private boolean pago;
+	private ArrayList<Adicionais> adicionais;
 	
-	private int quantidade; //quantidade de produtos vendidos
+	public Produto()
+	{
+		this.adicionais = new ArrayList();
+		this.totalProduto = 0;
+		this.quantidade = 1;
+	}
 	
-	private Double preco;
-
+	public Adicionais getAdicional(int index)
+	{
+		return this.adicionais.get(index);
+	}
+	
+	public int getTotalAdicionais()
+	{
+		return this.adicionais.size();
+	}
+	
 	public String getNome() {
-		return nome;
+		return this.nome;
 	}
 
 	public void setNome(String nome) {
 		this.nome = nome;
 	}
-
-	
 	
 	public int getQuantidade() {
-		return quantidade;
+		return this.quantidade;
+	}
+	
+	public void setPago(boolean setar)
+	{
+		this.pago = setar;
+	}
+	
+	public boolean getPago()
+	{
+		return this.pago;
+	}
+	
+	public void adicionrAdc(Adicionais adc)
+	{
+		this.adicionais.add(adc);
+		this.calcularPreco();
+	}
+	
+	public void calcularPreco()
+	{
+		this.totalProduto = this.preco;
+		if(this.adicionais.size() > 0)
+		{
+			for(int i = 0; i < this.adicionais.size() ; i++)
+			{
+				Adicionais adc = new Adicionais();
+				adc = this.adicionais.get(i);
+				
+				this.totalProduto += adc.precoAdicional;
+			}
+		}
+	}
+	
+	public double getTotalProduto()
+	{
+		return this.totalProduto;
 	}
 
 	public void setQuantidade(int quantidade, int tipo) {
@@ -52,12 +103,11 @@ public class Produto {
 		}
 	}
 
-	public Double getPreco() {
-		return preco;
+	public double getPreco() {
+		return this.preco;
 	}
 
-	public void setPreco(Double preco) {
+	public void setPreco(double preco) {
 		this.preco = preco;
 	}
-	
 }
