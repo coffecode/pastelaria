@@ -124,7 +124,7 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		campoTipo.setPreferredSize(new Dimension(150, 30));
 		
 		adicionarNome = new JLabel("Nome: ");
-		adicionarPreco = new JLabel("Pre�o: ");
+		adicionarPreco = new JLabel("Pre�o: ");
 		
 		campoNome = new JTextField();
 		campoNome.setPreferredSize(new Dimension(150, 30));
@@ -266,7 +266,7 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		    button.setOpaque(true);
 		    button.addActionListener(new ActionListener() {
 		      public void actionPerformed(ActionEvent e) {
-		       // fireEditingStopped();
+		        fireEditingStopped();
 		      }
 		    });
 		  }
@@ -289,9 +289,10 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 
 		  public Object getCellEditorValue() {
 		    if (isPushed) {
-		      if(tabelaProdutos.getSelectedRowCount() == 1)	//verifico se somente uma linha está selecionada  
+		      if(tabelaProdutos.getSelectedRowCount() ==1)	//verifico se somente uma linha está selecionada  
 		      {
 		    	   String pega = (String) tabelaProdutos.getValueAt(tabelaProdutos.getSelectedRow(), 0);
+		    	   System.out.println(pega);
 			       String formatacao;
 			       Query envia = new Query();
 			       formatacao = "DELETE FROM produtos WHERE `nome` = '" + pega + "';";
