@@ -21,6 +21,19 @@ public class Produto
 		return this.adicionais.get(index);
 	}
 	
+	public String getAllAdicionais()
+	{
+		String todosAdicionais = "";
+		
+		for(int i = 0 ; i < adicionais.size() ; i++)
+		{
+			todosAdicionais += adicionais.get(i).nomeAdicional;
+			todosAdicionais += ", ";
+		}
+		
+		return todosAdicionais;
+	}
+	
 	public int getTotalAdicionais()
 	{
 		return this.adicionais.size();

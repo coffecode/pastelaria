@@ -2,15 +2,18 @@ import java.awt.*;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
 
 import java.awt.event.*;
 import java.io.Serializable;
 import java.util.Vector;
 
-public class PainelFuncionarios extends JPanel implements MouseListener, ActionListener
+public class PainelFuncionarios extends JPanel implements MouseListener, ActionListener, TableModelListener
 {
 	private DefaultTableModel tabela;
 	private JTable tabelaFuncionarios;
@@ -20,7 +23,6 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 	private JButton adicionar;
 	private JPanel addPainel;
 	
-	@SuppressWarnings("null")
 	PainelFuncionarios()
 	{
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Gerenciar Funcionários"));
@@ -33,7 +35,7 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 
 		    @Override
 		    public boolean isCellEditable(int row, int column) {
-		       if(column == 4)
+		       if(column == 4 || column == 1 || column == 2)
 		    	   return true;
 		       
 		       return false;
@@ -106,7 +108,9 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		tabelaFuncionarios.getColumn("Nível").setCellRenderer(centraliza);
 		tabelaFuncionarios.getColumn("Deletar").setCellRenderer(centraliza);
 		tabelaFuncionarios.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
-		tabelaFuncionarios.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));		
+		tabelaFuncionarios.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));	
+		
+		tabelaFuncionarios.getModel().addTableModelListener(this);		
 		
 		if(linhas > 8)
 			tabelaFuncionarios.setPreferredScrollableViewportSize(new Dimension(700, 112));
@@ -213,6 +217,7 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 				"', " + level + ", '" + campoNome.getText() + "');";
 				
 				envia.executaUpdate(formatacao);
+				envia.fechaConexao();
 				
 				MenuPrincipal.AbrirPrincipal(2, false);
 			}
@@ -339,4 +344,12 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		    super.fireEditingStopped();
 		  }
 		}
+
+		@Override
+		public void tableChanged(TableModelEvent e) {
+	        int row = e.getFirstRow();
+	        int column = e.getColumn();
+	        TableModel model = (TableModel)e.getSource();
+	        String data = (String) model.getValueAt(row, column);	// data possui o conte�do atualizado.
+	    }		
 }

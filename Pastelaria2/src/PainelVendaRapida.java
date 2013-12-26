@@ -8,7 +8,12 @@ import javax.swing.table.TableCellRenderer;
 
 import java.awt.event.*;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.Vector;
 
 public class PainelVendaRapida extends JPanel implements ActionListener
@@ -365,6 +370,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		add(pagamentoPainel);
 	}
 	
+	@SuppressWarnings("static-access")
 	static public void updateCampo()
 	{
 		if(addProduto.getSelecionado() != null)
@@ -403,7 +409,54 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		
 		if(e.getSource() == finalizarVenda)
 		{
-			
+			if(campoForma.getSelectedItem() != "Fiado")
+			{
+				Calendar c = Calendar.getInstance();
+				Locale locale = new Locale("pt","BR"); 
+				GregorianCalendar calendar = new GregorianCalendar(); 
+				SimpleDateFormat formatador = new SimpleDateFormat("dd'/'MM'/'yyyy' - 'HH':'mm",locale); 
+				
+				c.get(Calendar.DAY_OF_WEEK);
+				
+				String formatacao;
+				Query envia = new Query();
+				formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id) VALUES('"
+				+ campoTotal.getText() +
+				"', '" + MenuLogin.logado +
+				"', " + c.get(Calendar.YEAR) + ", "
+				+ c.get(Calendar.MONTH) + ", "
+				+ c.get(Calendar.DAY_OF_MONTH) + ", "
+				+ c.get(Calendar.DAY_OF_WEEK) +
+				", '" + formatador.format(calendar.getTime()) + "', '" + campoForma.getSelectedItem() + "', '" + campoRecebido.getText() + "', '" + campoTroco.getText() + "', 0);";
+				
+				envia.executaUpdate(formatacao);
+				
+				Query pega = new Query();
+				pega.executaQuery("SELECT vendas_id FROM vendas ORDER BY vendas_id DESC");
+				
+				int venda_id = 0;
+				
+				if(pega.next())
+				{
+					venda_id = pega.getInt("vendas_id");
+					String pegaPreco = "";
+					
+					for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
+					{
+						pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade()));
+						pegaPreco.replaceAll(",", ".");						
+						
+						formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto) VALUES('"
+								+ venda_id +
+								"', '" + vendaRapida.getProduto(i).getNome() +
+								"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + vendaRapida.getProduto(i).getQuantidade() + "');";
+								
+								envia.executaUpdate(formatacao);						
+					}
+				}
+				
+				envia.fechaConexao();				
+			}
 		}
 		
 		if(e.getSource() == calcular)
@@ -419,6 +472,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		
 		if(e.getSource() == adicionarProduto)
 		{
+			@SuppressWarnings("static-access")
 			String nomeProduto = addProduto.getSelecionado();
 			
 			if(nomeProduto == null)
@@ -486,7 +540,8 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		
 		if(e.getSource() == campoForma)
 		{
-	        JComboBox cb = (JComboBox)e.getSource();
+	        @SuppressWarnings("rawtypes")
+			JComboBox cb = (JComboBox)e.getSource();
 	        String forma = (String)cb.getSelectedItem();
 	        
 	        if(forma == "Fiado")
@@ -561,6 +616,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		}
 	}
 	
+	@SuppressWarnings("serial")
 	class ButtonRenderer extends JButton implements TableCellRenderer {
 
 		  public ButtonRenderer() {
@@ -587,6 +643,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		 * @version 1.0 11/09/98
 		 */
 
+		@SuppressWarnings("serial")
 		class ButtonEditor extends DefaultCellEditor {
 		  protected JButton button;
 

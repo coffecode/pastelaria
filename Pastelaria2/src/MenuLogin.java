@@ -10,6 +10,8 @@ public class MenuLogin extends JFrame implements ActionListener
 	private JButton Confere;
 	private JPanel Painel;
 	
+	static public String logado = "";
+	
 	public MenuLogin()
 	{
 		setTitle("Login");
@@ -70,6 +72,9 @@ public class MenuLogin extends JFrame implements ActionListener
 				if(teste.getString("password").equals(CampoPassword.getText()))
 				{
 					dispose();		// Fecha o JFrame
+					
+					logado = teste.getString("nome");
+					
 					MenuPrincipal principal = new MenuPrincipal(teste.getInt("level"), teste.getString("nome"));
 					teste.fechaConexao();
 				}
