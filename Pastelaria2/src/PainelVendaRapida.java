@@ -62,10 +62,9 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 			campoValor = new JTextField(5);
 			
 			addAdicional = new ArrayList<>();
-			addRemover = new ArrayList<>();
+			addRemover = new ArrayList<>();					
 			
 			vendaRapida = new Venda();
-			
 			campoTotal = new JTextField("0,00", 4);
 		}
 		
@@ -156,19 +155,18 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 				
 				gbc.gridx++;		// coluna
 				adicionaisPainel.add(addRemover.get(i), gbc);
-			}
-			
-			JScrollPane scroll = new JScrollPane(adicionaisPainel);
-			scroll.setMinimumSize(new Dimension(360,120));
-			scroll.setMaximumSize(new Dimension(360,120));
-			scroll.setPreferredSize(new Dimension(360,120));
-			scroll.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Adicionais"));
-			
-			adicionaisPainel1.add(scroll);			
+			}		
 		}
 		
-		gbc.ipady = 0;
+		JScrollPane scroll = new JScrollPane(adicionaisPainel);
+		scroll.setMinimumSize(new Dimension(360,120));
+		scroll.setMaximumSize(new Dimension(360,120));
+		scroll.setPreferredSize(new Dimension(360,120));
+		scroll.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Adicionais"));
 		
+		adicionaisPainel1.add(scroll);			
+		
+		gbc.ipady = 0;
 		gbc.insets = new Insets(0,0,0,0);  //top padding
 		
 		gbc.gridx = 1;	// colunas
@@ -471,9 +469,17 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 				pegaPreco = String.format("%.2f", vendaRapida.getTotal());		    	
 		    	  
 				pegaPreco.replaceAll(".", ",");	
-				campoTotal.setText(pegaPreco);	
-				
+				campoTotal.setText(pegaPreco);
 				pega.fechaConexao();
+				
+				campoValor = new JTextField(5);
+				campoQuantidade = new JTextField("1", 2);
+				addProduto = new VendaRapidaProdutoCampo();
+				campoValor = new JTextField(5);
+				
+				addAdicional = new ArrayList<>();
+				addRemover = new ArrayList<>();				
+				
 				MenuPrincipal.AbrirPrincipal(0, false);
 			}
 		}
