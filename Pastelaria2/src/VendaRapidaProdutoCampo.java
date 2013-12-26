@@ -5,13 +5,13 @@ import java.util.*;
 
 import javax.swing.*;
 
-public class AutoSuggest extends JPanel implements ActionListener
+public class VendaRapidaProdutoCampo extends JPanel implements ActionListener
 {
     private final JTextField tf;
-    private final JComboBox combo = new JComboBox();
+    private final static JComboBox combo = new JComboBox();
     private final Vector<String> v = new Vector<String>();
     
-    public AutoSuggest()
+    public VendaRapidaProdutoCampo()
     {
         super(new BorderLayout());
         combo.setEditable(true);
@@ -48,7 +48,6 @@ public class AutoSuggest extends JPanel implements ActionListener
                    }
         		});
         	}
-        	
         	
         	public void keyPressed(KeyEvent e)
         	{
@@ -91,10 +90,6 @@ public class AutoSuggest extends JPanel implements ActionListener
 		
 		while(pega.next())
 		{
-			//double aDouble = Double.parseDouble(pega.getString("preco"));
-			
-			//nomes = pega.getString("nome") + "   -   " + "R$" + String.format("%.2f", aDouble);
-			//nomes.replaceAll(",", ".");
 			produtos.add(pega.getString("nome"));
 		}
         
@@ -131,13 +126,14 @@ public class AutoSuggest extends JPanel implements ActionListener
     }
 	@Override
 	public void actionPerformed(ActionEvent e) {
-        JComboBox cb = (JComboBox)e.getSource();
-        String produtoNome = (String)cb.getSelectedItem();
-        PainelVendaRapida.updateCampo(produtoNome);
+        PainelVendaRapida.updateCampo();
 	}
 	
-	public String getSelecionado()
+	static public String getSelecionado()
 	{
-		return (String)combo.getSelectedItem();
+		if(combo.getSelectedIndex() == -1)
+			return null;
+		
+		return combo.getSelectedItem().toString();
 	}
 }

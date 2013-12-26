@@ -56,7 +56,7 @@ public class Produto
 	
 	public void calcularPreco()
 	{
-		this.totalProduto = this.preco;
+		this.totalProduto = 0;
 		if(this.adicionais.size() > 0)
 		{
 			for(int i = 0; i < this.adicionais.size() ; i++)
@@ -71,7 +71,7 @@ public class Produto
 	
 	public double getTotalProduto()
 	{
-		return this.totalProduto;
+		return (this.preco + this.totalProduto);
 	}
 
 	public void setQuantidade(int quantidade, int tipo) {

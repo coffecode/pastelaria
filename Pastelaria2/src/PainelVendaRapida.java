@@ -2,6 +2,7 @@ import java.awt.*;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
@@ -18,13 +19,13 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 	private DefaultTableModel tabela;
 	private JComboBox campoForma;
 	private JTable tabelaPedido;
-	private JTextField campoTotal, campoRecebido, campoTroco;
+	static private JTextField campoTotal, campoRecebido, campoTroco;
 	
 	static private JTextField campoValor = new JTextField(5);
 	static private JTextField campoQuantidade = new JTextField("1", 2);
-	static private AutoSuggest addProduto = new AutoSuggest();
+	static private VendaRapidaProdutoCampo addProduto = new VendaRapidaProdutoCampo();
 	
-	static private ArrayList<AutoSuggest> addAdicional = new ArrayList<>();
+	static private ArrayList<VendaRapidaAdicionaisCampo> addAdicional = new ArrayList<>();
 	static private ArrayList<JButton> addRemover = new ArrayList<>();
 	
 	static private Venda vendaRapida = new Venda();
@@ -57,13 +58,15 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		{
 			campoValor = new JTextField(5);
 			campoQuantidade = new JTextField("1", 2);
-			addProduto = new AutoSuggest();
+			addProduto = new VendaRapidaProdutoCampo();
 			campoValor = new JTextField(5);
 			
 			addAdicional = new ArrayList<>();
 			addRemover = new ArrayList<>();
 			
 			vendaRapida = new Venda();
+			
+			campoTotal = new JTextField("0,00", 4);
 		}
 		
 		labelProduto = new JLabel("Produto:");
@@ -264,6 +267,15 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		
 		tabelaPedido.setRowHeight(24);
 		
+		DefaultTableCellRenderer centraliza = new DefaultTableCellRenderer();
+		centraliza.setHorizontalAlignment( JLabel.CENTER );
+		
+		tabelaPedido.getColumn("Preço").setCellRenderer(centraliza);
+		tabelaPedido.getColumn("Qntd").setCellRenderer(centraliza);
+		tabelaPedido.getColumn("Deletar").setCellRenderer(centraliza);
+		tabelaPedido.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
+		tabelaPedido.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));		
+		
 		tabelaPedido.setPreferredScrollableViewportSize(new Dimension(764, 120));
 		
 		JScrollPane scrolltabela = new JScrollPane(tabelaPedido);
@@ -278,7 +290,6 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		
 		
 		labelTotal = new JLabel("Total:");
-		campoTotal = new JTextField("0,00", 4);
 		campoTotal.setEditable(false);
 		
 		labelRecebido = new JLabel("Recebido:");
@@ -289,7 +300,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener
         calcular = new JButton(iconeCalcular);
         calcular.addActionListener(this);
         calcular.setBorder(BorderFactory.createEmptyBorder());
-        calcular.setContentAreaFilled(false);		
+        calcular.setContentAreaFilled(false);
 		
 		labelTroco = new JLabel("Troco:");
 		campoTroco = new JTextField("0,00", 4);
@@ -335,9 +346,13 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		gbc.gridx = 2;	// colunas
 		pagamentoPainel.add(campoTroco, gbc);
 		
+		gbc.insets = new Insets(0,50,0,15);  //top padding
+		
 		gbc.gridx = 4;	// colunas
 		gbc.gridy = 1;	// linhas			
 		pagamentoPainel.add(labelForma, gbc);
+		
+		gbc.insets = new Insets(5,5,5,5);  //top padding
 		
 		gbc.gridx = 5;	// colunas
 		gbc.gridy = 1;	// linhas			
@@ -352,26 +367,57 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		add(pagamentoPainel);
 	}
 	
-	static public void updateCampo(String valor)
+	static public void updateCampo()
 	{
-		Query pega = new Query();
-		pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + valor + "';");
-		
-		if(pega.next())
+		if(addProduto.getSelecionado() != null)
 		{
 			String pegaPreco;
-			double aDouble = Double.parseDouble(pega.getString("preco"));
+			double aDouble = 0;
+			
+			Query pega = new Query();
+			pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + addProduto.getSelecionado() + "';");
+			
+			if(pega.next())
+				aDouble += Double.parseDouble(pega.getString("preco"));
+			
+			for(int i = 0; i < addAdicional.size() ; i++)
+			{
+				if(addAdicional.get(i).getSelecionado() != null)
+				{
+					pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + addAdicional.get(i).getSelecionado() + "';");
+					
+					if(pega.next())
+						aDouble += Double.parseDouble(pega.getString("preco"));					
+				}
+			}
+			
 			pegaPreco = String.format("%.2f", aDouble);
 			pegaPreco.replaceAll(",", ".");			
+			
 			campoValor.setText(pegaPreco);
+			pega.fechaConexao();
 		}
-		
-		pega.fechaConexao();
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		boolean flag = false;
+		
+		if(e.getSource() == finalizarVenda)
+		{
+			
+		}
+		
+		if(e.getSource() == calcular)
+		{
+			double pegaTotal = Double.parseDouble(campoTotal.getText().replaceAll(",", "."));
+			double pegaRecebido = Double.parseDouble(campoRecebido.getText().replaceAll(",", "."));
+			
+			String resultado = String.format("%.2f", (pegaTotal - pegaRecebido)*-1);
+			resultado.replaceAll(",", ".");
+			
+			campoTroco.setText(resultado);			
+		}
 		
 		if(e.getSource() == adicionarProduto)
 		{
@@ -400,8 +446,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 						for(int i = 0 ; i < addAdicional.size() ; i++)
 						{
 							String nomeAdicional = addAdicional.get(i).getSelecionado();
-							//pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + nomeAdicional + "' AND `tipo` = 2;");
-							pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + nomeAdicional + "';");
+							pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + nomeAdicional + "' AND `tipo` = 2;");
 							
 							if(pega.next())
 							{
@@ -420,6 +465,13 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 				if(Integer.parseInt(campoQuantidade.getText()) > 0)
 					for(int i = 0; i < Integer.parseInt(campoQuantidade.getText()) ; i++)
 						vendaRapida.adicionarProduto(p);
+				
+				vendaRapida.calculaTotal();
+				String pegaPreco;
+				pegaPreco = String.format("%.2f", vendaRapida.getTotal());		    	
+		    	  
+				pegaPreco.replaceAll(".", ",");	
+				campoTotal.setText(pegaPreco);	
 				
 				pega.fechaConexao();
 				MenuPrincipal.AbrirPrincipal(0, false);
@@ -454,7 +506,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 			botao.setContentAreaFilled(false);
 			botao.addActionListener(this);
 			
-			addAdicional.add(new AutoSuggest());
+			addAdicional.add(new VendaRapidaAdicionaisCampo());
 			addRemover.add(botao);
 			MenuPrincipal.AbrirPrincipal(0, false);
 		}
@@ -474,6 +526,121 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		}
 		
 		if(flag)
+		{
+			String pegaPreco;
+			double aDouble = 0;
+			
+			Query pega = new Query();
+			pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + addProduto.getSelecionado() + "';");
+			
+			if(pega.next())
+				aDouble += Double.parseDouble(pega.getString("preco"));
+			
+			for(int i = 0; i < addAdicional.size() ; i++)
+			{
+				if(addAdicional.get(i).getSelecionado() != null)
+				{
+					pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + addAdicional.get(i).getSelecionado() + "';");
+					
+					if(pega.next())
+						aDouble += Double.parseDouble(pega.getString("preco"));					
+				}
+			}
+			
+			pegaPreco = String.format("%.2f", aDouble);
+			pegaPreco.replaceAll(",", ".");			
+			
+			campoValor.setText(pegaPreco);
 			MenuPrincipal.AbrirPrincipal(0, false);
+		}
 	}
+	
+	class ButtonRenderer extends JButton implements TableCellRenderer {
+
+		  public ButtonRenderer() {
+		    setOpaque(true);
+		  }
+
+		  public Component getTableCellRendererComponent(JTable table, Object value,
+		      boolean isSelected, boolean hasFocus, int row, int column) {
+			  
+			  setIcon(new ImageIcon("imgs/delete.png"));
+			  
+		    if (isSelected) {
+		    		setForeground(table.getSelectionForeground());
+		    		setBackground(table.getSelectionBackground());
+		    } else {
+			      setForeground(table.getSelectionForeground());
+			      setBackground(table.getSelectionBackground());
+		    }
+		    return this;
+		  }
+		}
+
+		/**
+		 * @version 1.0 11/09/98
+		 */
+
+		class ButtonEditor extends DefaultCellEditor {
+		  protected JButton button;
+
+		  private String label;
+
+		  private boolean isPushed;
+
+		  public ButtonEditor(JCheckBox checkBox) {
+		    super(checkBox);
+		    button = new JButton();
+		    button.setOpaque(true);
+		    button.addActionListener(new ActionListener() {
+		      public void actionPerformed(ActionEvent e) {
+		        fireEditingStopped();
+		      }
+		    });
+		  }
+
+		  public Component getTableCellEditorComponent(JTable table, Object value,
+		      boolean isSelected, int row, int column) {
+			  if (isSelected) {
+				  button.setForeground(table.getSelectionForeground());
+				  button.setBackground(table.getSelectionBackground());
+		    } else {
+		    	button.setForeground(table.getForeground());
+		    	button.setBackground(table.getBackground());
+		    }
+		    label = (value == null) ? "" : value.toString();
+		    button.setIcon(new ImageIcon("imgs/delete.png"));
+		    isPushed = true;
+		    return button;
+		  }
+
+		  public Object getCellEditorValue() {
+		    if (isPushed) {
+		      if(tabelaPedido.getSelectedRowCount() == 1)
+		      {
+		    	  vendaRapida.removerProdutoIndex(tabelaPedido.getSelectedRow());
+		    	  vendaRapida.calculaTotal();
+		    	  
+		    	  String pegaPreco;
+		    	  pegaPreco = String.format("%.2f", vendaRapida.getTotal());		    	
+		    	  
+		    	  pegaPreco.replaceAll(".", ",");	
+		    	  campoTotal.setText(pegaPreco);
+		    	  
+		    	  MenuPrincipal.AbrirPrincipal(0, false);
+		       }
+		    }
+		    isPushed = false;
+		    return new String(label);
+		  }
+
+		  public boolean stopCellEditing() {
+		    isPushed = false;
+		    return super.stopCellEditing();
+		  }
+
+		  protected void fireEditingStopped() {
+		    super.fireEditingStopped();
+		  }
+		}	
 }

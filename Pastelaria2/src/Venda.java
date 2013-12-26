@@ -30,7 +30,7 @@ public class Venda
 					if((x.getNome() == p.getNome()) && (x.getTotalProduto() == p.getTotalProduto()))
 					{
 						flag = true;
-						this.produtos.get(i).setQuantidade(p.getQuantidade(), 1);
+						this.produtos.get(i).setQuantidade(1, 1);
 						break;
 					}
 				}
@@ -41,6 +41,11 @@ public class Venda
 			
 			this.calculaTotal();
 		}
+		
+		public void removerProdutoIndex(int index)
+		{
+			this.produtos.remove(index);
+		}		
 		
 		public void removerProduto(String nome, double precoTotal)
 		{
