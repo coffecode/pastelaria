@@ -268,6 +268,7 @@ public class CadastrarFiado extends JFrame implements ActionListener, FocusListe
 		if(!("".equals(campoNome.getText().trim())) && !("".equals(campoTelefone.getText().trim())))
 		{
 			concluir.setEnabled(true);
+			getRootPane().setDefaultButton(concluir);
 		}
 	}
 	
