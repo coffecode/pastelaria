@@ -19,15 +19,11 @@ public class Venda
 		public void adicionarProduto(Produto p)
 		{
 			boolean flag = false;
-			
 			if(this.produtos.size() > 0)
 			{
 				for(int i = 0 ; i < this.produtos.size() ; i++)
 				{
-					Produto x = new Produto();
-					x = this.produtos.get(i);
-					
-					if((x.getNome() == p.getNome()) && (x.getTotalProduto() == p.getTotalProduto()))
+					if((this.produtos.get(i).getNome().equals(p.getNome())) && (this.produtos.get(i).getTotalProduto() == p.getTotalProduto()))
 					{
 						flag = true;
 						this.produtos.get(i).setQuantidade(1, 1);

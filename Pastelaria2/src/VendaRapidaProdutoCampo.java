@@ -136,4 +136,9 @@ public class VendaRapidaProdutoCampo extends JPanel implements ActionListener
 		
 		return combo.getSelectedItem().toString();
 	}
+	
+	static public void setFocus()
+	{
+		combo.requestFocus();
+	}
 }

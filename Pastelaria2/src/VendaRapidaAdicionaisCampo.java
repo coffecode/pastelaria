@@ -140,4 +140,9 @@ public class VendaRapidaAdicionaisCampo extends JPanel implements ActionListener
 		
 		return combo.getSelectedItem().toString();
 	}
+	
+	public void setFocus()
+	{
+		combo.requestFocus();
+	}	
 }

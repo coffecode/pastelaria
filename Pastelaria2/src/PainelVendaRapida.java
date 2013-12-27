@@ -15,8 +15,10 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Vector;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class PainelVendaRapida extends JPanel implements ActionListener
+public class PainelVendaRapida extends JPanel implements ActionListener, FocusListener
 {
 	private JPanel painelTotal, rapidaPainel, adicionaisPainel, adicionaisPainel1, pedidoPainel, pagamentoPainel;
 	private JLabel labelQuantidade, labelProduto, labelValor, labelCodigo, labelTotal, labelRecebido, labelTroco, labelForma;
@@ -25,15 +27,14 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 	private JComboBox campoForma;
 	private JTable tabelaPedido;
 	static private JTextField campoTotal, campoRecebido, campoTroco;
-	
 	static private JTextField campoValor = new JTextField(5);
 	static private JTextField campoQuantidade = new JTextField("1", 2);
 	static private VendaRapidaProdutoCampo addProduto = new VendaRapidaProdutoCampo();
-	
 	static private ArrayList<VendaRapidaAdicionaisCampo> addAdicional = new ArrayList<>();
 	static private ArrayList<JButton> addRemover = new ArrayList<>();
-	
 	static private Venda vendaRapida = new Venda();
+	
+	private Timer timer;
 	
 	PainelVendaRapida(boolean refresh)
 	{		
@@ -71,6 +72,9 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 			
 			vendaRapida = new Venda();
 			campoTotal = new JTextField("0,00", 4);
+			
+	        timer = new Timer();
+	        timer.schedule(new AtualizaFocusInicial(), 700); // em milisegundos				
 		}
 		
 		labelProduto = new JLabel("Produto:");
@@ -204,7 +208,6 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		tabela.addColumn("Adicionais");
 		tabela.addColumn("Deletar");
 		
-		
 		if(vendaRapida.getQuantidadeProdutos() > 0)
 		{
 			for(int i = 0; i < vendaRapida.getQuantidadeProdutos() ; i++)
@@ -291,14 +294,14 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		pagamentoPainel.setMinimumSize(new Dimension(800, 260));
 		pagamentoPainel.setMaximumSize(new Dimension(800, 260));
 		
-		
 		labelTotal = new JLabel("Total:");
 		campoTotal.setEditable(false);
 		
 		labelRecebido = new JLabel("Recebido:");
 		campoRecebido = new JTextField("0,00", 4);
 		campoRecebido.setEditable(true);
-		
+		campoRecebido.addFocusListener(this);
+	
         ImageIcon iconeCalcular = new ImageIcon("imgs/calcular.png");
         calcular = new JButton(iconeCalcular);
         calcular.addActionListener(this);
@@ -367,10 +370,18 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		
 		add(painelTotal);
 		add(pedidoPainel);
-		add(pagamentoPainel);
+		add(pagamentoPainel);	
 	}
 	
-	@SuppressWarnings("static-access")
+    class AtualizaFocusInicial extends TimerTask {
+
+        @Override
+        public void run() {
+            addProduto.setFocus();
+            timer.cancel();
+        }
+    }
+
 	static public void updateCampo()
 	{
 		if(addProduto.getSelecionado() != null)
@@ -461,18 +472,26 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		
 		if(e.getSource() == calcular)
 		{
-			double pegaTotal = Double.parseDouble(campoTotal.getText().replaceAll(",", "."));
-			double pegaRecebido = Double.parseDouble(campoRecebido.getText().replaceAll(",", "."));
+			String limpeza = campoRecebido.getText().replaceAll("[^0-9.,]+","");
 			
-			String resultado = String.format("%.2f", (pegaTotal - pegaRecebido)*-1);
-			resultado.replaceAll(",", ".");
+			if(!"".equals(limpeza.trim()))
+			{
+				double pegaTotal = Double.parseDouble(campoTotal.getText().replaceAll(",", "."));
+				double pegaRecebido = Double.parseDouble(limpeza.replaceAll(",", "."));
+				
+				String resultado = String.format("%.2f", (pegaTotal - pegaRecebido)*-1);
+				resultado.replaceAll(",", ".");
+				
+				campoTroco.setText(resultado);
+				
+				MenuPrincipal.setarEnter(finalizarVenda);
+			}
 			
-			campoTroco.setText(resultado);			
+			campoRecebido.requestFocus();
 		}
 		
 		if(e.getSource() == adicionarProduto)
 		{
-			@SuppressWarnings("static-access")
 			String nomeProduto = addProduto.getSelecionado();
 			
 			if(nomeProduto == null)
@@ -535,12 +554,12 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 				addRemover = new ArrayList<>();				
 				
 				MenuPrincipal.AbrirPrincipal(0, false);
+				addProduto.setFocus();
 			}
 		}
 		
 		if(e.getSource() == campoForma)
 		{
-	        @SuppressWarnings("rawtypes")
 			JComboBox cb = (JComboBox)e.getSource();
 	        String forma = (String)cb.getSelectedItem();
 	        
@@ -570,6 +589,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 			addAdicional.add(new VendaRapidaAdicionaisCampo());
 			addRemover.add(botao);
 			MenuPrincipal.AbrirPrincipal(0, false);
+			addAdicional.get(addAdicional.size()-1).setFocus();
 		}
 		
 		if(addRemover.size() > 0)
@@ -705,5 +725,34 @@ public class PainelVendaRapida extends JPanel implements ActionListener
 		  protected void fireEditingStopped() {
 		    super.fireEditingStopped();
 		  }
+		}
+
+		@Override
+		public void focusGained(FocusEvent e) {
+			if(e.getSource() == campoRecebido)
+			{
+				campoRecebido.setText("");
+			}
+		}
+
+		@Override
+		public void focusLost(FocusEvent e) {
+			if(e.getSource() == campoRecebido)
+			{
+				String limpeza = campoRecebido.getText().replaceAll("[^0-9.,]+","");
+				
+				if(!"".equals(limpeza.trim()))
+				{
+					double pegaTotal = Double.parseDouble(campoTotal.getText().replaceAll(",", "."));
+					double pegaRecebido = Double.parseDouble(limpeza.replaceAll(",", "."));
+					
+					String resultado = String.format("%.2f", (pegaTotal - pegaRecebido)*-1);
+					resultado.replaceAll(",", ".");
+					
+					campoTroco.setText(resultado);
+					
+					MenuPrincipal.setarEnter(finalizarVenda);
+				}			
+			}
 		}	
 }

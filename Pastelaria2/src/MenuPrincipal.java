@@ -40,6 +40,11 @@ public class MenuPrincipal
 		janela.setVisible(true);
 	}
 	
+	static public void setarEnter(JButton j)
+	{
+		janela.getRootPane().setDefaultButton(j);
+	}
+	
 	static public void DeletarPrincipal()
 	{
 		janela.dispose();
