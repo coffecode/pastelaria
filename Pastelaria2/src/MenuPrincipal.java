@@ -1,4 +1,5 @@
 import java.awt.*;
+
 import javax.swing.*;
 
 public class MenuPrincipal
@@ -26,7 +27,7 @@ public class MenuPrincipal
 		
 		janela.setSize(800,640);
 		janela.setLocationRelativeTo(null);
-		janela.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		janela.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
 		principalPainel1.setLayout(new BoxLayout(principalPainel1, BoxLayout.Y_AXIS));
 		principalPainel1.setMaximumSize(new Dimension(800, 640));		
@@ -37,6 +38,7 @@ public class MenuPrincipal
 		principalPainel1.add(menuFooter);
 		
 		janela.add(principalPainel1);
+		janela.setResizable(false);
 		janela.setVisible(true);
 	}
 	
@@ -48,6 +50,11 @@ public class MenuPrincipal
 	static public void DeletarPrincipal()
 	{
 		janela.dispose();
+	}
+	
+	static public void Ativar(boolean set)
+	{
+		janela.setEnabled(set);
 	}
 
 	static public void AbrirPrincipal(int modelo, boolean refresh)

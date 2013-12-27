@@ -1,5 +1,7 @@
 import java.awt.*;
+
 import javax.swing.*;
+
 import java.awt.event.*;
 
 public class MenuLogin extends JFrame implements ActionListener
@@ -17,6 +19,8 @@ public class MenuLogin extends JFrame implements ActionListener
 		setTitle("Login");
 		JPanel login = new JPanel();
 		login.setLayout(null);
+		
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		LabelUsername = new JLabel("Usu·rio:");
 		LabelUsername.setBounds(15,20,70,30); // Coluna, Linha, Largura, Altura!
@@ -50,6 +54,7 @@ public class MenuLogin extends JFrame implements ActionListener
 		
 		Confere.addActionListener(this);
 		getRootPane().setDefaultButton(Confere);	// Ao apertar ENTER acione o bot√£o
+		setResizable(false);
 	}
 	
 	public static void main(String[] args)

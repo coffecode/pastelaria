@@ -22,7 +22,10 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 {
 	private JPanel painelTotal, rapidaPainel, adicionaisPainel, adicionaisPainel1, pedidoPainel, pagamentoPainel;
 	private JLabel labelQuantidade, labelProduto, labelValor, labelCodigo, labelTotal, labelRecebido, labelTroco, labelForma;
-	private JButton adicionarADC, adicionarProduto, calcular, finalizarVenda;
+	private static JLabel labelFiado1;
+	private static JLabel labelFiado2;
+	private JButton adicionarADC, adicionarProduto, calcular;
+	private static JButton finalizarVenda;
 	private DefaultTableModel tabela;
 	private JComboBox campoForma;
 	private JTable tabelaPedido;
@@ -33,6 +36,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	static private ArrayList<VendaRapidaAdicionaisCampo> addAdicional = new ArrayList<>();
 	static private ArrayList<JButton> addRemover = new ArrayList<>();
 	static private Venda vendaRapida = new Venda();
+	private static int fiadorIDSalvo;
 	
 	private Timer timer;
 	
@@ -62,6 +66,9 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		
 		if(refresh)
 		{
+			labelFiado1 = new JLabel("");
+			labelFiado2 = new JLabel("");
+			
 			campoValor = new JTextField(5);
 			campoQuantidade = new JTextField("1", 2);
 			addProduto = new VendaRapidaProdutoCampo();
@@ -358,6 +365,10 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		gbc.gridy = 1;	// linhas			
 		pagamentoPainel.add(labelForma, gbc);
 		
+		gbc.gridx = 4;	// colunas
+		gbc.gridy = 2;	// linhas		
+		pagamentoPainel.add(labelFiado1, gbc);		
+		
 		gbc.insets = new Insets(5,5,5,5);  //top padding
 		
 		gbc.gridx = 5;	// colunas
@@ -365,8 +376,14 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		pagamentoPainel.add(campoForma, gbc);
 		
 		gbc.gridx = 5;	// colunas
+		gbc.gridy = 2;	// linhas			
+		pagamentoPainel.add(labelFiado2, gbc);			
+		
+		gbc.gridx = 5;	// colunas
 		gbc.gridy = 3;	// linhas			
-		pagamentoPainel.add(finalizarVenda, gbc);			
+		pagamentoPainel.add(finalizarVenda, gbc);
+		
+		fiadorIDSalvo = 0;
 		
 		add(painelTotal);
 		add(pedidoPainel);
@@ -467,6 +484,12 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 				}
 				
 				envia.fechaConexao();				
+			}
+			else
+			{
+				CadastrarFiado f = new CadastrarFiado();
+				f.setCallBack(1);
+				f.setVisible(true);
 			}
 		}
 		
@@ -754,5 +777,20 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 					MenuPrincipal.setarEnter(finalizarVenda);
 				}			
 			}
-		}	
+		}
+		
+		static public void setFiado(String fiador, int fiadoID)
+		{
+			if(fiadoID > 0)
+			{
+				fiadorIDSalvo = fiadoID;
+				labelFiado1.setText("Fiado na conta de:");
+				labelFiado2.setText(fiador);
+				labelFiado2.setForeground(Color.BLUE);
+				
+	        	finalizarVenda.setText("Concluir Venda");
+	    		ImageIcon iconeFinalizar = new ImageIcon("imgs/finalizar.png");
+	    		finalizarVenda.setIcon(iconeFinalizar);				
+			}					
+		}
 }
