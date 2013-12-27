@@ -164,6 +164,7 @@ public class CadastrarFiado extends JFrame implements ActionListener, FocusListe
 				if(validaCPF(pegaCPF))
 				{
 					legendaCPF.setText("CPF Válido");
+					CadastraFiado();
 				}
 				else
 				{
@@ -274,103 +275,108 @@ public class CadastrarFiado extends JFrame implements ActionListener, FocusListe
 	{
 		if(e.getSource() == procuraCPF)
 		{
-			String pegaCPF = campoCPF.getText();
-			pegaCPF = pegaCPF.replaceAll("[^0-9]+","");			
-			
-			if(!"".equals(pegaCPF.trim()))
+			CadastraFiado();
+		}
+	}
+	
+	private void CadastraFiado()
+	{
+		String pegaCPF = campoCPF.getText();
+		pegaCPF = pegaCPF.replaceAll("[^0-9]+","");			
+		
+		if(!"".equals(pegaCPF.trim()))
+		{
+			if(validaCPF(pegaCPF))
 			{
-				if(validaCPF(pegaCPF))
+				String formatacao;
+				Query consulta = new Query();
+				formatacao = "SELECT fiador_id, nome, telefone, apelido FROM fiados WHERE cpf = '" + pegaCPF + "';";
+				
+				consulta.executaQuery(formatacao);
+				if(consulta.next())
 				{
-					String formatacao;
-					Query consulta = new Query();
-					formatacao = "SELECT fiador_id, nome, telefone, apelido FROM fiados WHERE cpf = '" + pegaCPF + "';";
+					bancoNome = consulta.getString("nome");
+					bancoFiadorID = consulta.getInt("fiador_id");
 					
+					campoNome.setText(bancoNome);
+					campoApelido.setText(consulta.getString("apelido"));
+					campoTelefone.setText(consulta.getString("telefone"));
+					
+					formatacao = "SELECT total, valor_pago FROM vendas WHERE fiado_id = " + bancoFiadorID + ";";
 					consulta.executaQuery(formatacao);
-					if(consulta.next())
+					totalFiado = 0.0;
+					
+					while(consulta.next())
 					{
-						bancoNome = consulta.getString("nome");
-						bancoFiadorID = consulta.getInt("fiador_id");
+						String formata;
+						formata = consulta.getString("total");
+						formata = formata.replaceAll(",",".");	
+						double pTotal = Double.parseDouble(formata);
+						formata = consulta.getString("valor_pago");
+						formata = formata.replaceAll(",",".");							
+						double pPago = Double.parseDouble(formata);
 						
-						campoNome.setText(bancoNome);
-						campoApelido.setText(consulta.getString("apelido"));
-						campoTelefone.setText(consulta.getString("telefone"));
-						
-						formatacao = "SELECT total, valor_pago FROM vendas WHERE fiado_id = " + bancoFiadorID + ";";
-						consulta.executaQuery(formatacao);
-						totalFiado = 0.0;
-						
-						while(consulta.next())
-						{
-							String formata;
-							formata = consulta.getString("total");
-							formata = formata.replaceAll(",",".");	
-							double pTotal = Double.parseDouble(formata);
-							formata = consulta.getString("valor_pago");
-							formata = formata.replaceAll(",",".");							
-							double pPago = Double.parseDouble(formata);
-							
-							if(pTotal > pPago)
-								totalFiado += (pTotal - pPago);
-						}
-						
-						String pegaPreco;
-						pegaPreco = String.format("%.2f", totalFiado);	
-						
-						fiadorConta.setText("Esse cliente já possui cadastro e tem uma dívida de R$" + pegaPreco + ".");
-						concluir.setText("Adicionar");
-						concluir.setEnabled(true);
-						fiadorCPF.setEnabled(false);
-						campoCPF.setEnabled(false);
-						procuraCPF.setEnabled(false);
-						
-						fiadorNome.setEnabled(true);
-						campoNome.setEnabled(true);
-						campoNome.setEditable(false);
-						fiadorApelido.setEnabled(true);
-						campoApelido.setEnabled(true);
-						campoApelido.setEditable(false);
-						fiadorTelefone.setEnabled(true);
-						campoTelefone.setEnabled(true);
-						campoTelefone.setEnabled(true);
-						campoTelefone.setEditable(false);
-						imagem.setEnabled(true);
-						cadastrar = false;
-						
-						if(totalFiado > 0)
-						{
-							fiadorConta.setIcon(iconeConsulta);
-							fiadorConta.setForeground(Color.red);
-						}
-					}
-					else
-					{
-						fiadorConta.setText("Esse cliente ainda não possui cadastro.");
-						legendaCPF.setText("Por favor, cadastre o cliente.");
-						
-						fiadorCPF.setEnabled(false);
-						campoCPF.setEnabled(false);
-						procuraCPF.setEnabled(false);
-						
-						fiadorNome.setEnabled(true);
-						campoNome.setEnabled(true);
-						fiadorApelido.setEnabled(true);
-						campoApelido.setEnabled(true);
-						fiadorTelefone.setEnabled(true);
-						campoTelefone.setEnabled(true);
-						campoTelefone.setEnabled(true);
-						imagem.setEnabled(true);
-						
-						cadastrar = true;
+						if(pTotal > pPago)
+							totalFiado += (pTotal - pPago);
 					}
 					
-					consulta.fechaConexao();
+					String pegaPreco;
+					pegaPreco = String.format("%.2f", totalFiado);	
+					
+					fiadorConta.setText("Esse cliente já possui cadastro e tem uma dívida de R$" + pegaPreco + ".");
+					concluir.setText("Adicionar");
+					concluir.setEnabled(true);
+					fiadorCPF.setEnabled(false);
+					campoCPF.setEnabled(false);
+					procuraCPF.setEnabled(false);
+					
+					fiadorNome.setEnabled(true);
+					campoNome.setEnabled(true);
+					campoNome.setEditable(false);
+					fiadorApelido.setEnabled(true);
+					campoApelido.setEnabled(true);
+					campoApelido.setEditable(false);
+					fiadorTelefone.setEnabled(true);
+					campoTelefone.setEnabled(true);
+					campoTelefone.setEnabled(true);
+					campoTelefone.setEditable(false);
+					imagem.setEnabled(true);
+					cadastrar = false;
+					
+					if(totalFiado > 0)
+					{
+						fiadorConta.setIcon(iconeConsulta);
+						fiadorConta.setForeground(Color.red);
+					}
 				}
 				else
 				{
-					legendaCPF.setText("CPF Inválido.");
-				}				
+					fiadorConta.setText("Esse cliente ainda não possui cadastro.");
+					legendaCPF.setText("Por favor, cadastre o cliente.");
+					
+					fiadorCPF.setEnabled(false);
+					campoCPF.setEnabled(false);
+					procuraCPF.setEnabled(false);
+					
+					fiadorNome.setEnabled(true);
+					campoNome.setEnabled(true);
+					fiadorApelido.setEnabled(true);
+					campoApelido.setEnabled(true);
+					fiadorTelefone.setEnabled(true);
+					campoTelefone.setEnabled(true);
+					campoTelefone.setEnabled(true);
+					imagem.setEnabled(true);
+					
+					cadastrar = true;
+				}
+				
+				consulta.fechaConexao();
 			}
-		}
+			else
+			{
+				legendaCPF.setText("CPF Inválido.");
+			}				
+		}		
 	}
 	
 	private boolean validaCPF(String strCpf)
