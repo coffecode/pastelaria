@@ -39,6 +39,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	private static int fiadorIDSalvo;
 	
 	private Timer timer;
+	private static boolean fiadoConcluido = false;
 	
 	PainelVendaRapida(boolean refresh)
 	{		
@@ -439,57 +440,142 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		{
 			if(campoForma.getSelectedItem() != "Fiado")
 			{
-				Calendar c = Calendar.getInstance();
-				Locale locale = new Locale("pt","BR"); 
-				GregorianCalendar calendar = new GregorianCalendar(); 
-				SimpleDateFormat formatador = new SimpleDateFormat("dd'/'MM'/'yyyy' - 'HH':'mm",locale); 
+				String confirmacao = "Valor Total: " + campoTotal.getText() + "\n" + 
+				"Valor Pago: " + campoRecebido.getText() + "\n(Troco: " + campoTroco.getText() + ")\n\n" + 
+				"Forma de Pagamento: " + campoForma.getSelectedItem() + "\n\n" +
+				"Confirmar ?";
 				
-				c.get(Calendar.DAY_OF_WEEK);
+				int opcao = JOptionPane.showConfirmDialog(null, confirmacao, "Confirmar Venda", JOptionPane.YES_NO_OPTION);
+				int venda_id = 0;				
 				
-				String formatacao;
-				Query envia = new Query();
-				formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id) VALUES('"
-				+ campoTotal.getText() +
-				"', '" + MenuLogin.logado +
-				"', " + c.get(Calendar.YEAR) + ", "
-				+ c.get(Calendar.MONTH) + ", "
-				+ c.get(Calendar.DAY_OF_MONTH) + ", "
-				+ c.get(Calendar.DAY_OF_WEEK) +
-				", '" + formatador.format(calendar.getTime()) + "', '" + campoForma.getSelectedItem() + "', '" + campoRecebido.getText() + "', '" + campoTroco.getText() + "', 0);";
-				
-				envia.executaUpdate(formatacao);
-				
-				Query pega = new Query();
-				pega.executaQuery("SELECT vendas_id FROM vendas ORDER BY vendas_id DESC");
-				
-				int venda_id = 0;
-				
-				if(pega.next())
+				if(opcao == JOptionPane.YES_OPTION)
 				{
-					venda_id = pega.getInt("vendas_id");
-					String pegaPreco = "";
+					Calendar c = Calendar.getInstance();
+					Locale locale = new Locale("pt","BR"); 
+					GregorianCalendar calendar = new GregorianCalendar(); 
+					SimpleDateFormat formatador = new SimpleDateFormat("dd'/'MM'/'yyyy' - 'HH':'mm",locale); 
 					
-					for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
+					c.get(Calendar.DAY_OF_WEEK);
+					
+					String formatacao;
+					Query envia = new Query();
+					formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id) VALUES('"
+					+ campoTotal.getText() +
+					"', '" + MenuLogin.logado +
+					"', " + c.get(Calendar.YEAR) + ", "
+					+ c.get(Calendar.MONTH) + ", "
+					+ c.get(Calendar.DAY_OF_MONTH) + ", "
+					+ c.get(Calendar.DAY_OF_WEEK) +
+					", '" + formatador.format(calendar.getTime()) + "', '" + campoForma.getSelectedItem() + "', '" + campoRecebido.getText() + "', '" + campoTroco.getText() + "', 0);";
+					
+					envia.executaUpdate(formatacao);
+					
+					Query pega = new Query();
+					pega.executaQuery("SELECT vendas_id FROM vendas ORDER BY vendas_id DESC");
+					
+					if(pega.next())
 					{
-						pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade()));
-						pegaPreco.replaceAll(",", ".");						
+						venda_id = pega.getInt("vendas_id");
+						String pegaPreco = "";
 						
-						formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto) VALUES('"
-								+ venda_id +
-								"', '" + vendaRapida.getProduto(i).getNome() +
-								"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + vendaRapida.getProduto(i).getQuantidade() + "');";
-								
-								envia.executaUpdate(formatacao);						
+						for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
+						{
+							pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade()));
+							pegaPreco.replaceAll(",", ".");						
+							
+							formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto) VALUES('"
+									+ venda_id +
+									"', '" + vendaRapida.getProduto(i).getNome() +
+									"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + vendaRapida.getProduto(i).getQuantidade() + "');";
+									
+									envia.executaUpdate(formatacao);						
+						}
 					}
+					
+					envia.fechaConexao();
+					JOptionPane.showMessageDialog(null, "A venda foi computada com sucesso!", "Venda #" + venda_id, JOptionPane.INFORMATION_MESSAGE);
+					MenuPrincipal.AbrirPrincipal(0, true);	
 				}
-				
-				envia.fechaConexao();				
 			}
 			else
 			{
-				CadastrarFiado f = new CadastrarFiado();
-				f.setCallBack(1);
-				f.setVisible(true);
+				if(fiadoConcluido)
+				{
+					String formata;
+					formata = campoTotal.getText();
+					formata = formata.replaceAll(",",".");	
+					double pTotal = Double.parseDouble(formata);
+					formata = campoRecebido.getText();
+					formata = formata.replaceAll(",",".");							
+					double pPago = Double.parseDouble(formata);					
+					double totalFiado = (pTotal - pPago);
+					String divida;
+					divida = String.format("%.2f", totalFiado);
+					
+					String confirmacao = "Valor Total: " + campoTotal.getText() + "\n" + 
+					"Valor Pago: " + campoRecebido.getText() + 
+					"\n\nForma de Pagamento: " + campoForma.getSelectedItem() + "\n\n" +
+					"Será adicionado a dívida de R$" + divida + " na conta de " + labelFiado2.getText() + ".\n" + "\nConfirmar ?";
+					
+					int opcao = JOptionPane.showConfirmDialog(null, confirmacao, "Confirmar Venda", JOptionPane.YES_NO_OPTION);
+					int venda_id = 0;
+					
+					if(opcao == JOptionPane.YES_OPTION)
+					{
+						Calendar c = Calendar.getInstance();
+						Locale locale = new Locale("pt","BR"); 
+						GregorianCalendar calendar = new GregorianCalendar(); 
+						SimpleDateFormat formatador = new SimpleDateFormat("dd'/'MM'/'yyyy' - 'HH':'mm",locale); 
+						
+						c.get(Calendar.DAY_OF_WEEK);
+						
+						String formatacao;
+						Query envia = new Query();
+						formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id) VALUES('"
+						+ campoTotal.getText() +
+						"', '" + MenuLogin.logado +
+						"', " + c.get(Calendar.YEAR) + ", "
+						+ c.get(Calendar.MONTH) + ", "
+						+ c.get(Calendar.DAY_OF_MONTH) + ", "
+						+ c.get(Calendar.DAY_OF_WEEK) +
+						", '" + formatador.format(calendar.getTime()) + "', '" + campoForma.getSelectedItem() + "', '" + campoRecebido.getText() + "', '" + campoTroco.getText() + 
+						"', " + fiadorIDSalvo + ");";
+						
+						envia.executaUpdate(formatacao);
+						
+						Query pega = new Query();
+						pega.executaQuery("SELECT vendas_id FROM vendas ORDER BY vendas_id DESC");
+						
+						if(pega.next())
+						{
+							venda_id = pega.getInt("vendas_id");
+							String pegaPreco = "";
+							
+							for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
+							{
+								pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade()));
+								pegaPreco.replaceAll(",", ".");						
+								
+								formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto) VALUES('"
+										+ venda_id +
+										"', '" + vendaRapida.getProduto(i).getNome() +
+										"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + vendaRapida.getProduto(i).getQuantidade() + "');";
+										
+										envia.executaUpdate(formatacao);						
+							}
+						}
+						
+						envia.fechaConexao();
+						JOptionPane.showMessageDialog(null, "A venda foi computada com sucesso!", "Venda #" + venda_id, JOptionPane.INFORMATION_MESSAGE);
+						MenuPrincipal.AbrirPrincipal(0, true);
+					}					
+				}
+				else
+				{
+					CadastrarFiado f = new CadastrarFiado();
+					f.setCallBack(1);
+					f.setVisible(true);					
+				}
 			}
 		}
 		
@@ -510,7 +596,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 				MenuPrincipal.setarEnter(finalizarVenda);
 			}
 			
-			campoRecebido.requestFocus();
+			finalizarVenda.requestFocus();
 		}
 		
 		if(e.getSource() == adicionarProduto)
@@ -590,13 +676,15 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	        {
 	        	finalizarVenda.setText("Prosseguir");
 	    		ImageIcon iconeFinalizar = new ImageIcon("imgs/fiado24.png");
-	    		finalizarVenda.setIcon(iconeFinalizar);   		
+	    		finalizarVenda.setIcon(iconeFinalizar);
+	    		
+	    		fiadoConcluido = false;
 	        }
 	        else
 	        {
 	        	finalizarVenda.setText("Concluir Venda");
 	    		ImageIcon iconeFinalizar = new ImageIcon("imgs/finalizar.png");
-	    		finalizarVenda.setIcon(iconeFinalizar);		    		
+	    		finalizarVenda.setIcon(iconeFinalizar);
 	        }
 		}
 		
@@ -790,7 +878,9 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 				
 	        	finalizarVenda.setText("Concluir Venda");
 	    		ImageIcon iconeFinalizar = new ImageIcon("imgs/finalizar.png");
-	    		finalizarVenda.setIcon(iconeFinalizar);				
+	    		finalizarVenda.setIcon(iconeFinalizar);	
+	    		
+	    		fiadoConcluido = true;
 			}					
 		}
 }
