@@ -281,7 +281,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		tabelaPedido.setRowHeight(24);
 		
 		DefaultTableCellRenderer centraliza = new DefaultTableCellRenderer();
-		centraliza.setHorizontalAlignment( JLabel.CENTER );
+		centraliza.setHorizontalAlignment( JLabel.CENTER );//
 		
 		tabelaPedido.getColumn("Preço").setCellRenderer(centraliza);
 		tabelaPedido.getColumn("Qntd").setCellRenderer(centraliza);
