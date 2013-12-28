@@ -16,7 +16,7 @@ public class PainelMenu extends JPanel implements MouseListener
 		this.setMaximumSize(new Dimension(800, 100));
 		this.setMinimumSize(new Dimension(800, 100));
 		
-		this.vendaRapida = new JButton("Venda Rápida");
+		this.vendaRapida = new JButton("Venda Rï¿½pida");
 		ImageIcon iconeRapida = new ImageIcon("imgs/vrapida.png");
 		this.vendaRapida.setIcon(iconeRapida);
 		this.vendaRapida.setPreferredSize(new Dimension(170, 60));
@@ -30,7 +30,7 @@ public class PainelMenu extends JPanel implements MouseListener
 		this.produtos.addMouseListener(this);
 		this.add(produtos);
 		
-		this.funcionarios = new JButton("Funcionários");
+		this.funcionarios = new JButton("Funcionï¿½rios");
 		this.funcionarios.setPreferredSize(new Dimension(170, 60));
 		ImageIcon iconeFuncionarios = new ImageIcon("imgs/funcionarios.png");
 		this.funcionarios.setIcon(iconeFuncionarios);
@@ -67,21 +67,21 @@ public class PainelMenu extends JPanel implements MouseListener
 			if(this.funcionario > 1)
 				MenuPrincipal.AbrirPrincipal(1, false);
 			else
-				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
+				JOptionPane.showMessageDialog(null, "Vocï¿½ nï¿½o tem permissï¿½o para ver isso.");
 		}
 		else if(e.getSource() == funcionarios)
 		{
 			if(this.funcionario > 1)
 				MenuPrincipal.AbrirPrincipal(2, false);
 			else
-				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
+				JOptionPane.showMessageDialog(null, "Vocï¿½ nï¿½o tem permissï¿½o para ver isso.");
 		}
 		else if(e.getSource() == consulta)
 		{
 			if(this.funcionario > 1)
 				MenuPrincipal.AbrirPrincipal(3, false);
 			else
-				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
+				JOptionPane.showMessageDialog(null, "Vocï¿½ nï¿½o tem permissï¿½o para ver isso.");
 		}
 		else if(e.getSource() == fiados)
 		{

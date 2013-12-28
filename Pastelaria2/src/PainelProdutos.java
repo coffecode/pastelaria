@@ -127,10 +127,10 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		tabelaProdutos.getColumnModel().getColumn(0).setMaxWidth(240);
 		tabelaProdutos.getColumnModel().getColumn(1).setMinWidth(240);
 		tabelaProdutos.getColumnModel().getColumn(1).setMaxWidth(240);
-		tabelaProdutos.getColumnModel().getColumn(2).setMinWidth(240);
-		tabelaProdutos.getColumnModel().getColumn(2).setMaxWidth(240);
-		tabelaProdutos.getColumnModel().getColumn(3).setMinWidth(62);
-		tabelaProdutos.getColumnModel().getColumn(3).setMaxWidth(62);		
+		tabelaProdutos.getColumnModel().getColumn(2).setMinWidth(220);
+		tabelaProdutos.getColumnModel().getColumn(2).setMaxWidth(220);
+		tabelaProdutos.getColumnModel().getColumn(3).setMinWidth(82);
+		tabelaProdutos.getColumnModel().getColumn(3).setMaxWidth(82);		
 		
 		tabelaProdutos.setRowHeight(30);
 		

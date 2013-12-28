@@ -48,7 +48,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		
 		painelTotal = new JPanel();
 		painelTotal.setLayout(new BoxLayout(painelTotal, BoxLayout.X_AXIS));
-		painelTotal.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Venda Rápida"));
+		painelTotal.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Venda RÃ¡pida"));
 		painelTotal.setMinimumSize(new Dimension(800, 150));		// Horizontal , Vertical
 		painelTotal.setMaximumSize(new Dimension(800, 150));		
 		
@@ -85,7 +85,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		}
 		
 		labelProduto = new JLabel("Produto:");
-		labelValor = new JLabel("Preço:");
+		labelValor = new JLabel("PreÃ§o:");
 		campoValor.setEditable(false);
 		
 		adicionarADC = new JButton("");
@@ -211,7 +211,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		
 		tabela.addColumn("Nome");
 		tabela.addColumn("Qntd");
-		tabela.addColumn("Preço");
+		tabela.addColumn("Preï¿½o");
 		tabela.addColumn("Adicionais");
 		tabela.addColumn("Deletar");
 		
@@ -283,7 +283,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		DefaultTableCellRenderer centraliza = new DefaultTableCellRenderer();
 		centraliza.setHorizontalAlignment( JLabel.CENTER );
 		
-		tabelaPedido.getColumn("Preço").setCellRenderer(centraliza);
+		tabelaPedido.getColumn("PreÃ§o").setCellRenderer(centraliza);
 		tabelaPedido.getColumn("Qntd").setCellRenderer(centraliza);
 		tabelaPedido.getColumn("Deletar").setCellRenderer(centraliza);
 		tabelaPedido.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
@@ -321,7 +321,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		
 		labelForma = new JLabel("Forma de Pagamento:");
 		
-		String[] tiposPagamento = {"Dinheiro", "Ticket Refeição", "Cartão de Crédito", "Fiado" };
+		String[] tiposPagamento = {"Dinheiro", "Ticket RefeiÃ§Ã£o", "CartÃ£o de CrÃ©dito", "Fiado" };
 		campoForma = new JComboBox(tiposPagamento);
 		campoForma.setSelectedIndex(0);
 		campoForma.setPreferredSize(new Dimension(150, 30));
@@ -519,7 +519,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			
 			if(nomeProduto == null)
 			{
-				JOptionPane.showMessageDialog(null, "Você precisa selecionar um produto antes!");
+				JOptionPane.showMessageDialog(null, "VocÃª precisa selecionar um produto antes!");
 			}
 			else
 			{
