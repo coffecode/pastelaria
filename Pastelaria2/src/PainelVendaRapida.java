@@ -133,7 +133,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		
 		rapidaPainel.add(adicionarADC, gbc);
 		
-		adicionarProduto = new JButton("Adicionar Produto");
+		adicionarProduto = new JButton("Adicionar");
 		ImageIcon iconePlus = new ImageIcon("imgs/plus2.png");
 		adicionarProduto.setIcon(iconePlus);
 		adicionarProduto.setPreferredSize(new Dimension(60, 40));
@@ -143,7 +143,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		
 		gbc.gridy = 2;	// linhas
 		gbc.gridx = 6;	// colunas
-		gbc.gridwidth = 3;
+		gbc.gridwidth = 5;
 		
 		rapidaPainel.add(adicionarProduto, gbc);
 		
@@ -211,7 +211,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		
 		tabela.addColumn("Nome");
 		tabela.addColumn("Qntd");
-		tabela.addColumn("Pre�o");
+		tabela.addColumn("Preço");
 		tabela.addColumn("Adicionais");
 		tabela.addColumn("Deletar");
 		
@@ -272,11 +272,11 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		tabelaPedido.getColumnModel().getColumn(2).setMinWidth(80);
 		tabelaPedido.getColumnModel().getColumn(2).setMaxWidth(80);				
 		
-		tabelaPedido.getColumnModel().getColumn(3).setMinWidth(385);
-		tabelaPedido.getColumnModel().getColumn(3).setMaxWidth(385);
+		tabelaPedido.getColumnModel().getColumn(3).setMinWidth(380);
+		tabelaPedido.getColumnModel().getColumn(3).setMaxWidth(380);
 		
-		tabelaPedido.getColumnModel().getColumn(4).setMinWidth(50);
-		tabelaPedido.getColumnModel().getColumn(4).setMaxWidth(50);			
+		tabelaPedido.getColumnModel().getColumn(4).setMinWidth(55);
+		tabelaPedido.getColumnModel().getColumn(4).setMaxWidth(55);			
 		
 		tabelaPedido.setRowHeight(24);
 		
@@ -289,7 +289,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		tabelaPedido.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
 		tabelaPedido.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));		
 		
-		tabelaPedido.setPreferredScrollableViewportSize(new Dimension(764, 120));
+		tabelaPedido.setPreferredScrollableViewportSize(new Dimension(765, 120));
 		
 		JScrollPane scrolltabela = new JScrollPane(tabelaPedido);
 		pedidoPainel.add(scrolltabela);
