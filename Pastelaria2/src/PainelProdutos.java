@@ -2,15 +2,39 @@ import java.awt.*;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
 
 import java.awt.event.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Vector;
+import java.awt.BorderLayout;
 
-public class PainelProdutos extends JPanel implements MouseListener, ActionListener{
+import javax.swing.DefaultCellEditor;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
+
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
+
+
+
+public class PainelProdutos extends JPanel implements MouseListener, ActionListener, TableModelListener{
 
 	private DefaultTableModel tabela;
 	private JTable tabelaProdutos;
@@ -20,7 +44,7 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 	private JButton adicionar;
 	private JPanel addPainel;
 	
-	@SuppressWarnings("null")
+	
 	PainelProdutos()
 	{
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Gerenciar Produtos"));
@@ -28,12 +52,17 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		setMinimumSize(new Dimension(800, 480));		// Horizontal , Vertical
 		setMaximumSize(new Dimension(800, 480));
 		
+		
+		
+        
+        
 		//instance table model
 		tabela = new DefaultTableModel() {
 
-		    @Override
+
+			@Override
 		    public boolean isCellEditable(int row, int column) {
-		       if(column == 3)
+		       if(column == 3 || column == 1 || column ==2)
 		    	   return true;
 		       
 		       return false;
@@ -45,16 +74,29 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		tabela.addColumn("Tipo");
 		tabela.addColumn("Deletar");
 		
+		
+		
 		Query pega = new Query();
 		pega.executaQuery("SELECT * FROM produtos ORDER BY nome ");
 		int linhas = 0;
+		
 		
 		while(pega.next())
 		{
 			Vector<Serializable> linha = new Vector<Serializable>();
 				
 			linha.add(pega.getString("nome"));
-			linha.add(pega.getString("preco"));	
+			
+			String pegaPreco;
+			pegaPreco = pega.getString("preco");
+			pegaPreco.replaceAll(".", ",");
+			
+			linha.add(pegaPreco);
+				
+			
+			
+			
+
 			if(pega.getInt("tipo") < 2)
 				linha.add("Produto");
 			else
@@ -65,13 +107,14 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 			linhas++;
 		}
 		
+		
 		tabelaProdutos = new JTable() {
 		    Color alternate = new Color(141, 182, 205);
 		    
 		    @Override
 		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
 		        Component stamp = super.prepareRenderer(renderer, row, column);
-		        if (row % 2 == 0 && column != 3)
+		        if (row % 2 == 0 && column != 3 && column!=2)
 		            stamp.setBackground(alternate);
 		        else
 		            stamp.setBackground(this.getBackground());
@@ -101,6 +144,13 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		tabelaProdutos.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
 		tabelaProdutos.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));		
 		
+		String[] tiposProduto = { "Adicional", "Produto" };
+		
+		tabelaProdutos.getColumn("Tipo").setCellEditor(new MyComboBoxEditor(tiposProduto));
+		tabelaProdutos.getColumn("Tipo").setCellRenderer(new MyComboBoxRenderer(tiposProduto));
+		
+		tabelaProdutos.getModel().addTableModelListener(this);
+		
 		if(linhas > 8)
 			tabelaProdutos.setPreferredScrollableViewportSize(new Dimension(700, 112));
 		else
@@ -118,8 +168,8 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(5,5,5,5);  //top padding
 		
-		String[] tiposProdutos = { "Produto", "Adicional" };
-		campoTipo = new JComboBox(tiposProdutos);
+		
+		campoTipo= new JComboBox(tiposProduto);
 		campoTipo.setSelectedIndex(0);
 		campoTipo.setPreferredSize(new Dimension(150, 30));
 		
@@ -170,6 +220,31 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		add(addPainel);
 	}
 	
+	class MyComboBoxRenderer extends JComboBox implements TableCellRenderer {
+		  public MyComboBoxRenderer(String[] items) {
+		    super(items);
+		  }
+
+		  public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+		      boolean hasFocus, int row, int column) {
+		    if (isSelected) {
+		      setForeground(table.getSelectionForeground());
+		      super.setBackground(table.getSelectionBackground());
+		    } else {
+		      setForeground(table.getForeground());
+		      setBackground(table.getBackground());
+		    }
+		    setSelectedItem(value);
+		    return this;
+		  }
+		}
+
+
+	class MyComboBoxEditor extends DefaultCellEditor {
+		  public MyComboBoxEditor(String[] items) {
+		    super(new JComboBox(items));
+		  }
+		}
 	@Override
 	public void actionPerformed(ActionEvent e) {
 	
@@ -232,6 +307,7 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		    setOpaque(true);
 		  }
 
+		  
 		  public Component getTableCellRendererComponent(JTable table, Object value,
 		      boolean isSelected, boolean hasFocus, int row, int column) {
 			  
@@ -281,18 +357,19 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		    	button.setBackground(table.getBackground());
 		    }
 		    label = (value == null) ? "" : value.toString();
-		    //button.setText(label);
+		    button.setText(label);
 		    button.setIcon(new ImageIcon("imgs/delete.png"));
 		    isPushed = true;
 		    return button;
 		  }
-
+		
+		  
+		  
 		  public Object getCellEditorValue() {
 		    if (isPushed) {
 		      if(tabelaProdutos.getSelectedRowCount() ==1)	//verifico se somente uma linha está selecionada  
 		      {
 		    	   String pega = (String) tabelaProdutos.getValueAt(tabelaProdutos.getSelectedRow(), 0);
-		    	   System.out.println(pega);
 			       String formatacao;
 			       Query envia = new Query();
 			       formatacao = "DELETE FROM produtos WHERE `nome` = '" + pega + "';";
@@ -312,5 +389,42 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		  protected void fireEditingStopped() {
 		    super.fireEditingStopped();
 		  }
+		  
+		  
 		}
+		public void tableChanged(TableModelEvent e) {
+			
+	        int row = e.getFirstRow();
+	        int column = e.getColumn();
+	        
+	        if(column == 1){
+		        TableModel model = (TableModel)e.getSource();
+		        String data = (String) model.getValueAt(row, column);	// data possui o conte�do atualizado.
+		        
+		        String pega = (String) model.getValueAt(row, 0);
+		        
+			    String formatacao;
+			    Query envia = new Query();
+			    formatacao = "UPDATE produtos SET preco =  " + data + " WHERE nome = '"+pega+"' " ;
+			    envia.executaUpdate(formatacao);
+			    MenuPrincipal.AbrirPrincipal(1, false);
+	        }else if(column == 2){
+	        	
+	        	
+	        	TableModel model = (TableModel)e.getSource();
+		        String data = (String) model.getValueAt(row, column);	// data possui o conte�do atualizado
+		        String pega = (String) model.getValueAt(row, 0);
+		        int tipo =0;
+		        if(data.equals("Adicional")){
+		        	tipo =2;
+		        }else{
+		        	tipo =1;
+		        }
+		        String formatacao;
+			    Query envia = new Query();
+			    formatacao = "UPDATE produtos SET tipo =  " + tipo + " WHERE nome = '"+pega+"' " ;
+			    envia.executaUpdate(formatacao);
+			    MenuPrincipal.AbrirPrincipal(1, false);
+	        }
+	    }	
 }

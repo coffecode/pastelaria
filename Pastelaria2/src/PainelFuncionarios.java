@@ -11,7 +11,26 @@ import javax.swing.table.TableModel;
 
 import java.awt.event.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Vector;
+import java.awt.BorderLayout;
+
+import javax.swing.DefaultCellEditor;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
+
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 public class PainelFuncionarios extends JPanel implements MouseListener, ActionListener, TableModelListener
 {
@@ -35,7 +54,7 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 
 		    @Override
 		    public boolean isCellEditable(int row, int column) {
-		       if(column == 4 || column == 1 || column == 2)
+		       if(column == 4 || column == 1 || column == 2 || column == 3)
 		    	   return true;
 		       
 		       return false;
@@ -80,7 +99,7 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		    @Override
 		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
 		        Component stamp = super.prepareRenderer(renderer, row, column);
-		        if (row % 2 == 0 && column != 4)
+		        if (row % 2 == 0 && column != 4 && column != 3)
 		            stamp.setBackground(alternate);
 		        else
 		            stamp.setBackground(this.getBackground());
@@ -108,7 +127,12 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		tabelaFuncionarios.getColumn("Nível").setCellRenderer(centraliza);
 		tabelaFuncionarios.getColumn("Deletar").setCellRenderer(centraliza);
 		tabelaFuncionarios.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
-		tabelaFuncionarios.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));	
+		tabelaFuncionarios.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));
+		
+		String[] tiposFuncionario = { "Funcionário", "Gerente" };
+		
+		tabelaFuncionarios.getColumn("Nível").setCellEditor(new MyComboBoxEditor(tiposFuncionario));
+		tabelaFuncionarios.getColumn("Nível").setCellRenderer(new MyComboBoxRenderer(tiposFuncionario));
 		
 		tabelaFuncionarios.getModel().addTableModelListener(this);		
 		
@@ -129,7 +153,6 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(5,5,5,5);  //top padding
 		
-		String[] tiposFuncionario = { "Funcionário", "Gerente" };
 		campoLevel = new JComboBox(tiposFuncionario);
 		campoLevel.setSelectedIndex(0);
 		campoLevel.setPreferredSize(new Dimension(150, 30));
@@ -190,6 +213,31 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		
 		add(addPainel);
 	}
+	
+	class MyComboBoxRenderer extends JComboBox implements TableCellRenderer {
+		  public MyComboBoxRenderer(String[] items) {
+		    super(items);
+		  }
+
+		  public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+		      boolean hasFocus, int row, int column) {
+		    if (isSelected) {
+		      setForeground(table.getSelectionForeground());
+		      super.setBackground(table.getSelectionBackground());
+		    } else {
+		      setForeground(table.getForeground());
+		      setBackground(table.getBackground());
+		    }
+		    setSelectedItem(value);
+		    return this;
+		  }
+		}
+
+	class MyComboBoxEditor extends DefaultCellEditor {
+		  public MyComboBoxEditor(String[] items) {
+		    super(new JComboBox(items));
+		  }
+		}	
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -349,7 +397,49 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		public void tableChanged(TableModelEvent e) {
 	        int row = e.getFirstRow();
 	        int column = e.getColumn();
-	        TableModel model = (TableModel)e.getSource();
-	        String data = (String) model.getValueAt(row, column);	// data possui o conte�do atualizado.
+	        if(column == 1 || column==2){
+	        	String tipo;
+	        	if(column==1){
+	        		tipo = "username";
+	        	}else{
+	        		tipo = "password";
+	        	}
+		        TableModel model = (TableModel)e.getSource();
+		        String data = (String) model.getValueAt(row, column);	// data possui o conte�do atualizado.
+		        
+		        String pega = (String) model.getValueAt(row, 0);
+		        
+			    String formatacao;
+			    Query envia = new Query();
+			    formatacao = "UPDATE funcionarios SET "+tipo+" = '" + data + "' WHERE nome = '"+pega+"' " ;
+			    envia.executaUpdate(formatacao);
+			    MenuPrincipal.AbrirPrincipal(2, false);
+	        }else if(column == 3){
+	        	String pegauser = (String) tabelaFuncionarios.getValueAt(tabelaFuncionarios.getSelectedRow(), 0);
+	        	if(pegauser.equals(PainelStatus.pegaNome()))
+		    	  {
+		    		  JOptionPane.showMessageDialog(null, "Você não alterar seu próprio cargo.");
+		    		  MenuPrincipal.AbrirPrincipal(2, false);
+		    	  }
+		    	  else
+		    	  {  		  
+		    		  TableModel model = (TableModel)e.getSource();
+				        String data = (String) model.getValueAt(row, column);	// data possui o conte�do atualizado
+				        String pega = (String) model.getValueAt(row, 0);
+				        int tipo =0;
+				        if(data.equals("Gerente")){
+				        	tipo =2;
+				        }else{
+				        	tipo =1;
+				        }
+				        String formatacao;
+					    Query envia = new Query();
+					    formatacao = "UPDATE funcionarios SET level =  " + tipo + " WHERE nome = '"+pega+"' " ;
+					    envia.executaUpdate(formatacao);
+					    MenuPrincipal.AbrirPrincipal(2, false);	    		  
+		    	  }
+	        	
+	        	
+	        }
 	    }		
 }
