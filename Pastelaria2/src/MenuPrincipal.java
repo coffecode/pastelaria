@@ -15,14 +15,13 @@ public class MenuPrincipal
 	
 	public MenuPrincipal(int level, String nome)
 	{
-		janela = new JFrame("Pastelaço - Controle de Caixa v1.00");
+		janela = new JFrame("Pastelaï¿½o - Controle de Caixa v1.00");
 		principalPainel1 = new JPanel();
 		
 		menuPainel = new PainelMenu(level);
 		menuMesas = new PainelMesas(35);
 		menuFooter = new PainelLegenda();
 		
-		menuVendaMesa = new PainelVenda();
 		menuStatus = new PainelStatus(nome);
 		
 		janela.setSize(800,640);
@@ -96,5 +95,17 @@ public class MenuPrincipal
 			principalPainel1.revalidate();
 			principalPainel1.repaint();
 		}		
+		if(modelo>= 5)      // Abre o menu de funcionarios	
+		{
+			principalPainel1.removeAll();
+			principalPainel1.add(menuStatus);
+			principalPainel1.add(menuPainel);
+			
+			PainelVenda menuVenda = new PainelVenda(modelo);
+			
+			principalPainel1.add(menuVenda);
+			principalPainel1.revalidate();
+			principalPainel1.repaint();
+		}
 	}
 }

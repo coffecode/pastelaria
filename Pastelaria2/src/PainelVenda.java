@@ -11,9 +11,9 @@ public class PainelVenda extends JPanel implements MouseListener
 	private JPanel mesasPainel;
 	private JButton[] mesas;
 	
-	PainelVenda()
+	PainelVenda(int i)
 	{
-		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Venda na Mesa"));
+		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Venda na Mesa " + (i-4) ));
 		setLayout(new FlowLayout(FlowLayout.CENTER, 6, 5));
 		setMinimumSize(new Dimension(800, 500));		// Horizontal , Vertical
 		setMaximumSize(new Dimension(800, 500));
