@@ -73,7 +73,7 @@ public class PainelMesas extends JPanel implements MouseListener
 		{
 			if(e.getSource() == mesas[i])
 			{
-				MenuPrincipal.AbrirPrincipal(i+5, false);
+				MenuPrincipal.AbrirPrincipal(i+5, true);
 				break;
 			}
 		}
