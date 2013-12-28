@@ -101,7 +101,7 @@ public class MenuPrincipal
 			principalPainel1.add(menuStatus);
 			principalPainel1.add(menuPainel);
 			
-			PainelVenda menuVenda = new PainelVenda(modelo);
+			PainelVenda menuVenda = new PainelVenda(refresh, modelo);
 			
 			principalPainel1.add(menuVenda);
 			principalPainel1.revalidate();
