@@ -357,7 +357,7 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		    	button.setBackground(table.getBackground());
 		    }
 		    label = (value == null) ? "" : value.toString();
-		    button.setText(label);
+		    //button.setText(label);
 		    button.setIcon(new ImageIcon("imgs/delete.png"));
 		    isPushed = true;
 		    return button;
