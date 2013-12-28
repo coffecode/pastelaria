@@ -211,7 +211,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		
 		tabela.addColumn("Nome");
 		tabela.addColumn("Qntd");
-		tabela.addColumn("Pre�o");
+		tabela.addColumn("Preço");
 		tabela.addColumn("Adicionais");
 		tabela.addColumn("Deletar");
 		
