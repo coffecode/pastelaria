@@ -94,8 +94,33 @@ public class MenuPrincipal
 			principalPainel1.add(menuFuncionarios);
 			principalPainel1.revalidate();
 			principalPainel1.repaint();
-		}		
-		if(modelo>= 5)      // Abre o menu de funcionarios	
+		}
+		if(modelo == 3)			// Abre o menu de vendas
+		{
+			principalPainel1.removeAll();
+			principalPainel1.add(menuStatus);
+			principalPainel1.add(menuPainel);
+			
+			PainelVendas menuVendas = new PainelVendas();
+			
+			principalPainel1.add(menuVendas);
+			principalPainel1.revalidate();
+			principalPainel1.repaint();
+		}
+		if(modelo == 4)			// Abre o inicio.
+		{
+			principalPainel1.removeAll();
+			principalPainel1.add(menuStatus);
+			principalPainel1.add(menuPainel);
+			
+			menuMesas = new PainelMesas(35);
+			
+			principalPainel1.add(menuMesas);
+			principalPainel1.add(menuFooter);
+			principalPainel1.revalidate();
+			principalPainel1.repaint();
+		}						
+		if(modelo>= 5)
 		{
 			principalPainel1.removeAll();
 			principalPainel1.add(menuStatus);

@@ -1,7 +1,9 @@
 import java.awt.*;
 
+//import com.jtattoo.plaf.smart.SmartLookAndFeel;
 import javax.swing.*;
 
+//import javax.swing.UIManager.*;
 import java.awt.event.*;
 
 public class MenuLogin extends JFrame implements ActionListener
@@ -16,6 +18,23 @@ public class MenuLogin extends JFrame implements ActionListener
 	
 	public MenuLogin()
 	{
+		
+		/*try {
+			UIManager.setLookAndFeel("com.jtattoo.plaf.smart.SmartLookAndFeel");
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedLookAndFeelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+		
 		setTitle("Login");
 		JPanel login = new JPanel();
 		login.setLayout(null);

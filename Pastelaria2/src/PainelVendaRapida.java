@@ -453,7 +453,10 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 					Calendar c = Calendar.getInstance();
 					Locale locale = new Locale("pt","BR"); 
 					GregorianCalendar calendar = new GregorianCalendar(); 
-					SimpleDateFormat formatador = new SimpleDateFormat("dd'/'MM'/'yyyy' - 'HH':'mm",locale); 
+					SimpleDateFormat formatador = new SimpleDateFormat("dd'/'MM'/'yyyy' - 'HH':'mm",locale);
+					
+					if(Double.parseDouble(campoRecebido.getText().replaceAll(",",".")) > Double.parseDouble(campoTotal.getText().replaceAll(",",".")))
+						campoRecebido.setText(campoTotal.getText());					
 					
 					c.get(Calendar.DAY_OF_WEEK);
 					
@@ -525,7 +528,10 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 						Calendar c = Calendar.getInstance();
 						Locale locale = new Locale("pt","BR"); 
 						GregorianCalendar calendar = new GregorianCalendar(); 
-						SimpleDateFormat formatador = new SimpleDateFormat("dd'/'MM'/'yyyy' - 'HH':'mm",locale); 
+						SimpleDateFormat formatador = new SimpleDateFormat("dd'/'MM'/'yyyy' - 'HH':'mm",locale);
+						
+						if(Double.parseDouble(campoRecebido.getText().replaceAll(",",".")) > Double.parseDouble(campoTotal.getText().replaceAll(",",".")))
+							campoRecebido.setText(campoTotal.getText());
 						
 						c.get(Calendar.DAY_OF_WEEK);
 						

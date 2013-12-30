@@ -6,7 +6,7 @@ import java.awt.event.*;
 
 public class PainelMenu extends JPanel implements MouseListener
 {
-	private JButton vendaRapida, consulta, fiados, produtos, funcionarios;
+	private JButton vendaRapida, consulta, inicio, produtos, funcionarios;
 	private int funcionario;
 	
 	public PainelMenu(int level)
@@ -15,6 +15,13 @@ public class PainelMenu extends JPanel implements MouseListener
 		this.setLayout(new FlowLayout(FlowLayout.CENTER, 6, 5));
 		this.setMaximumSize(new Dimension(800, 100));
 		this.setMinimumSize(new Dimension(800, 100));
+		
+		this.inicio = new JButton("Início");
+		this.inicio.setPreferredSize(new Dimension(130, 60));
+		ImageIcon iconeInicio = new ImageIcon("imgs/inicio.png");
+		this.inicio.setIcon(iconeInicio);
+		this.inicio.addMouseListener(this);
+		this.add(inicio);		
 		
 		this.vendaRapida = new JButton("Venda Rï¿½pida");
 		ImageIcon iconeRapida = new ImageIcon("imgs/vrapida.png");
@@ -43,13 +50,6 @@ public class PainelMenu extends JPanel implements MouseListener
 		this.consulta.setIcon(iconeVendas);
 		this.consulta.addMouseListener(this);
 		this.add(consulta);
-		
-		this.fiados = new JButton("Fiados");
-		this.fiados.setPreferredSize(new Dimension(130, 60));
-		ImageIcon iconeFiados = new ImageIcon("imgs/fiados.png");
-		this.fiados.setIcon(iconeFiados);
-		this.fiados.addMouseListener(this);
-		this.add(fiados);
 		
 		this.funcionario = level;
 	}
@@ -83,7 +83,7 @@ public class PainelMenu extends JPanel implements MouseListener
 			else
 				JOptionPane.showMessageDialog(null, "Vocï¿½ nï¿½o tem permissï¿½o para ver isso.");
 		}
-		else if(e.getSource() == fiados)
+		else if(e.getSource() == inicio)
 		{
 			MenuPrincipal.AbrirPrincipal(4, false);
 		}		
@@ -118,9 +118,9 @@ public class PainelMenu extends JPanel implements MouseListener
 		{
 			PainelLegenda.AtualizaLegenda("Consulte as vendas de determinada data.");
 		}
-		if(e.getSource() == fiados)
+		if(e.getSource() == inicio)
 		{
-			PainelLegenda.AtualizaLegenda("Clientes que ainda nÃ£o pagaram.");
+			PainelLegenda.AtualizaLegenda("Início do programa (mesas).");
 		}
 	}
 
