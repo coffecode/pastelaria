@@ -168,7 +168,7 @@ public class PainelVendas extends JPanel implements ActionListener, TableModelLi
 			  if(column == 5)
 				  setIcon(new ImageIcon("imgs/delete.png"));
 			  else
-				  setIcon(new ImageIcon("imgs/documento.png"));
+				  setIcon(new ImageIcon("imgs/fiados1.png"));
 			  
 			  	String pegaCPF = (String) table.getValueAt(row,4);
 			  	String formataTip = "<html>";
@@ -264,7 +264,7 @@ public class PainelVendas extends JPanel implements ActionListener, TableModelLi
 			  if(column == 5)
 				  button.setIcon(new ImageIcon("imgs/delete.png"));
 			  else
-				  button.setIcon(new ImageIcon("imgs/documento.png"));		    
+				  button.setIcon(new ImageIcon("imgs/fiados1.png"));		    
 		    
 		    isPushed = true;
 		    return button;
