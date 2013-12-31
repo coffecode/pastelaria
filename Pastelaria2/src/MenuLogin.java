@@ -18,7 +18,6 @@ public class MenuLogin extends JFrame implements ActionListener
 	
 	public MenuLogin()
 	{
-		
 		/*try {
 			UIManager.setLookAndFeel("com.jtattoo.plaf.smart.SmartLookAndFeel");
 		} catch (ClassNotFoundException e) {

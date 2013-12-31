@@ -21,6 +21,7 @@ import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Calendar;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -66,12 +67,22 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		Query pega = new Query();
 		pega.executaQuery("SELECT * FROM produtos WHERE tipo = 1 ORDER BY nome ");
 		int linhas = 0;
+		int quantidade = 0;
+		Calendar c = Calendar.getInstance();
 		
 		while(pega.next())
 		{
-			Object[] linha = {pega.getInt("produtos_id"), pega.getString("nome"), pega.getString("preco"), "0 vezes", "Produto", "Deletar"};
+			Query pega2 = new Query();
+			pega2.executaQuery("SELECT quantidade_produto FROM vendas_produtos WHERE mes = "+ c.get(Calendar.MONTH) +" AND ano = "+ c.get(Calendar.YEAR) +" AND nome_produto = '" + pega.getString("nome") + "'");		
+			
+			while(pega2.next())
+				quantidade += pega2.getInt("quantidade_produto");
+			
+			Object[] linha = {pega.getInt("produtos_id"), pega.getString("nome"), pega.getString("preco"), quantidade + " vezes", "Produto", "Deletar"};
 			tabela.addRow(linha);
 			linhas++;
+			quantidade = 0;
+			pega2.fechaConexao();
 		}
 		
 		tabelaProdutos = new JTable() {
@@ -151,12 +162,30 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		
 		pega.executaQuery("SELECT * FROM produtos WHERE tipo = 2 ORDER BY nome ");
 		int linhas2 = 0;
+		quantidade = 0;
 		
 		while(pega.next())
 		{
-			Object[] linha = {pega.getInt("produtos_id"), pega.getString("nome"), pega.getString("preco"), "0 vezes", "Adicional", "Deletar"};
+			Query pega2 = new Query();
+			pega2.executaQuery("SELECT quantidade_produto, adicionais_produto FROM vendas_produtos WHERE mes = "+ c.get(Calendar.MONTH) +" AND ano = "+ c.get(Calendar.YEAR) +" AND adicionais_produto LIKE '%" + pega.getString("nome") + "%'");		
+			
+			while(pega2.next())
+			{ 
+				int pos = -1;  
+				int contagem = 0;  
+				while (true) {  
+				    pos = pega2.getString("adicionais_produto").indexOf (pega.getString("nome"), pos + 1);   
+				    if (pos < 0) break;  
+				    contagem++;  
+				}
+				quantidade += (pega2.getInt("quantidade_produto") * contagem);
+			}
+			
+			Object[] linha = {pega.getInt("produtos_id"), pega.getString("nome"), pega.getString("preco"), quantidade + " vezes", "Adicional", "Deletar"};
 			tabelaAdc.addRow(linha);
 			linhas2++;
+			quantidade = 0;
+			pega2.fechaConexao();
 		}
 		
 		pega.fechaConexao();

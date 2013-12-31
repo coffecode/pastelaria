@@ -462,15 +462,15 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 					
 					String formatacao;
 					Query envia = new Query();
-					formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id) VALUES('"
+					formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id, data) VALUES('"
 					+ campoTotal.getText() +
 					"', '" + MenuLogin.logado +
 					"', " + c.get(Calendar.YEAR) + ", "
 					+ c.get(Calendar.MONTH) + ", "
 					+ c.get(Calendar.DAY_OF_MONTH) + ", "
 					+ c.get(Calendar.DAY_OF_WEEK) +
-					", '" + formatador.format(calendar.getTime()) + "', '" + campoForma.getSelectedItem() + "', '" + campoRecebido.getText() + "', '" + campoTroco.getText() + "', 0);";
-					
+					", '" + formatador.format(calendar.getTime()) + "', '" + campoForma.getSelectedItem() + "', '" + campoRecebido.getText() + "', '" + campoTroco.getText()
+					+ "', 0, CURDATE());";
 					envia.executaUpdate(formatacao);
 					
 					Query pega = new Query();
@@ -486,11 +486,11 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 							pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade()));
 							pegaPreco.replaceAll(",", ".");						
 							
-							formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto) VALUES('"
+							formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto, dia, mes, ano) VALUES('"
 									+ venda_id +
 									"', '" + vendaRapida.getProduto(i).getNome() +
-									"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + vendaRapida.getProduto(i).getQuantidade() + "');";
-									
+									"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + vendaRapida.getProduto(i).getQuantidade() + 
+									"', " + c.get(Calendar.DAY_OF_MONTH) + ", " + c.get(Calendar.MONTH) + ", " + c.get(Calendar.YEAR) + ");";
 									envia.executaUpdate(formatacao);						
 						}
 					}
@@ -537,7 +537,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 						
 						String formatacao;
 						Query envia = new Query();
-						formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id) VALUES('"
+						formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id, data) VALUES('"
 						+ campoTotal.getText() +
 						"', '" + MenuLogin.logado +
 						"', " + c.get(Calendar.YEAR) + ", "
@@ -545,8 +545,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 						+ c.get(Calendar.DAY_OF_MONTH) + ", "
 						+ c.get(Calendar.DAY_OF_WEEK) +
 						", '" + formatador.format(calendar.getTime()) + "', '" + campoForma.getSelectedItem() + "', '" + campoRecebido.getText() + "', '" + campoTroco.getText() + 
-						"', " + fiadorIDSalvo + ");";
-						
+						"', " + fiadorIDSalvo + ", CURDATE());";
 						envia.executaUpdate(formatacao);
 						
 						Query pega = new Query();
@@ -562,11 +561,11 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 								pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade()));
 								pegaPreco.replaceAll(",", ".");						
 								
-								formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto) VALUES('"
+								formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto, dia, mes, ano) VALUES('"
 										+ venda_id +
 										"', '" + vendaRapida.getProduto(i).getNome() +
-										"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + vendaRapida.getProduto(i).getQuantidade() + "');";
-										
+										"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + vendaRapida.getProduto(i).getQuantidade() +
+										"', " + c.get(Calendar.DAY_OF_MONTH) + ", " + c.get(Calendar.MONTH) + ", " + c.get(Calendar.YEAR) + ");";
 										envia.executaUpdate(formatacao);						
 							}
 						}
