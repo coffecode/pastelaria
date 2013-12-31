@@ -29,7 +29,7 @@ public class MenuLogin extends JFrame implements ActionListener
 		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (UnsupportedLookAndFeelException e) {
+		} catch (UnsupportedLookAndFeelException e) {//
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}*/
