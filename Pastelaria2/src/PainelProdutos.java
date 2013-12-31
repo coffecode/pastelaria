@@ -8,20 +8,15 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
-
-import java.awt.event.*;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Vector;
-import java.awt.BorderLayout;
-
 import javax.swing.DefaultCellEditor;
-import javax.swing.JFrame;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableColumn;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -29,84 +24,55 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JList;
-import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
+public class PainelProdutos extends JPanel implements ActionListener, TableModelListener{
 
-
-public class PainelProdutos extends JPanel implements MouseListener, ActionListener, TableModelListener{
-
-	private DefaultTableModel tabela;
-	private JTable tabelaProdutos;
+	private DefaultTableModel tabela, tabelaAdc;
+	private JTable tabelaProdutos, tabelaAdicionais;
 	private JLabel adicionarNome, adicionarPreco;
 	private JTextField campoNome, campoPreco;
 	private JComboBox campoTipo;
 	private JButton adicionar;
 	private JPanel addPainel;
 	
-	
 	PainelProdutos()
 	{
-		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Gerenciar Produtos"));
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setMinimumSize(new Dimension(800, 480));		// Horizontal , Vertical
 		setMaximumSize(new Dimension(800, 480));
 		
-		
-		
-        
+		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane.setMinimumSize(new Dimension(786, 480));
+		tabbedPane.setMaximumSize(new Dimension(786, 480));		
         
 		//instance table model
 		tabela = new DefaultTableModel() {
-
-
 			@Override
 		    public boolean isCellEditable(int row, int column) {
-		       if(column == 3 || column == 1 || column ==2)
+		       if(column == 1 || column == 2 || column == 4 || column ==5)
 		    	   return true;
 		       
 		       return false;
 		    }
 		};
 		
+		tabela.addColumn("ID");
 		tabela.addColumn("Nome");
-		tabela.addColumn("Preco");
+		tabela.addColumn("Preço");
+		tabela.addColumn("Vendido no Mês");
 		tabela.addColumn("Tipo");
 		tabela.addColumn("Deletar");
 		
-		
-		
 		Query pega = new Query();
-		pega.executaQuery("SELECT * FROM produtos ORDER BY nome ");
+		pega.executaQuery("SELECT * FROM produtos WHERE tipo = 1 ORDER BY nome ");
 		int linhas = 0;
-		
 		
 		while(pega.next())
 		{
-			Vector<Serializable> linha = new Vector<Serializable>();
-				
-			linha.add(pega.getString("nome"));
-			
-			String pegaPreco;
-			pegaPreco = pega.getString("preco");
-			pegaPreco.replaceAll(".", ",");
-			
-			linha.add(pegaPreco);
-				
-			
-			
-			
-
-			if(pega.getInt("tipo") < 2)
-				linha.add("Produto");
-			else
-				linha.add("Adicional");
-			linha.add("Deletar");
-
+			Object[] linha = {pega.getInt("produtos_id"), pega.getString("nome"), pega.getString("preco"), "0 vezes", "Produto", "Deletar"};
 			tabela.addRow(linha);
 			linhas++;
 		}
-		
 		
 		tabelaProdutos = new JTable() {
 		    Color alternate = new Color(141, 182, 205);
@@ -114,7 +80,7 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		    @Override
 		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
 		        Component stamp = super.prepareRenderer(renderer, row, column);
-		        if (row % 2 == 0 && column != 3 && column!=2)
+		        if (row % 2 == 0 && column != 4 && column!= 5)
 		            stamp.setBackground(alternate);
 		        else
 		            stamp.setBackground(this.getBackground());
@@ -123,23 +89,26 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		};
 		
 		tabelaProdutos.setModel(tabela);
-		tabelaProdutos.getColumnModel().getColumn(0).setMinWidth(240);
-		tabelaProdutos.getColumnModel().getColumn(0).setMaxWidth(240);
-		tabelaProdutos.getColumnModel().getColumn(1).setMinWidth(240);
-		tabelaProdutos.getColumnModel().getColumn(1).setMaxWidth(240);
-		tabelaProdutos.getColumnModel().getColumn(2).setMinWidth(220);
-		tabelaProdutos.getColumnModel().getColumn(2).setMaxWidth(220);
-		tabelaProdutos.getColumnModel().getColumn(3).setMinWidth(82);
-		tabelaProdutos.getColumnModel().getColumn(3).setMaxWidth(82);		
+		tabelaProdutos.getColumnModel().getColumn(0).setMinWidth(0);
+		tabelaProdutos.getColumnModel().getColumn(0).setMaxWidth(0);
+		tabelaProdutos.getColumnModel().getColumn(1).setMinWidth(300);
+		tabelaProdutos.getColumnModel().getColumn(1).setMaxWidth(300);		
+		tabelaProdutos.getColumnModel().getColumn(2).setMinWidth(100);
+		tabelaProdutos.getColumnModel().getColumn(2).setMaxWidth(100);
+		tabelaProdutos.getColumnModel().getColumn(3).setMinWidth(150);
+		tabelaProdutos.getColumnModel().getColumn(3).setMaxWidth(150);
+		tabelaProdutos.getColumnModel().getColumn(5).setMinWidth(60);
+		tabelaProdutos.getColumnModel().getColumn(5).setMaxWidth(60);		
 		
-		tabelaProdutos.setRowHeight(30);
+		tabelaProdutos.setRowHeight(28);
 		
 		DefaultTableCellRenderer centraliza = new DefaultTableCellRenderer();
 		centraliza.setHorizontalAlignment( JLabel.CENTER );
 		
 		tabelaProdutos.getColumn("Nome").setCellRenderer(centraliza);
-		tabelaProdutos.getColumn("Preco").setCellRenderer(centraliza);
+		tabelaProdutos.getColumn("Preço").setCellRenderer(centraliza);
 		tabelaProdutos.getColumn("Tipo").setCellRenderer(centraliza);
+		tabelaProdutos.getColumn("Vendido no Mês").setCellRenderer(centraliza);
 		tabelaProdutos.getColumn("Deletar").setCellRenderer(centraliza);
 		tabelaProdutos.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
 		tabelaProdutos.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));		
@@ -147,34 +116,118 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		String[] tiposProduto = { "Adicional", "Produto" };
 		
 		tabelaProdutos.getColumn("Tipo").setCellEditor(new MyComboBoxEditor(tiposProduto));
-		tabelaProdutos.getColumn("Tipo").setCellRenderer(new MyComboBoxRenderer(tiposProduto));
-		
+		MyComboBoxRenderer combo = new MyComboBoxRenderer(tiposProduto);
+		((JLabel)combo.getRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
+		tabelaProdutos.getColumn("Tipo").setCellRenderer(combo);
 		tabelaProdutos.getModel().addTableModelListener(this);
 		
 		if(linhas > 8)
-			tabelaProdutos.setPreferredScrollableViewportSize(new Dimension(700, 112));
+			tabelaProdutos.setPreferredScrollableViewportSize(new Dimension(600, 112));
 		else
-			tabelaProdutos.setPreferredScrollableViewportSize(new Dimension(700, linhas*16));
+			tabelaProdutos.setPreferredScrollableViewportSize(new Dimension(600, linhas*16));
 		
 		JScrollPane scrolltabela = new JScrollPane(tabelaProdutos);
-		add(scrolltabela);
+		
+		ImageIcon iconeUltimas = new ImageIcon("imgs/fiado24.png");
+		tabbedPane.addTab("Produtos", iconeUltimas, scrolltabela, "Gerenciar Produtos da loja.");
+		
+		//instance table model
+		tabelaAdc = new DefaultTableModel() {
+			@Override
+		    public boolean isCellEditable(int row, int column) {
+		       if(column == 2 || column == 4 || column ==5)
+		    	   return true;
+		       
+		       return false;
+		    }
+		};
+		
+		tabelaAdc.addColumn("ID");
+		tabelaAdc.addColumn("Nome");
+		tabelaAdc.addColumn("Preço");
+		tabelaAdc.addColumn("Vendido no Mês");
+		tabelaAdc.addColumn("Tipo");
+		tabelaAdc.addColumn("Deletar");
+		
+		pega.executaQuery("SELECT * FROM produtos WHERE tipo = 2 ORDER BY nome ");
+		int linhas2 = 0;
+		
+		while(pega.next())
+		{
+			Object[] linha = {pega.getInt("produtos_id"), pega.getString("nome"), pega.getString("preco"), "0 vezes", "Adicional", "Deletar"};
+			tabelaAdc.addRow(linha);
+			linhas2++;
+		}
+		
+		pega.fechaConexao();
+		
+		tabelaAdicionais = new JTable() {
+		    Color alternate = new Color(141, 182, 205);
+		    
+		    @Override
+		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+		        Component stamp = super.prepareRenderer(renderer, row, column);
+		        if (row % 2 == 0 && column != 4 && column!= 5)
+		            stamp.setBackground(alternate);
+		        else
+		            stamp.setBackground(this.getBackground());
+		        return stamp;
+		    }				
+		};
+		
+		tabelaAdicionais.setModel(tabelaAdc);
+		tabelaAdicionais.getColumnModel().getColumn(0).setMinWidth(0);
+		tabelaAdicionais.getColumnModel().getColumn(0).setMaxWidth(0);
+		tabelaAdicionais.getColumnModel().getColumn(1).setMinWidth(300);
+		tabelaAdicionais.getColumnModel().getColumn(1).setMaxWidth(300);		
+		tabelaAdicionais.getColumnModel().getColumn(2).setMinWidth(100);
+		tabelaAdicionais.getColumnModel().getColumn(2).setMaxWidth(100);
+		tabelaAdicionais.getColumnModel().getColumn(3).setMinWidth(150);
+		tabelaAdicionais.getColumnModel().getColumn(3).setMaxWidth(150);
+		tabelaAdicionais.getColumnModel().getColumn(5).setMinWidth(60);
+		tabelaAdicionais.getColumnModel().getColumn(5).setMaxWidth(60);		
+		
+		tabelaAdicionais.setRowHeight(28);
+		
+		tabelaAdicionais.getColumn("Nome").setCellRenderer(centraliza);
+		tabelaAdicionais.getColumn("Preço").setCellRenderer(centraliza);
+		tabelaAdicionais.getColumn("Tipo").setCellRenderer(centraliza);
+		tabelaAdicionais.getColumn("Vendido no Mês").setCellRenderer(centraliza);
+		tabelaAdicionais.getColumn("Deletar").setCellRenderer(centraliza);
+		tabelaAdicionais.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
+		tabelaAdicionais.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));		
+		
+		tabelaAdicionais.getColumn("Tipo").setCellEditor(new MyComboBoxEditor(tiposProduto));
+		MyComboBoxRenderer combo2 = new MyComboBoxRenderer(tiposProduto);
+		((JLabel)combo2.getRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
+		tabelaAdicionais.getColumn("Tipo").setCellRenderer(combo2);
+		tabelaAdicionais.getModel().addTableModelListener(this);
+		
+		if(linhas2 > 8)
+			tabelaAdicionais.setPreferredScrollableViewportSize(new Dimension(600, 112));
+		else
+			tabelaAdicionais.setPreferredScrollableViewportSize(new Dimension(600, linhas2*16));
+		
+		JScrollPane scrolltabelaAdc = new JScrollPane(tabelaAdicionais);		
+		tabbedPane.addTab("Adicionais", iconeUltimas, scrolltabelaAdc, "Gerenciar Adicionais da loja.");
+		
+		add(tabbedPane);
 		
 		addPainel = new JPanel();
 		addPainel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Adicionar"));
 		addPainel.setLayout(new GridBagLayout());
-		addPainel.setMinimumSize(new Dimension(800, 200));
-		addPainel.setMaximumSize(new Dimension(800, 200));
+		addPainel.setMinimumSize(new Dimension(790, 200));
+		addPainel.setMaximumSize(new Dimension(790, 200));
 		
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(5,5,5,5);  //top padding
-		
 		
 		campoTipo= new JComboBox(tiposProduto);
 		campoTipo.setSelectedIndex(0);
 		campoTipo.setPreferredSize(new Dimension(150, 30));
 		
 		adicionarNome = new JLabel("Nome: ");
-		adicionarPreco = new JLabel("Preï¿½o: ");
+		adicionarPreco = new JLabel("Preço: ");
 		
 		campoNome = new JTextField();
 		campoNome.setPreferredSize(new Dimension(150, 30));
@@ -215,7 +268,7 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		gbc.gridx = 2;	// colunas
 		gbc.gridy = 3;	// linhas			
 		
-		addPainel.add(adicionar, gbc);
+		addPainel.add(adicionar, gbc);		
 		
 		add(addPainel);
 	}
@@ -263,42 +316,87 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 			}
 			else
 			{
-				String formatacao;
-				Query envia = new Query();
-				formatacao = "INSERT INTO produtos(nome, preco, tipo) VALUES('"
-				+ campoNome.getText() +
-				"', " + campoPreco.getText() + ", "+tipo+");";
+				String limpeza = campoPreco.getText().replaceAll("[^0-9.,]+","");
 				
-				envia.executaUpdate(formatacao);
-				
-				MenuPrincipal.AbrirPrincipal(1, false);
+				if(!"".equals(limpeza.trim()))
+				{
+					limpeza = limpeza.replaceAll(",", ".");
+					double limpeza2 = Double.parseDouble(limpeza);
+					
+					if(limpeza2 > 0)
+					{
+						String resultado = String.format("%.2f", limpeza2);
+						
+						String formatacao;
+						Query envia = new Query();
+						formatacao = "INSERT INTO produtos(nome, preco, tipo) VALUES('"
+						+ campoNome.getText() +
+						"', '" + resultado + "', "+tipo+");";
+						
+						envia.executaUpdate(formatacao);
+						
+						int idProdutoNovo = 9999999;
+						
+						envia.executaQuery("SELECT produtos_id FROM produtos ORDER BY produtos_id DESC limit 0, 1");
+						if(envia.next())
+						{
+							idProdutoNovo = envia.getInt("produtos_id");
+						}
+						
+						envia.fechaConexao();
+						if(tipo == 1)
+						{
+							boolean flag = false;
+							
+							Object[] linha = {idProdutoNovo, campoNome.getText(), resultado, "0 vezes", "Produto", "Deletar"};
+							
+							for(int i = 0; i < tabela.getRowCount() ; i++)
+							{
+								if(campoNome.getText().compareTo((String) tabela.getValueAt(i, 1)) <= 0)
+								{
+									tabela.insertRow(i, linha);
+									flag = true;
+									break;
+								}
+							}
+
+							if(!flag)
+								tabela.addRow(linha);							
+						}
+						else
+						{
+							boolean flag = false;
+							
+							Object[] linha = {idProdutoNovo, campoNome.getText(), resultado, "0 vezes", "Adicional", "Deletar"};
+							
+							for(int i = 0; i < tabelaAdc.getRowCount() ; i++)
+							{
+								if(campoNome.getText().compareTo((String) tabelaAdc.getValueAt(i, 1)) <= 0)
+								{
+									tabelaAdc.insertRow(i, linha);
+									flag = true;
+									break;
+								}
+							}
+
+							if(!flag)
+								tabelaAdc.addRow(linha);								
+						}
+						
+						campoNome.setText("");
+						campoPreco.setText("");
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "Preço Inválido!");
+					}
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(null, "Preço Inválido!");
+				}
 			}
 		}
-	}
-
-	@Override
-	public void mouseClicked(MouseEvent e) {
-
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e)	{
-
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-
 	}
 	
 	class ButtonRenderer extends JButton implements TableCellRenderer {
@@ -306,7 +404,6 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		  public ButtonRenderer() {
 		    setOpaque(true);
 		  }
-
 		  
 		  public Component getTableCellRendererComponent(JTable table, Object value,
 		      boolean isSelected, boolean hasFocus, int row, int column) {
@@ -320,7 +417,6 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 			      setForeground(table.getSelectionForeground());
 			      setBackground(table.getSelectionBackground());
 		    }
-		    //setText((value == null) ? "" : value.toString());
 		    return this;
 		  }
 		}
@@ -357,25 +453,41 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		    	button.setBackground(table.getBackground());
 		    }
 		    label = (value == null) ? "" : value.toString();
-		    //button.setText(label);
 		    button.setIcon(new ImageIcon("imgs/delete.png"));
 		    isPushed = true;
 		    return button;
 		  }
-		
-		  
 		  
 		  public Object getCellEditorValue() {
 		    if (isPushed) {
-		      if(tabelaProdutos.getSelectedRowCount() ==1)	//verifico se somente uma linha estÃ¡ selecionada  
+		      if(tabelaProdutos.getSelectedRowCount() ==1)
 		      {
-		    	   String pega = (String) tabelaProdutos.getValueAt(tabelaProdutos.getSelectedRow(), 0);
 			       String formatacao;
 			       Query envia = new Query();
-			       formatacao = "DELETE FROM produtos WHERE `nome` = '" + pega + "';";
+			       formatacao = "DELETE FROM produtos WHERE `produtos_id` = " + tabelaProdutos.getValueAt(tabelaProdutos.getSelectedRow(), 0) + ";";
 			       envia.executaUpdate(formatacao);
-			       MenuPrincipal.AbrirPrincipal(1, false);
+			       envia.fechaConexao();
+			       
+				      SwingUtilities.invokeLater(new Runnable() {  
+				    	  public void run() {  
+				    		  tabela.removeRow(tabelaProdutos.getSelectedRow());
+				    	  }  
+				      });
 		       }
+		      else if(tabelaAdicionais.getSelectedRowCount() ==1)
+		      {
+			       String formatacao;
+			       Query envia = new Query();
+			       formatacao = "DELETE FROM produtos WHERE `produtos_id` = " + tabelaAdicionais.getValueAt(tabelaAdicionais.getSelectedRow(), 0) + ";";
+			       envia.executaUpdate(formatacao);
+			       envia.fechaConexao();
+			       
+				      SwingUtilities.invokeLater(new Runnable() {  
+				    	  public void run() {  
+				    		  tabelaAdc.removeRow(tabelaAdicionais.getSelectedRow());
+				    	  }  
+				      });		    	  
+		      }
 		    }
 		    isPushed = false;
 		    return new String(label);
@@ -390,41 +502,165 @@ public class PainelProdutos extends JPanel implements MouseListener, ActionListe
 		    super.fireEditingStopped();
 		  }
 		  
-		  
 		}
 		public void tableChanged(TableModelEvent e) {
 			
-	        int row = e.getFirstRow();
+	        final int row = e.getFirstRow();
 	        int column = e.getColumn();
 	        
-	        if(column == 1){
-		        TableModel model = (TableModel)e.getSource();
-		        String data = (String) model.getValueAt(row, column);	// data possui o conteï¿½do atualizado.
-		        
-		        String pega = (String) model.getValueAt(row, 0);
-		        
-			    String formatacao;
-			    Query envia = new Query();
-			    formatacao = "UPDATE produtos SET preco =  " + data + " WHERE nome = '"+pega+"' " ;
-			    envia.executaUpdate(formatacao);
-			    MenuPrincipal.AbrirPrincipal(1, false);
-	        }else if(column == 2){
-	        	
-	        	
-	        	TableModel model = (TableModel)e.getSource();
-		        String data = (String) model.getValueAt(row, column);	// data possui o conteï¿½do atualizado
-		        String pega = (String) model.getValueAt(row, 0);
-		        int tipo =0;
-		        if(data.equals("Adicional")){
-		        	tipo =2;
-		        }else{
-		        	tipo =1;
-		        }
-		        String formatacao;
-			    Query envia = new Query();
-			    formatacao = "UPDATE produtos SET tipo =  " + tipo + " WHERE nome = '"+pega+"' " ;
-			    envia.executaUpdate(formatacao);
-			    MenuPrincipal.AbrirPrincipal(1, false);
+	        if((TableModel)e.getSource() == tabela)
+	        {
+	        	if(column == 1)
+	        	{
+				    String formatacao;
+				    Query envia = new Query();
+				    formatacao = "UPDATE produtos SET nome = '" + (String) tabela.getValueAt(row, column) + "' WHERE produtos_id = " + tabela.getValueAt(row, 0);
+				    envia.executaUpdate(formatacao);
+				    envia.fechaConexao();
+	        	}
+	        	else if(column == 2)
+	        	{
+	        		String pega = (String) tabela.getValueAt(row, column);
+					String limpeza = pega.replaceAll("[^0-9.,]+","");
+					
+					if(!"".equals(limpeza.trim()))
+					{
+						limpeza = limpeza.replaceAll(",", ".");
+						double limpeza2 = Double.parseDouble(limpeza);
+						
+						if(limpeza2 > 0)
+						{
+							String resultado = String.format("%.2f", limpeza2);
+						    String formatacao;
+						    Query envia = new Query();
+						    formatacao = "UPDATE produtos SET preco = '" + resultado + "' WHERE produtos_id = " + tabela.getValueAt(row, 0);
+						    envia.executaUpdate(formatacao);
+						    envia.fechaConexao();
+						}
+					}
+	        	}
+	        	else if(column == 4)
+	        	{
+			        String data = (String) tabela.getValueAt(row, column);
+			        int tipo =0;
+			        if(data.equals("Adicional")){
+			        	tipo = 2;
+			        }else{
+			        	tipo = 1;
+			        }
+			        
+			        String formatacao;
+				    Query envia = new Query();
+				    formatacao = "UPDATE produtos SET tipo = " + tipo + " WHERE produtos_id = " + tabela.getValueAt(row, 0);
+				    envia.executaUpdate(formatacao);
+				    envia.fechaConexao();
+				    
+				    if(tipo == 2)
+				    {					    
+						boolean flag = false;
+						
+						Object[] linha = {tabela.getValueAt(row, 0), (String) tabela.getValueAt(row, 1), (String) tabela.getValueAt(row, 2), 
+						(String) tabela.getValueAt(row, 3), "Adicional", ""};
+						
+						String nomeP = (String) tabela.getValueAt(row, 1);
+						
+						for(int i = 0; i < tabelaAdc.getRowCount() ; i++)
+						{
+							if(nomeP.compareTo((String) tabelaAdc.getValueAt(i, 1)) <= 0)
+							{
+								tabelaAdc.insertRow(i, linha);
+								flag = true;
+								break;
+							}
+						}
+
+						if(!flag)
+							tabelaAdc.addRow(linha);
+						
+					    SwingUtilities.invokeLater(new Runnable() {  
+					    	  public void run() {  
+					    		  tabela.removeRow(row);
+					    	  }  
+					      });						
+				    }
+	        	}
 	        }
-	    }	
+	        if((TableModel)e.getSource() == tabelaAdc)
+	        {
+	        	if(column == 1)
+	        	{
+				    String formatacao;
+				    Query envia = new Query();
+				    formatacao = "UPDATE produtos SET nome = '" + (String) tabelaAdc.getValueAt(row, column) + "' WHERE produtos_id = " + tabelaAdc.getValueAt(row, 0);
+				    envia.executaUpdate(formatacao);
+				    envia.fechaConexao();
+	        	}
+	        	else if(column == 2)
+	        	{
+	        		String pega = (String) tabelaAdc.getValueAt(row, column);
+					String limpeza = pega.replaceAll("[^0-9.,]+","");
+					
+					if(!"".equals(limpeza.trim()))
+					{
+						limpeza = limpeza.replaceAll(",", ".");
+						double limpeza2 = Double.parseDouble(limpeza);
+						
+						if(limpeza2 > 0)
+						{
+							String resultado = String.format("%.2f", limpeza2);
+						    String formatacao;
+						    Query envia = new Query();
+						    formatacao = "UPDATE produtos SET preco = '" + resultado + "' WHERE produtos_id = " + tabelaAdc.getValueAt(row, 0);
+						    envia.executaUpdate(formatacao);
+						    envia.fechaConexao();
+						}
+					}
+	        	}
+	        	else if(column == 4)
+	        	{
+			        String data = (String) tabelaAdc.getValueAt(row, column);
+			        int tipo =0;
+			        if(data.equals("Adicional")){
+			        	tipo = 2;
+			        }else{
+			        	tipo = 1;
+			        }
+			        
+			        String formatacao;
+				    Query envia = new Query();
+				    formatacao = "UPDATE produtos SET tipo = " + tipo + " WHERE produtos_id = " + tabelaAdc.getValueAt(row, 0);
+				    envia.executaUpdate(formatacao);
+				    envia.fechaConexao();
+				    
+				    if(tipo == 1)
+				    {					    
+						boolean flag = false;
+						
+						Object[] linha = {tabelaAdc.getValueAt(row, 0), (String) tabelaAdc.getValueAt(row, 1), (String) tabelaAdc.getValueAt(row, 2), 
+						(String) tabelaAdc.getValueAt(row, 3), "Produto", ""};
+						
+						String nomeP = (String) tabelaAdc.getValueAt(row, 1);
+						
+						for(int i = 0; i < tabela.getRowCount() ; i++)
+						{
+							if(nomeP.compareTo((String) tabela.getValueAt(i, 1)) <= 0)
+							{
+								tabela.insertRow(i, linha);
+								flag = true;
+								break;
+							}
+						}
+
+						if(!flag)
+							tabela.addRow(linha);
+						
+					    SwingUtilities.invokeLater(new Runnable() {  
+					    	  public void run() {  
+					    		  tabelaAdc.removeRow(row);
+					    	  }  
+					      });						
+				    }				    
+	        	}	        	
+	        }
+	    }
 }

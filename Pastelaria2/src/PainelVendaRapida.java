@@ -411,7 +411,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + addProduto.getSelecionado() + "';");
 			
 			if(pega.next())
-				aDouble += Double.parseDouble(pega.getString("preco"));
+				aDouble += Double.parseDouble((pega.getString("preco").replaceAll(",", ".")));
 			
 			for(int i = 0; i < addAdicional.size() ; i++)
 			{
@@ -420,7 +420,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 					pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + addAdicional.get(i).getSelecionado() + "';");
 					
 					if(pega.next())
-						aDouble += Double.parseDouble(pega.getString("preco"));					
+						aDouble += Double.parseDouble((pega.getString("preco").replaceAll(",", ".")));				
 				}
 			}
 			
@@ -474,7 +474,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 					envia.executaUpdate(formatacao);
 					
 					Query pega = new Query();
-					pega.executaQuery("SELECT vendas_id FROM vendas ORDER BY vendas_id DESC");
+					pega.executaQuery("SELECT vendas_id FROM vendas ORDER BY vendas_id DESC limit 0, 1");
 					
 					if(pega.next())
 					{
@@ -622,7 +622,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 				
 				if(pega.next())
 				{
-					double precoProduto = Double.parseDouble(pega.getString("preco"));
+					double precoProduto = Double.parseDouble((pega.getString("preco").replaceAll(",", ".")));
 					
 					p.setNome(nomeProduto);
 					p.setPreco(precoProduto);
@@ -636,7 +636,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 							
 							if(pega.next())
 							{
-								double pAdicional = Double.parseDouble(pega.getString("preco"));
+								double pAdicional = Double.parseDouble((pega.getString("preco").replaceAll(",", ".")));
 								
 								Adicionais adcional = new Adicionais();
 								adcional.nomeAdicional = nomeAdicional;

@@ -323,30 +323,14 @@ public class UltimasVendas extends JPanel
 		    	  }
 		    	  else	// deletar
 		    	  {
-		    		  int opcao = JOptionPane.showConfirmDialog(null, "Essa opção irá quitar a dívida.\n\nVocê tem certeza?\n\n", "Quitar Dívida", JOptionPane.YES_NO_OPTION);
+		    		  int opcao = JOptionPane.showConfirmDialog(null, "Essa opção irá deletar a venda.\n\nVocê tem certeza?\n\n", "Deletar Venda", JOptionPane.YES_NO_OPTION);
 		    		  
 		    		  if(opcao == JOptionPane.YES_OPTION)
-		    		  {
-		    			  String pegaCPF = (String) tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 3);
-		    				  
+		    		  { 
 		    			Query pega = new Query();
-		    			pega.executaQuery("SELECT fiador_id FROM fiados WHERE `cpf` = '" + pegaCPF + "'");
-		    					
-		    			if(pega.next())
-		    			{		
-		    				pega.executaQuery("SELECT * FROM vendas WHERE `fiado_id` = " + pega.getInt("fiador_id") + "");
-		    						
-		    				while(pega.next())
-		    				{
-		    					if((Double.parseDouble(pega.getString("total").replaceAll(",", ".")) > Double.parseDouble(pega.getString("valor_pago").replaceAll(",", "."))))
-		    					{		    								
-		    						Query manda = new Query();
-		    								
-	    							manda.executaUpdate("UPDATE vendas SET `valor_pago` = '" + pega.getString("total") + "' WHERE `vendas_id` = " + pega.getInt("vendas_id"));
-	    							manda.fechaConexao();
-		    					}
-		    				}
-		    			}
+		    			pega.executaUpdate("DELETE FROM vendas WHERE `vendas_id` = " + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0));
+		    			pega.executaUpdate("DELETE FROM vendas_produtos WHERE `id_link` = " + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0));
+		    			pega.fechaConexao();
 		    		 }		    		  
 		    	  }
 		       }

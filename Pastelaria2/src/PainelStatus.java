@@ -25,7 +25,7 @@ public class PainelStatus extends JPanel implements Runnable, MouseListener {
     protected TimerThread timerThread;
     static private JLabel leftLabel;
     private JButton bSair;
-    static private String nomeFun = "André Alves";
+    static private String nomeFun = "xastre";
     
     public PainelStatus(String nomeFuncionario)
     {

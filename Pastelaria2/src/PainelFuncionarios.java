@@ -32,7 +32,7 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
-public class PainelFuncionarios extends JPanel implements MouseListener, ActionListener, TableModelListener
+public class PainelFuncionarios extends JPanel implements ActionListener, TableModelListener
 {
 	private DefaultTableModel tabela;
 	private JTable tabelaFuncionarios;
@@ -54,11 +54,20 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 
 		    @Override
 		    public boolean isCellEditable(int row, int column) {
-		       if(column == 4 || column == 1 || column == 2 || column == 3)
+		    	
+			       if(column == 1 || column == 2)
+			    	   return true;		    	
+		    	
+		    	String pega = (String) tabela.getValueAt(row, 0);
+		    	
+		    	if(pega.equals(PainelStatus.pegaNome()))
+		    		return false;
+		    	
+		       if(column == 4 || column == 3)
 		    	   return true;
 		       
 		       return false;
-		    }
+		    }	    
 		};
 		
 		tabela.addColumn("Nome");
@@ -68,7 +77,7 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		tabela.addColumn("Deletar");
 		
 		Query pega = new Query();
-		pega.executaQuery("SELECT * FROM funcionarios");
+		pega.executaQuery("SELECT * FROM funcionarios ORDER BY nome");
 		int linhas = 0;
 		
 		while(pega.next())
@@ -132,7 +141,10 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		String[] tiposFuncionario = { "Funcionário", "Gerente" };
 		
 		tabelaFuncionarios.getColumn("Nível").setCellEditor(new MyComboBoxEditor(tiposFuncionario));
-		tabelaFuncionarios.getColumn("Nível").setCellRenderer(new MyComboBoxRenderer(tiposFuncionario));
+		
+		MyComboBoxRenderer combo = new MyComboBoxRenderer(tiposFuncionario);
+		((JLabel)combo.getRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
+		tabelaFuncionarios.getColumn("Nível").setCellRenderer(combo);
 		
 		tabelaFuncionarios.getModel().addTableModelListener(this);		
 		
@@ -267,34 +279,34 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 				envia.executaUpdate(formatacao);
 				envia.fechaConexao();
 				
-				MenuPrincipal.AbrirPrincipal(2, false);
+				String tipo = "";
+				boolean flag = false;
+				
+				if(level == 1)
+					tipo = "Funcion�rio";
+				else
+					tipo = "Gerente";
+				
+				Object[] linha = {campoNome.getText(), campoUser.getText(), campoSenha.getText(), tipo, ""};
+				
+				for(int i = 0; i < tabela.getRowCount() ; i++)
+				{
+					if(campoNome.getText().compareTo((String) tabela.getValueAt(i, 0)) <= 0)
+					{
+						tabela.insertRow(i, linha);
+						flag = true;
+						break;
+					}
+				}
+
+				if(!flag)
+					tabela.addRow(linha);
+				
+				campoNome.setText("");
+				campoUser.setText("");
+				campoSenha.setText("");				
 			}
 		}
-	}
-
-	@Override
-	public void mouseClicked(MouseEvent e) {
-
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e)	{
-
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-
 	}
 	
 	class ButtonRenderer extends JButton implements TableCellRenderer {
@@ -352,7 +364,6 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		    	button.setBackground(table.getBackground());
 		    }
 		    label = (value == null) ? "" : value.toString();
-		    //button.setText(label);
 		    button.setIcon(new ImageIcon("imgs/delete.png"));
 		    isPushed = true;
 		    return button;
@@ -362,21 +373,18 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 		    if (isPushed) {
 		      if(tabelaFuncionarios.getSelectedRowCount() == 1)	//verifico se somente uma linha está selecionada  
 		      {
-		    	  String pegauser = (String) tabelaFuncionarios.getValueAt(tabelaFuncionarios.getSelectedRow(), 0);
-		    	  
-		    	  if(pegauser.equals(PainelStatus.pegaNome()))
-		    	  {
-		    		  JOptionPane.showMessageDialog(null, "Você não pode deletar sua própria conta.");
-		    	  }
-		    	  else
-		    	  {  		  
-			          String pega = (String) tabelaFuncionarios.getValueAt(tabelaFuncionarios.getSelectedRow(), 1);
-			          String formatacao;
-			          Query envia = new Query();
-			          formatacao = "DELETE FROM funcionarios WHERE `username` = '" + pega + "';";
-			          envia.executaUpdate(formatacao);
-			          MenuPrincipal.AbrirPrincipal(2, false);	    		  
-		    	  }
+		    	  String pega = (String) tabelaFuncionarios.getValueAt(tabelaFuncionarios.getSelectedRow(), 1);
+			      String formatacao;
+			      Query envia = new Query();
+			      formatacao = "DELETE FROM funcionarios WHERE `username` = '" + pega + "';";
+			      envia.executaUpdate(formatacao);
+			      envia.fechaConexao();
+			          
+			      SwingUtilities.invokeLater(new Runnable() {  
+			    	  public void run() {  
+			    		  tabela.removeRow(tabelaFuncionarios.getSelectedRow());
+			    	  }  
+			      });
 		       }
 		    }
 		    isPushed = false;
@@ -405,7 +413,7 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 	        		tipo = "password";
 	        	}
 		        TableModel model = (TableModel)e.getSource();
-		        String data = (String) model.getValueAt(row, column);	// data possui o conte�do atualizado.
+		        String data = (String) model.getValueAt(row, column);
 		        
 		        String pega = (String) model.getValueAt(row, 0);
 		        
@@ -413,33 +421,22 @@ public class PainelFuncionarios extends JPanel implements MouseListener, ActionL
 			    Query envia = new Query();
 			    formatacao = "UPDATE funcionarios SET "+tipo+" = '" + data + "' WHERE nome = '"+pega+"' " ;
 			    envia.executaUpdate(formatacao);
-			    MenuPrincipal.AbrirPrincipal(2, false);
+			    envia.fechaConexao();
 	        }else if(column == 3){
-	        	String pegauser = (String) tabelaFuncionarios.getValueAt(tabelaFuncionarios.getSelectedRow(), 0);
-	        	if(pegauser.equals(PainelStatus.pegaNome()))
-		    	  {
-		    		  JOptionPane.showMessageDialog(null, "Você não alterar seu próprio cargo.");
-		    		  MenuPrincipal.AbrirPrincipal(2, false);
-		    	  }
-		    	  else
-		    	  {  		  
-		    		  TableModel model = (TableModel)e.getSource();
-				        String data = (String) model.getValueAt(row, column);	// data possui o conte�do atualizado
-				        String pega = (String) model.getValueAt(row, 0);
-				        int tipo =0;
-				        if(data.equals("Gerente")){
-				        	tipo =2;
-				        }else{
-				        	tipo =1;
-				        }
-				        String formatacao;
-					    Query envia = new Query();
-					    formatacao = "UPDATE funcionarios SET level =  " + tipo + " WHERE nome = '"+pega+"' " ;
-					    envia.executaUpdate(formatacao);
-					    MenuPrincipal.AbrirPrincipal(2, false);	    		  
-		    	  }
-	        	
-	        	
+	        	TableModel model = (TableModel)e.getSource();
+				String data = (String) model.getValueAt(row, column);
+				String pega = (String) model.getValueAt(row, 0);
+				int tipo =0;
+				if(data.equals("Gerente")){
+				       tipo =2;
+				}else{
+				       tipo =1;
+				}
+				String formatacao;
+				Query envia = new Query();
+				formatacao = "UPDATE funcionarios SET level =  " + tipo + " WHERE nome = '"+pega+"' " ;
+				envia.executaUpdate(formatacao);
+				envia.fechaConexao();  		  
 	        }
-	    }		
+	    }	
 }
