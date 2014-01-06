@@ -2,9 +2,12 @@ import java.awt.*;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
 
 import java.awt.event.*;
 import java.io.Serializable;
@@ -19,7 +22,7 @@ import java.util.Vector;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class PainelVenda extends JPanel implements ActionListener, FocusListener
+public class PainelVenda extends JPanel implements ActionListener, FocusListener, TableModelListener
 {
 	private JPanel painelTotal, rapidaPainel, adicionaisPainel, adicionaisPainel1, pedidoPainel, pagamentoPainel;
 	private JLabel labelQuantidade, labelProduto, labelValor, labelCodigo, labelTotal, labelRecebido, labelTroco, labelForma, labelFaltando, labelPagar;
@@ -40,12 +43,14 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 	private static int fiadorIDSalvo;
 	static private int numeroMesa;
 	
+	private int flag1;
 	
 	private Timer timer;
 	private static boolean fiadoConcluido = false;
 	
 	PainelVenda(boolean refresh, int numero)
 	{		
+		flag1 = 0 ;
 		numero  -= 4;
 		numeroMesa = numero;
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -397,6 +402,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 		
 		
 		
+		
 		tabelaPedido.getColumn("Qntd pago").setCellRenderer(centraliza);
 		tabelaPedido.getColumn("Qntd").setCellRenderer(centraliza);
 		tabelaPedido.getColumn("Preço/Uni").setCellRenderer(centraliza);
@@ -525,6 +531,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 		add(painelTotal);
 		add(pedidoPainel);
 		add(pagamentoPainel);	
+		tabelaPedido.getModel().addTableModelListener(this);
 	}
 	
     class AtualizaFocusInicial extends TimerTask {
@@ -538,7 +545,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 
 	static public void updateCampo()
 	{
-		if(addProduto.getSelecionado() == null)
+		if(addProduto.getSelecionado() != null)
 		{
 			String pegaPreco;
 			double aDouble = 0;
@@ -727,7 +734,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 			
 			if(!"".equals(limpeza.trim()))
 			{
-				double pegaTotal = Double.parseDouble(campoTotal.getText().replaceAll(",", "."));
+				double pegaTotal = Double.parseDouble(campoPagar.getText().replaceAll(",", "."));
 				double pegaRecebido = Double.parseDouble(limpeza.replaceAll(",", "."));
 				
 				String resultado = String.format("%.2f", (pegaTotal - pegaRecebido)*-1);
@@ -760,6 +767,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 				
 				if(pega.next())
 				{
+					
 					double precoProduto = Double.parseDouble(pega.getString("preco"));
 					
 					p.setNome(nomeProduto);
@@ -772,7 +780,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 							String nomeAdicional = addAdicional.get(i).getSelecionado();
 							nomeA += nomeAdicional;
 							nomeA += ", ";
-							quantidade++;
+							
 							pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + nomeAdicional + "' AND `tipo` = 2;");
 							
 							if(pega.next())
@@ -793,12 +801,12 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 					for(int i = 0; i < Integer.parseInt(campoQuantidade.getText()) ; i++)
 						vendaRapida.adicionarProduto(p);
 				
-				
+				quantidade= Integer.parseInt(campoQuantidade.getText());
 				String formatacao;
 				Query envia = new Query();
 				formatacao = "INSERT INTO produtosMesa(mesa_id, produto, adicionais, qntd, qntdPago ) VALUES("+ numeroMesa +",'"
 				+ nomeP +
-				"', '" + nomeA + "', "+quantidade+", 0);";
+				"', '"+ nomeA +"', "+quantidade+", 0);";
 				
 				envia.executaUpdate(formatacao);
 				
@@ -1037,5 +1045,67 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 	    		fiadoConcluido = true;
 			}					
 		}
+	public void tableChanged(TableModelEvent e) {
+				if(flag1 == 0){
+					
+			        final int row = e.getFirstRow();
+			        int column = e.getColumn();
+			        if((TableModel)e.getSource() == tabela)
+			        {
+			        	if(column == 4)
+			        	{
+			        		String pega =(String)tabelaPedido.getValueAt(row, column);
+			        		String limpeza = pega.replaceAll("[^0-9f]+","");
+			        		
+			        		if("".equals(limpeza.trim())){
+			        			flag1 =1;
+			        			tabelaPedido.setValueAt(""+0, row, column);
+			        		}else{
+	
+			        			
+			        			int valor = Integer.parseInt(limpeza);
+				        		
+	
+	
+			        			if((valor> ((int)tabelaPedido.getValueAt(row, 2)) - ((int)tabelaPedido.getValueAt(row, 1))) || valor ==0){
+			        				System.out.println("ENTREI2  "+ valor);
+			        				flag1 =1;
+			        				tabelaPedido.setValueAt(""+0, row, column);
+			        			}else{
+			        				System.out.println("ENTREI3  "+ valor);
+			        				flag1 =1;
+			        				tabelaPedido.setValueAt(""+valor, row, column);
+	
+			        			}
+			        			
+			        			
+			        		}
+			        		
+			        
+			        	}
+			        }
+				}else {
+					flag1 =0;
+					this.calcularPagar();
+				}
+		        
+	}
+	
+	private void calcularPagar(){
+		double valor = 0;
+		for(int i = 0 ; i < tabelaPedido.getRowCount(); i++){
+			String pegaPreco = (String) tabela.getValueAt(i, 3);
+	    	pegaPreco = pegaPreco.replace(",", ".");
+	    	double precoP =Double.parseDouble(pegaPreco);
+	    	
+	    	pegaPreco =  tabelaPedido.getValueAt(i, 4).toString();
+	    	
+	    	System.out.println(pegaPreco);
+	    	double qntd =  Double.parseDouble(pegaPreco);
+	    	
+	    	valor += qntd * precoP;
+		}
+		 campoPagar.setText(""+valor);
+	}
 }
 
