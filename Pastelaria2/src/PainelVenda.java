@@ -252,7 +252,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 			
 			if(pega1.next())
 			{
-				double precoProduto = Double.parseDouble(pega1.getString("preco"));
+				double precoProduto = Double.parseDouble(pega1.getString("preco").replaceAll(",", "."));
 				
 				p.setNome(nomeProduto);
 				p.setPreco(precoProduto);
@@ -266,7 +266,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 						
 						if(pega2.next())
 						{
-							double pAdicional = Double.parseDouble(pega2.getString("preco"));
+							double pAdicional = Double.parseDouble(pega2.getString("preco").replaceAll(",", "."));
 							
 							Adicionais adcional = new Adicionais();
 							adcional.nomeAdicional = nome[i];
@@ -344,7 +344,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 			
 			pegaPreco = (String) tabela.getValueAt(i, 3);
 	    	pegaPreco = pegaPreco.replace(",", ".");
-	    	double precoP =Double.parseDouble(pegaPreco);
+	    	double precoP =Double.parseDouble(pegaPreco.replaceAll(",", "."));
 	    	
 	    	
 	    	//pegaValorPago = +qntdPago * precoP;
@@ -558,7 +558,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 			pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + addProduto.getSelecionado() + "';");
 			
 			if(pega.next())
-				aDouble += Double.parseDouble(pega.getString("preco"));
+				aDouble += Double.parseDouble(pega.getString("preco").replaceAll(",", "."));
 			
 			for(int i = 0; i < addAdicional.size() ; i++)
 			{
@@ -567,7 +567,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 					pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + addAdicional.get(i).getSelecionado() + "';");
 					
 					if(pega.next())
-						aDouble += Double.parseDouble(pega.getString("preco"));					
+						aDouble += Double.parseDouble(pega.getString("preco").replaceAll(",", "."));					
 				}
 			}
 			
@@ -666,7 +666,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 					String formata;
 					formata = campoPagar.getText();
 					formata = formata.replaceAll(",",".");	
-					double pTotal = Double.parseDouble(formata);
+					double pTotal = Double.parseDouble(formata.replaceAll(",", "."));
 					formata = campoRecebido.getText();
 					formata = formata.replaceAll(",",".");							
 					double pPago = Double.parseDouble(formata);					
@@ -793,7 +793,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 				if(pega.next())
 				{
 					
-					double precoProduto = Double.parseDouble(pega.getString("preco"));
+					double precoProduto = Double.parseDouble(pega.getString("preco").replaceAll(",", "."));
 					
 					p.setNome(nomeProduto);
 					p.setPreco(precoProduto);
@@ -810,7 +810,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 							
 							if(pega.next())
 							{
-								double pAdicional = Double.parseDouble(pega.getString("preco"));
+								double pAdicional = Double.parseDouble(pega.getString("preco").replaceAll(",", "."));
 								
 								Adicionais adcional = new Adicionais();
 								adcional.nomeAdicional = nomeAdicional;
@@ -931,7 +931,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 			pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + addProduto.getSelecionado() + "';");
 			
 			if(pega.next())
-				aDouble += Double.parseDouble(pega.getString("preco"));
+				aDouble += Double.parseDouble(pega.getString("preco").replaceAll(",", "."));
 			
 			for(int i = 0; i < addAdicional.size() ; i++)
 			{
@@ -940,7 +940,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 					pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + addAdicional.get(i).getSelecionado() + "';");
 					
 					if(pega.next())
-						aDouble += Double.parseDouble(pega.getString("preco"));					
+						aDouble += Double.parseDouble(pega.getString("preco").replaceAll(",", "."));					
 				}
 			}
 			
@@ -1138,12 +1138,12 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 		for(int i = 0 ; i < tabelaPedido.getRowCount(); i++){
 			String pegaPreco = (String) tabela.getValueAt(i, 3);
 	    	pegaPreco = pegaPreco.replace(",", ".");
-	    	double precoP =Double.parseDouble(pegaPreco);
+	    	double precoP =Double.parseDouble(pegaPreco.replaceAll(",", "."));
 	    	
 	    	pegaPreco =  tabelaPedido.getValueAt(i, 4).toString();
 	    	
 	    	System.out.println(pegaPreco);
-	    	double qntd =  Double.parseDouble(pegaPreco);
+	    	double qntd =  Double.parseDouble(pegaPreco.replaceAll(",", "."));
 	    	
 	    	valor += qntd * precoP;
 		}
