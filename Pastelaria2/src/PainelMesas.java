@@ -42,6 +42,18 @@ public class PainelMesas extends JPanel implements MouseListener
 			mesas[i].setVerticalTextPosition(AbstractButton.BOTTOM);
 			mesas[i].addMouseListener(this);
 
+			Query pega = new Query();
+			pega.executaQuery("SELECT * FROM produtosMesa WHERE mesa_id = "+ (i+1) +";");
+			System.out.print(""+(i+1)+"==");
+			if(pega.next()){
+				//MESA SENDO USADA
+				System.out.print("USADA");
+			}else{
+				//MESA FECHADA
+				System.out.print("LIVRE");
+			}
+			
+			
 			gbc.gridx = colunas;
 			gbc.gridy = linhas;
 			gbc.insets = new Insets(10,10,0,0);  //top padding
