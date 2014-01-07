@@ -274,6 +274,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 							
 							p.adicionrAdc(adcional);
 						}
+						pega2.fechaConexao();
 					}
 				}
 				if(qntd > 0)
@@ -281,9 +282,11 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 						vendaRapida.adicionarProduto(p);
 				
 				
+				
 			}	
+			pega1.fechaConexao();
 		}
-		
+		pega.fechaConexao();
 		vendaRapida.calculaTotal();
 		String pegaPreco;
 		pegaPreco = String.format("%.2f", vendaRapida.getTotal());		    	
@@ -532,6 +535,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 		add(pedidoPainel);
 		add(pagamentoPainel);	
 		tabelaPedido.getModel().addTableModelListener(this);
+		this.terminar();
 	}
 	
     class AtualizaFocusInicial extends TimerTask {
@@ -603,7 +607,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 					String formatacao;
 					Query envia = new Query();
 					formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id) VALUES('"
-					+ campoTotal.getText() +
+					+ campoPagar.getText() +
 					"', '" + MenuLogin.logado +
 					"', " + c.get(Calendar.YEAR) + ", "
 					+ c.get(Calendar.MONTH) + ", "
@@ -621,24 +625,36 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 						venda_id = pega.getInt("vendas_id");
 						String pegaPreco = "";
 						
-						for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
+						
+						for(int i=0; i<tabelaPedido.getRowCount(); i++)
 						{
-							pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade()));
-							pegaPreco.replaceAll(",", ".");						
-							
-							formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto) VALUES('"
-									+ venda_id +
-									"', '" + vendaRapida.getProduto(i).getNome() +
-									"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + vendaRapida.getProduto(i).getQuantidade() + "');";
-									
-									envia.executaUpdate(formatacao);						
+							int qntd = Integer.parseInt(tabelaPedido.getValueAt(i, 4).toString());
+							if((qntd)>0)
+							{
+								pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * qntd));
+								pegaPreco.replaceAll(",", ".");						
+								
+								formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto) VALUES('"
+										+ venda_id +
+										"', '" + vendaRapida.getProduto(i).getNome() +
+										"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + qntd + "');";
+										
+										envia.executaUpdate(formatacao);
+										
+								int pago = ((int)tabelaPedido.getValueAt(i, 1))+ qntd;
+								Query ajusta = new Query();
+								formatacao = "UPDATE produtosMesa SET qntdPago = " + pago + " WHERE produto = '"+vendaRapida.getProduto(i).getNome()+"' AND adicionais ='"+vendaRapida.getProduto(i).getAllAdicionais()+"' ;";
+								ajusta.executaUpdate(formatacao);
+								ajusta.fechaConexao();
+							}
 						}
+						
 					}
-					Query exclui = new Query();
-					exclui.executaUpdate("DELETE FROM produtosMesa WHERE mesa_id = " + numeroMesa + ";");
 					
 					
+					pega.fechaConexao();
 					envia.fechaConexao();
+					this.terminar();
 					JOptionPane.showMessageDialog(null, "A venda foi computada com sucesso!", "Venda #" + venda_id, JOptionPane.INFORMATION_MESSAGE);
 					MenuPrincipal.AbrirPrincipal(numeroMesa+4, true);	
 				}
@@ -648,7 +664,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 				if(fiadoConcluido)
 				{
 					String formata;
-					formata = campoTotal.getText();
+					formata = campoPagar.getText();
 					formata = formata.replaceAll(",",".");	
 					double pTotal = Double.parseDouble(formata);
 					formata = campoRecebido.getText();
@@ -658,7 +674,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 					String divida;
 					divida = String.format("%.2f", totalFiado);
 					
-					String confirmacao = "Valor Total: " + campoTotal.getText() + "\n" + 
+					String confirmacao = "Valor Total: " + campoPagar.getText() + "\n" + 
 					"Valor Pago: " + campoRecebido.getText() + 
 					"\n\nForma de Pagamento: " + campoForma.getSelectedItem() + "\n\n" +
 					"Ser� adicionado a d�vida de R$" + divida + " na conta de " + labelFiado2.getText() + ".\n" + "\nConfirmar ?";
@@ -678,7 +694,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 						String formatacao;
 						Query envia = new Query();
 						formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id) VALUES('"
-						+ campoTotal.getText() +
+						+ campoPagar.getText() +
 						"', '" + MenuLogin.logado +
 						"', " + c.get(Calendar.YEAR) + ", "
 						+ c.get(Calendar.MONTH) + ", "
@@ -697,23 +713,32 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 							venda_id = pega.getInt("vendas_id");
 							String pegaPreco = "";
 							
-							for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
+							for(int i=0; i<tabelaPedido.getRowCount(); i++)
 							{
-								pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade()));
-								pegaPreco.replaceAll(",", ".");						
-								
-								formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto) VALUES('"
-										+ venda_id +
-										"', '" + vendaRapida.getProduto(i).getNome() +
-										"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + vendaRapida.getProduto(i).getQuantidade() + "');";
-										
-										envia.executaUpdate(formatacao);						
+								int qntd = Integer.parseInt(tabelaPedido.getValueAt(i, 4).toString());
+								if((qntd)>0)
+								{
+									pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * qntd));
+									pegaPreco.replaceAll(",", ".");						
+									
+									formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto) VALUES('"
+											+ venda_id +
+											"', '" + vendaRapida.getProduto(i).getNome() +
+											"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + qntd + "');";
+											
+											envia.executaUpdate(formatacao);
+											
+									int pago = ((int)tabelaPedido.getValueAt(i, 1))+ qntd;
+									Query ajusta = new Query();
+									formatacao = "UPDATE produtosMesa SET qntdPago = " + pago + " WHERE produto = '"+vendaRapida.getProduto(i).getNome()+"' AND adicionais ='"+vendaRapida.getProduto(i).getAllAdicionais()+"' ;";
+									ajusta.executaUpdate(formatacao);
+									ajusta.fechaConexao();
+								}
 							}
 						}
 						
-						Query exclui = new Query();
-						exclui.executaUpdate("DELETE FROM produtosMesa WHERE mesa_id = " + numeroMesa + ";");
 						
+						pega.fechaConexao();
 						envia.fechaConexao();
 						JOptionPane.showMessageDialog(null, "A venda foi computada com sucesso!", "Venda #" + venda_id, JOptionPane.INFORMATION_MESSAGE);
 						MenuPrincipal.AbrirPrincipal(numeroMesa+4, true);
@@ -796,19 +821,35 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 						}
 					}
 				}
-				
+				pega.fechaConexao();
 				if(Integer.parseInt(campoQuantidade.getText()) > 0)
 					for(int i = 0; i < Integer.parseInt(campoQuantidade.getText()) ; i++)
 						vendaRapida.adicionarProduto(p);
+				Query teste = new Query();
+				teste.executaQuery("SELECT * FROM produtosMesa WHERE mesa_id = "+ numeroMesa +" AND produto = '"+nomeP+"' AND adicionais = '"+ nomeA +"'  ; ");
+				if(teste.next()){
 				
-				quantidade= Integer.parseInt(campoQuantidade.getText());
-				String formatacao;
-				Query envia = new Query();
-				formatacao = "INSERT INTO produtosMesa(mesa_id, produto, adicionais, qntd, qntdPago ) VALUES("+ numeroMesa +",'"
-				+ nomeP +
-				"', '"+ nomeA +"', "+quantidade+", 0);";
+					
+
+					int qntd = teste.getInt("qntd");
+					qntd += Integer.parseInt(campoQuantidade.getText());
+					
+					teste.executaUpdate("UPDATE produtosMesa SET qntd = " + qntd + " WHERE produto = '"+nomeP+"' AND adicionais = '"+ nomeA+"' AND mesa_id  = "+numeroMesa+";");
+					
+				}else{
+					quantidade= Integer.parseInt(campoQuantidade.getText());
+					String formatacao;
+					Query envia = new Query();
+					formatacao = "INSERT INTO produtosMesa(mesa_id, produto, adicionais, qntd, qntdPago ) VALUES("+ numeroMesa +",'"
+					+ nomeP +
+					"', '"+ nomeA +"', "+quantidade+", 0);";
+					
+					envia.executaUpdate(formatacao);
+					envia.fechaConexao();
+				}
 				
-				envia.executaUpdate(formatacao);
+				teste.fechaConexao();
+				
 				
 				vendaRapida.calculaTotal();
 				String pegaPreco;
@@ -905,7 +946,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 			
 			pegaPreco = String.format("%.2f", aDouble);
 			pegaPreco.replaceAll(",", ".");			
-			
+			pega.fechaConexao();
 			campoValor.setText(pegaPreco);
 			MenuPrincipal.AbrirPrincipal(numeroMesa+4, false);
 		}
@@ -982,6 +1023,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 		    	  String formatacao = "DELETE  FROM produtosMesa WHERE mesa_id = "+ numeroMesa +" AND produto ='"+ nome +"' AND adicionais='"+adicionais+"'; ";
 		    	  pega.executaUpdate(formatacao);
 		    	  
+		    	  pega.fechaConexao();
 		    	  
 		    	  MenuPrincipal.AbrirPrincipal(numeroMesa+4, true);
 		       }
@@ -1016,7 +1058,7 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 				
 				if(!"".equals(limpeza.trim()))
 				{
-					double pegaTotal = Double.parseDouble(campoTotal.getText().replaceAll(",", "."));
+					double pegaTotal = Double.parseDouble(campoPagar.getText().replaceAll(",", "."));
 					double pegaRecebido = Double.parseDouble(limpeza.replaceAll(",", "."));
 					
 					String resultado = String.format("%.2f", (pegaTotal - pegaRecebido)*-1);
@@ -1106,6 +1148,29 @@ public class PainelVenda extends JPanel implements ActionListener, FocusListener
 	    	valor += qntd * precoP;
 		}
 		 campoPagar.setText(""+valor);
+	}
+	
+	private void terminar(){
+		int flag = 1;
+		for(int i =0; i< tabelaPedido.getRowCount(); i++)
+		{
+			
+			int v1 = Integer.parseInt(tabelaPedido.getValueAt(i, 1).toString());
+			int v2 = Integer.parseInt(tabelaPedido.getValueAt(i, 2).toString());
+			
+			flag =0;
+			if(v1!=v2){
+				flag =1;
+				break;
+			}
+		}
+		if(flag == 0){
+			Query apaga = new Query();
+			apaga.executaUpdate("DELETE from produtosMesa WHERE  mesa_id ="+numeroMesa+";");
+			apaga.fechaConexao();
+			MenuPrincipal.AbrirPrincipal(numeroMesa + 4, true);
+			
+		}
 	}
 }
 
