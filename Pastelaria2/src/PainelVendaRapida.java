@@ -7,8 +7,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import java.awt.event.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Serializable;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -24,7 +27,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	private JLabel labelQuantidade, labelProduto, labelValor, labelCodigo, labelTotal, labelRecebido, labelTroco, labelForma;
 	private static JLabel labelFiado1;
 	private static JLabel labelFiado2;
-	private JButton adicionarADC, adicionarProduto, calcular;
+	private JButton adicionarADC, adicionarProduto, calcular, recibo;
 	private static JButton finalizarVenda;
 	private DefaultTableModel tabela;
 	private JComboBox campoForma;
@@ -40,6 +43,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	
 	private Timer timer;
 	private static boolean fiadoConcluido = false;
+	static ImageIcon iconeFinalizar;
 	
 	PainelVendaRapida(boolean refresh)
 	{		
@@ -49,9 +53,9 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		
 		painelTotal = new JPanel();
 		painelTotal.setLayout(new BoxLayout(painelTotal, BoxLayout.X_AXIS));
-		painelTotal.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Venda RÃ¡pida"));
-		painelTotal.setMinimumSize(new Dimension(800, 150));		// Horizontal , Vertical
-		painelTotal.setMaximumSize(new Dimension(800, 150));		
+		painelTotal.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Venda Rápida"));
+		painelTotal.setMinimumSize(new Dimension(800, 180));		// Horizontal , Vertical
+		painelTotal.setMaximumSize(new Dimension(800, 180));		
 		
 		rapidaPainel = new JPanel();
 		rapidaPainel.setLayout(new GridBagLayout());
@@ -65,6 +69,8 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		
+		iconeFinalizar = new ImageIcon(getClass().getResource("imgs/finalizar.png"));
+		
 		if(refresh)
 		{
 			labelFiado1 = new JLabel("");
@@ -72,6 +78,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			
 			campoValor = new JTextField(5);
 			campoQuantidade = new JTextField("1", 2);
+			campoQuantidade.setHorizontalAlignment(SwingConstants.CENTER);
 			addProduto = new VendaRapidaProdutoCampo();
 			campoValor = new JTextField(5);
 			
@@ -86,11 +93,11 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		}
 		
 		labelProduto = new JLabel("Produto:");
-		labelValor = new JLabel("PreÃ§o:");
+		labelValor = new JLabel("Preço");
 		campoValor.setEditable(false);
 		
 		adicionarADC = new JButton("");
-		ImageIcon iconeADC = new ImageIcon("imgs/plus1.png");
+		ImageIcon iconeADC = new ImageIcon(getClass().getResource("imgs/plus1.png"));
 		adicionarADC.setIcon(iconeADC);
 		adicionarADC.setPreferredSize(new Dimension(25, 22));
 		adicionarADC.setBorder(BorderFactory.createEmptyBorder());
@@ -135,7 +142,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		rapidaPainel.add(adicionarADC, gbc);
 		
 		adicionarProduto = new JButton("Adicionar");
-		ImageIcon iconePlus = new ImageIcon("imgs/plus2.png");
+		ImageIcon iconePlus = new ImageIcon(getClass().getResource("imgs/plus2.png"));
 		adicionarProduto.setIcon(iconePlus);
 		adicionarProduto.setPreferredSize(new Dimension(60, 40));
 		adicionarProduto.addActionListener(this);
@@ -212,7 +219,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		
 		tabela.addColumn("Nome");
 		tabela.addColumn("Qntd");
-		tabela.addColumn("PreÃ§o");
+		tabela.addColumn("Preço");
 		tabela.addColumn("Adicionais");
 		tabela.addColumn("Deletar");
 		
@@ -249,7 +256,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		}
 		
 		tabelaPedido = new JTable() {
-		    Color alternate = new Color(141, 182, 205);
+			Color alternate = new Color(206, 220, 249);
 		    
 		    @Override
 		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -284,7 +291,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		DefaultTableCellRenderer centraliza = new DefaultTableCellRenderer();
 		centraliza.setHorizontalAlignment( JLabel.CENTER );//
 		
-		tabelaPedido.getColumn("PreÃ§o").setCellRenderer(centraliza);
+		tabelaPedido.getColumn("Preço").setCellRenderer(centraliza);
 		tabelaPedido.getColumn("Qntd").setCellRenderer(centraliza);
 		tabelaPedido.getColumn("Deletar").setCellRenderer(centraliza);
 		tabelaPedido.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
@@ -295,22 +302,36 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		JScrollPane scrolltabela = new JScrollPane(tabelaPedido);
 		pedidoPainel.add(scrolltabela);
 		
-		pagamentoPainel = new JPanel();
+		pagamentoPainel = new JPanel(){
+			@Override
+		    public void paintComponent(Graphics g) {
+		        super.paintComponent(g);
+		        Graphics2D g2d = (Graphics2D) g;
+		        Color color1 = getBackground();
+		        Color color2 = new Color(167, 227, 153);
+		        int w = getWidth();
+		        int h = getHeight();
+		        GradientPaint gp = new GradientPaint(
+		            0, 0, color1, 0, h, color2);
+		        g2d.setPaint(gp);
+		        g2d.fillRect(0, 0, w, h);
+		    }
+		};
 		pagamentoPainel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Pagamento"));
 		
 		pagamentoPainel.setLayout(new GridBagLayout());
-		pagamentoPainel.setMinimumSize(new Dimension(800, 260));
-		pagamentoPainel.setMaximumSize(new Dimension(800, 260));
+		pagamentoPainel.setMinimumSize(new Dimension(800, 270));
+		pagamentoPainel.setMaximumSize(new Dimension(800, 270));
 		
 		labelTotal = new JLabel("Total:");
 		campoTotal.setEditable(false);
 		
 		labelRecebido = new JLabel("Recebido:");
-		campoRecebido = new JTextField("0,00", 4);
+		campoRecebido = new JTextField("", 4);
 		campoRecebido.setEditable(true);
 		campoRecebido.addFocusListener(this);
 	
-        ImageIcon iconeCalcular = new ImageIcon("imgs/calcular.png");
+        ImageIcon iconeCalcular = new ImageIcon(getClass().getResource("imgs/calcular.png"));
         calcular = new JButton(iconeCalcular);
         calcular.addActionListener(this);
         calcular.setBorder(BorderFactory.createEmptyBorder());
@@ -322,7 +343,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		
 		labelForma = new JLabel("Forma de Pagamento:");
 		
-		String[] tiposPagamento = {"Dinheiro", "Ticket RefeiÃ§Ã£o", "CartÃ£o de CrÃ©dito", "Fiado" };
+		String[] tiposPagamento = {"Dinheiro", "Ticket Refeição", "Cartão de Crédito", "Fiado" };
 		campoForma = new JComboBox(tiposPagamento);
 		campoForma.setSelectedIndex(0);
 		campoForma.setPreferredSize(new Dimension(150, 30));
@@ -330,9 +351,18 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		
 		finalizarVenda = new JButton("Concluir Venda");
 		finalizarVenda.setPreferredSize(new Dimension(100, 35));
-		ImageIcon iconeFinalizar = new ImageIcon("imgs/finalizar.png");
+		ImageIcon iconeFinalizar = new ImageIcon(getClass().getResource("imgs/finalizar.png"));
 		finalizarVenda.setIcon(iconeFinalizar);	
 		finalizarVenda.addActionListener(this);
+		
+		recibo = new JButton("Recibo");
+		recibo.setPreferredSize(new Dimension(170, 80));
+		recibo.setFont(new Font("Helvetica", Font.BOLD, 14));
+		ImageIcon iconeRecibo = new ImageIcon(getClass().getResource("imgs/recibo.png"));
+		recibo.setHorizontalTextPosition(AbstractButton.CENTER);
+		recibo.setVerticalTextPosition(AbstractButton.BOTTOM);		
+		recibo.setIcon(iconeRecibo);	
+		recibo.addActionListener(this);
 		
 		gbc.insets = new Insets(5,5,5,5);  //top padding
 		
@@ -360,7 +390,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		gbc.gridx = 2;	// colunas
 		pagamentoPainel.add(campoTroco, gbc);
 		
-		gbc.insets = new Insets(0,50,0,15);  //top padding
+		gbc.insets = new Insets(0,30,0,15);  //top padding
 		
 		gbc.gridx = 4;	// colunas
 		gbc.gridy = 1;	// linhas			
@@ -384,12 +414,112 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		gbc.gridy = 3;	// linhas			
 		pagamentoPainel.add(finalizarVenda, gbc);
 		
+		gbc.insets = new Insets(0,50,0,15);  //top padding
+		gbc.gridheight = 3;
+		gbc.gridwidth = 2;
+		gbc.gridy = 1;	// linhas			
+		gbc.gridx = 6;	// colunas
+		pagamentoPainel.add(recibo, gbc);		
+		
 		fiadorIDSalvo = 0;
 		
 		add(painelTotal);
 		add(pedidoPainel);
-		add(pagamentoPainel);	
+		add(pagamentoPainel);
+		
+		//MenuPrincipal.setarEnter(adicionarProduto);
+		
+		ActionMap actionMap = getActionMap();
+		actionMap.put("botao1", new AtalhoAction(0));
+		actionMap.put("botao2", new AtalhoAction(1));
+		actionMap.put("botao3", new AtalhoAction(2));
+		setActionMap(actionMap);
+		
+		InputMap imap = getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
+		imap.put(KeyStroke.getKeyStroke("TAB"), "botao1");
+		imap.put(KeyStroke.getKeyStroke("PLUS"), "botao2");
+		imap.put(KeyStroke.getKeyStroke("MINUS"), "botao3");
 	}
+	
+	private class AtalhoAction extends AbstractAction {
+		
+		private int tipo = 0;
+		
+		public AtalhoAction() {
+	        super();
+	    }
+		
+		public AtalhoAction(int tipo) {
+	        this.tipo = tipo;
+	    }		
+		
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+        	switch(this.tipo)
+        	{
+        		case 0:	// tab
+        		{
+        			System.out.println("passou aqui 0");
+        			campoQuantidade.requestFocus();
+        			break;
+        		}
+        		case 1: // plus
+        		{
+        			System.out.println("passou aqui 1");
+        			JButton botao = new JButton();
+        			ImageIcon iconeRemove = new ImageIcon(getClass().getResource("imgs/remove.png"));
+        			botao.setIcon(iconeRemove);
+        			botao.setBorder(BorderFactory.createEmptyBorder());
+        			botao.setContentAreaFilled(false);
+        			botao.addActionListener(this);
+        			
+        			addAdicional.add(new VendaRapidaAdicionaisCampo());
+        			addRemover.add(botao);
+        			MenuPrincipal.AbrirPrincipal(0, false);
+        			addAdicional.get(addAdicional.size()-1).setFocus();
+        			break;
+        		}
+        		case 2: // minus
+        		{
+        			System.out.println("passou aqui 2");
+        			if(addRemover.size() > 0)
+        			{        				
+						addAdicional.remove((addRemover.size()-1));
+						addRemover.remove((addRemover.size()-1));
+        				
+        				String pegaPreco;
+        				double aDouble = 0;
+        				
+        				Query pega = new Query();
+        				pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + addProduto.getSelecionado() + "';");
+        				
+        				if(pega.next())
+        					aDouble += Double.parseDouble(pega.getString("preco").replaceAll(",", "."));
+        				
+        				for(int i = 0; i < addAdicional.size() ; i++)
+        				{
+        					if(addAdicional.get(i).getSelecionado() != null)
+        					{
+        						pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + addAdicional.get(i).getSelecionado() + "';");
+        						
+        						if(pega.next())
+        							aDouble += Double.parseDouble(pega.getString("preco").replaceAll(",", "."));				
+        					}
+        				}
+        				
+        				pegaPreco = String.format("%.2f", aDouble);
+        				pegaPreco.replaceAll(",", ".");			
+        				
+        				campoValor.setText(pegaPreco);
+        				MenuPrincipal.AbrirPrincipal(0, false);        				
+        			}        			
+        			break;
+        		}        		
+        		default:
+        	}
+        }
+    }		
 	
     class AtualizaFocusInicial extends TimerTask {
 
@@ -431,6 +561,105 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			pega.fechaConexao();
 		}
 	}
+	
+	private boolean criarRecibo()
+	{
+	      try{
+	          File arquivo = new File("codecoffe/recibo.txt");
+	            
+              FileWriter arquivoTxt = new FileWriter(arquivo, false);
+              PrintWriter linhasTxt = new PrintWriter(arquivoTxt);
+              
+              String pegaPreco = "";
+              
+              Query pega = new Query();
+              pega.executaQuery("SELECT restaurante FROM opcoes");
+              
+              if(pega.next())
+              {
+	                linhasTxt.println("===========================================");
+	                linhasTxt.println(String.format("              %s              ", pega.getString("restaurante")));
+	                linhasTxt.println("===========================================");
+	                linhasTxt.println("*********** NAO TEM VALOR FISCAL **********");
+	                linhasTxt.println("===========================================");		                	
+              }
+              
+              pega.fechaConexao();
+              
+              linhasTxt.println("PRODUTO              QTDE  VALOR UN.  VALOR");
+              
+				for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
+				{
+					linhasTxt.print(String.format("%-20.20s", vendaRapida.getProduto(i).getNome()));
+					linhasTxt.print(String.format("%3s     ", vendaRapida.getProduto(i).getQuantidade()));
+											
+					pegaPreco = String.format("%.2f", vendaRapida.getProduto(i).getPreco());
+					pegaPreco.replaceAll(",", ".");							
+					
+					linhasTxt.print(String.format("%5s    ", pegaPreco));
+					
+					pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getPreco()*vendaRapida.getProduto(i).getQuantidade()));
+					pegaPreco.replaceAll(",", ".");							
+					
+					linhasTxt.print(String.format("%6s    ", pegaPreco));
+					linhasTxt.println();
+					
+					for(int j = 0; j < vendaRapida.getProduto(i).getTotalAdicionais(); j++)
+					{
+						linhasTxt.print(String.format("%-20.20s", "+" + vendaRapida.getProduto(i).getAdicional(j).nomeAdicional));
+						linhasTxt.print(String.format("%3s     ", vendaRapida.getProduto(i).getQuantidade()));
+						
+						pegaPreco = String.format("%.2f", vendaRapida.getProduto(i).getAdicional(j).precoAdicional);
+						pegaPreco.replaceAll(",", ".");							
+						
+						linhasTxt.print(String.format("%5s    ", pegaPreco));
+						
+						pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getAdicional(j).precoAdicional*vendaRapida.getProduto(i).getQuantidade()));
+						pegaPreco.replaceAll(",", ".");							
+						
+						linhasTxt.print(String.format("%6s    ", pegaPreco));
+						linhasTxt.println();
+					}
+				}            
+              
+              linhasTxt.println("===========================================");
+              linhasTxt.println("   INFORMACOES PARA FECHAMENTO DE CONTA    ");
+              linhasTxt.println("===========================================");
+              
+              linhasTxt.print(String.format("%-18.18s", "Atendido por: "));
+              linhasTxt.println(PainelStatus.pegaNome());
+              
+				Calendar c = Calendar.getInstance();
+				Locale locale = new Locale("pt","BR"); 
+				GregorianCalendar calendar = new GregorianCalendar(); 
+				SimpleDateFormat formatador = new SimpleDateFormat("EEE, dd'/'MM'/'yyyy' - 'HH':'mm", locale);		                
+              
+              linhasTxt.print(String.format("%-18.18s", "Data: "));
+              linhasTxt.println(formatador.format(calendar.getTime()));
+	            
+              linhasTxt.println("===========================================");
+              linhasTxt.println("                     ----------------------");
+              linhasTxt.println("Total                            R$" + campoTotal.getText());
+              linhasTxt.println("===========================================");
+              linhasTxt.println("       OBRIGADO E VOLTE SEMPRE!	          ");
+              linhasTxt.println("       POWERED BY CodeCoffe V1.0    		  ");
+              
+              int i = 0;
+              while(i < 10){
+                  i++;
+                  linhasTxt.println();
+              }
+              
+              arquivoTxt.close();
+              linhasTxt.close();
+              return true;
+	      }
+	      catch(IOException error)
+	      {
+	          System.out.println("Erro: " + error.getMessage());
+	          return false;
+	      }			
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -438,149 +667,197 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		
 		if(e.getSource() == finalizarVenda)
 		{
-			if(campoForma.getSelectedItem() != "Fiado")
+			if(vendaRapida.getQuantidadeProdutos() > 0)
 			{
-				String confirmacao = "Valor Total: " + campoTotal.getText() + "\n" + 
-				"Valor Pago: " + campoRecebido.getText() + "\n(Troco: " + campoTroco.getText() + ")\n\n" + 
-				"Forma de Pagamento: " + campoForma.getSelectedItem() + "\n\n" +
-				"Confirmar ?";
-				
-				int opcao = JOptionPane.showConfirmDialog(null, confirmacao, "Confirmar Venda", JOptionPane.YES_NO_OPTION);
-				int venda_id = 0;				
-				
-				if(opcao == JOptionPane.YES_OPTION)
+				if("".equals(campoRecebido.getText().trim()) && campoForma.getSelectedItem() != "Fiado")
 				{
-					Calendar c = Calendar.getInstance();
-					Locale locale = new Locale("pt","BR"); 
-					GregorianCalendar calendar = new GregorianCalendar(); 
-					SimpleDateFormat formatador = new SimpleDateFormat("dd'/'MM'/'yyyy' - 'HH':'mm",locale);
-					
-					if(Double.parseDouble(campoRecebido.getText().replaceAll(",",".")) > Double.parseDouble(campoTotal.getText().replaceAll(",",".")))
-						campoRecebido.setText(campoTotal.getText());					
-					
-					c.get(Calendar.DAY_OF_WEEK);
-					
-					String formatacao;
-					Query envia = new Query();
-					formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id, data) VALUES('"
-					+ campoTotal.getText() +
-					"', '" + MenuLogin.logado +
-					"', " + c.get(Calendar.YEAR) + ", "
-					+ c.get(Calendar.MONTH) + ", "
-					+ c.get(Calendar.DAY_OF_MONTH) + ", "
-					+ c.get(Calendar.DAY_OF_WEEK) +
-					", '" + formatador.format(calendar.getTime()) + "', '" + campoForma.getSelectedItem() + "', '" + campoRecebido.getText() + "', '" + campoTroco.getText()
-					+ "', 0, CURDATE());";
-					envia.executaUpdate(formatacao);
-					
-					Query pega = new Query();
-					pega.executaQuery("SELECT vendas_id FROM vendas ORDER BY vendas_id DESC limit 0, 1");
-					
-					if(pega.next())
-					{
-						venda_id = pega.getInt("vendas_id");
-						String pegaPreco = "";
-						
-						for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
-						{
-							pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade()));
-							pegaPreco.replaceAll(",", ".");						
-							
-							formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto, dia, mes, ano) VALUES('"
-									+ venda_id +
-									"', '" + vendaRapida.getProduto(i).getNome() +
-									"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + vendaRapida.getProduto(i).getQuantidade() + 
-									"', " + c.get(Calendar.DAY_OF_MONTH) + ", " + c.get(Calendar.MONTH) + ", " + c.get(Calendar.YEAR) + ");";
-									envia.executaUpdate(formatacao);						
-						}
-					}
-					
-					envia.fechaConexao();
-					JOptionPane.showMessageDialog(null, "A venda foi computada com sucesso!", "Venda #" + venda_id, JOptionPane.INFORMATION_MESSAGE);
-					MenuPrincipal.AbrirPrincipal(0, true);	
-				}
-			}
-			else
-			{
-				if(fiadoConcluido)
-				{
-					String formata;
-					formata = campoTotal.getText();
-					formata = formata.replaceAll(",",".");	
-					double pTotal = Double.parseDouble(formata);
-					formata = campoRecebido.getText();
-					formata = formata.replaceAll(",",".");							
-					double pPago = Double.parseDouble(formata);					
-					double totalFiado = (pTotal - pPago);
-					String divida;
-					divida = String.format("%.2f", totalFiado);
-					
-					String confirmacao = "Valor Total: " + campoTotal.getText() + "\n" + 
-					"Valor Pago: " + campoRecebido.getText() + 
-					"\n\nForma de Pagamento: " + campoForma.getSelectedItem() + "\n\n" +
-					"Será adicionado a dívida de R$" + divida + " na conta de " + labelFiado2.getText() + ".\n" + "\nConfirmar ?";
-					
-					int opcao = JOptionPane.showConfirmDialog(null, confirmacao, "Confirmar Venda", JOptionPane.YES_NO_OPTION);
-					int venda_id = 0;
-					
-					if(opcao == JOptionPane.YES_OPTION)
-					{
-						Calendar c = Calendar.getInstance();
-						Locale locale = new Locale("pt","BR"); 
-						GregorianCalendar calendar = new GregorianCalendar(); 
-						SimpleDateFormat formatador = new SimpleDateFormat("dd'/'MM'/'yyyy' - 'HH':'mm",locale);
-						
-						if(Double.parseDouble(campoRecebido.getText().replaceAll(",",".")) > Double.parseDouble(campoTotal.getText().replaceAll(",",".")))
-							campoRecebido.setText(campoTotal.getText());
-						
-						c.get(Calendar.DAY_OF_WEEK);
-						
-						String formatacao;
-						Query envia = new Query();
-						formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id, data) VALUES('"
-						+ campoTotal.getText() +
-						"', '" + MenuLogin.logado +
-						"', " + c.get(Calendar.YEAR) + ", "
-						+ c.get(Calendar.MONTH) + ", "
-						+ c.get(Calendar.DAY_OF_MONTH) + ", "
-						+ c.get(Calendar.DAY_OF_WEEK) +
-						", '" + formatador.format(calendar.getTime()) + "', '" + campoForma.getSelectedItem() + "', '" + campoRecebido.getText() + "', '" + campoTroco.getText() + 
-						"', " + fiadorIDSalvo + ", CURDATE());";
-						envia.executaUpdate(formatacao);
-						
-						Query pega = new Query();
-						pega.executaQuery("SELECT vendas_id FROM vendas ORDER BY vendas_id DESC");
-						
-						if(pega.next())
-						{
-							venda_id = pega.getInt("vendas_id");
-							String pegaPreco = "";
-							
-							for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
-							{
-								pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade()));
-								pegaPreco.replaceAll(",", ".");						
-								
-								formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto, dia, mes, ano) VALUES('"
-										+ venda_id +
-										"', '" + vendaRapida.getProduto(i).getNome() +
-										"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + vendaRapida.getProduto(i).getQuantidade() +
-										"', " + c.get(Calendar.DAY_OF_MONTH) + ", " + c.get(Calendar.MONTH) + ", " + c.get(Calendar.YEAR) + ");";
-										envia.executaUpdate(formatacao);						
-							}
-						}
-						
-						envia.fechaConexao();
-						JOptionPane.showMessageDialog(null, "A venda foi computada com sucesso!", "Venda #" + venda_id, JOptionPane.INFORMATION_MESSAGE);
-						MenuPrincipal.AbrirPrincipal(0, true);
-					}					
+					JOptionPane.showMessageDialog(null, "É necessário preencher o campo recebido caso a venda não seja fiada!", "Erro", JOptionPane.INFORMATION_MESSAGE);
 				}
 				else
 				{
-					CadastrarFiado f = new CadastrarFiado();
-					f.setCallBack(1);
-					f.setVisible(true);					
+					if(campoForma.getSelectedItem() != "Fiado")
+					{
+						if(Double.parseDouble(campoRecebido.getText().replaceAll(",",".")) < Double.parseDouble(campoTotal.getText().replaceAll(",",".")))
+							campoRecebido.setText(campoTotal.getText());
+						
+						String confirmacao = "Valor Total: " + campoTotal.getText() + "\n" + 
+						"Valor Pago: " + campoRecebido.getText() + "\n(Troco: " + campoTroco.getText() + ")\n\n" + 
+						"Forma de Pagamento: " + campoForma.getSelectedItem() + "\n\n" +
+						"Confirmar ?";
+						
+						int opcao = JOptionPane.showConfirmDialog(null, confirmacao, "Confirmar Venda", JOptionPane.YES_NO_OPTION);
+						int venda_id = 0;				
+						
+						if(opcao == JOptionPane.YES_OPTION)
+						{
+							Calendar c = Calendar.getInstance();
+							Locale locale = new Locale("pt","BR"); 
+							GregorianCalendar calendar = new GregorianCalendar(); 
+							SimpleDateFormat formatador = new SimpleDateFormat("dd'/'MM'/'yyyy' - 'HH':'mm",locale);				
+							
+							c.get(Calendar.DAY_OF_WEEK);
+							
+							String formatacao;
+							Query envia = new Query();
+							formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id, data) VALUES('"
+							+ campoTotal.getText() +
+							"', '" + MenuLogin.logado +
+							"', " + c.get(Calendar.YEAR) + ", "
+							+ c.get(Calendar.MONTH) + ", "
+							+ c.get(Calendar.DAY_OF_MONTH) + ", "
+							+ c.get(Calendar.DAY_OF_WEEK) +
+							", '" + formatador.format(calendar.getTime()) + "', '" + campoForma.getSelectedItem() + "', '" + campoRecebido.getText() + "', '" + campoTroco.getText()
+							+ "', 0, CURDATE());";
+							envia.executaUpdate(formatacao);
+							
+							Query pega = new Query();
+							pega.executaQuery("SELECT vendas_id FROM vendas ORDER BY vendas_id DESC limit 0, 1");
+							
+							if(pega.next())
+							{
+								venda_id = pega.getInt("vendas_id");
+								String pegaPreco = "";
+								
+								for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
+								{
+									pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade()));
+									pegaPreco.replaceAll(",", ".");						
+									
+									formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto, dia, mes, ano, data) VALUES('"
+											+ venda_id +
+											"', '" + vendaRapida.getProduto(i).getNome() +
+											"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + vendaRapida.getProduto(i).getQuantidade() + 
+											"', " + c.get(Calendar.DAY_OF_MONTH) + ", " + c.get(Calendar.MONTH) + ", " + c.get(Calendar.YEAR) + ", CURDATE());";
+											envia.executaUpdate(formatacao);						
+								}
+							}
+							
+							envia.fechaConexao();
+							DiarioLog.add("Adicionou a Venda #" + venda_id + " de R$" + campoTotal.getText() + ".", 1);
+							
+							pega.executaQuery("SELECT recibofim FROM opcoes");
+							
+							if(pega.next())
+							{
+								if(pega.getInt("recibofim") == 1)
+								{
+									opcao = JOptionPane.showConfirmDialog(null, "A venda foi concluida com sucesso!\n\nDeseja imprimir o recibo?", "Venda #" + venda_id, JOptionPane.YES_NO_OPTION);
+									
+									if(opcao == JOptionPane.YES_OPTION)
+									{
+										if(criarRecibo())
+										{
+											VisualizarRecibo.imprimirRecibo();
+										}
+									}									
+								}
+								else
+								{
+									JOptionPane.showMessageDialog(null, "A venda foi concluida com sucesso!", "Venda #" + venda_id, JOptionPane.INFORMATION_MESSAGE);
+								}
+							}
+							
+							pega.fechaConexao();
+							MenuPrincipal.AbrirPrincipal(0, true);	
+						}
+					}
+					else
+					{
+						if(fiadoConcluido)
+						{
+							String formata;
+							formata = campoTotal.getText();
+							formata = formata.replaceAll(",",".");	
+							double pTotal = Double.parseDouble(formata);
+							
+							if("".equals(campoRecebido.getText().trim()))
+								campoRecebido.setText("0,00");							
+							
+							formata = campoRecebido.getText();
+							formata = formata.replaceAll(",",".");
+							
+							double pPago = Double.parseDouble(formata);					
+							double totalFiado = (pTotal - pPago);
+							String divida;
+							divida = String.format("%.2f", totalFiado);
+							
+							String confirmacao = "Valor Total: " + campoTotal.getText() + "\n" + 
+							"Valor Pago: " + campoRecebido.getText() + 
+							"\n\nForma de Pagamento: " + campoForma.getSelectedItem() + "\n\n" +
+							"Será adicionado a dívida de R$" + divida + " na conta de " + labelFiado2.getText() + ".\n" + "\nConfirmar ?";
+							
+							int opcao = JOptionPane.showConfirmDialog(null, confirmacao, "Confirmar Venda", JOptionPane.YES_NO_OPTION);
+							int venda_id = 0;
+							
+							if(opcao == JOptionPane.YES_OPTION)
+							{
+								Calendar c = Calendar.getInstance();
+								Locale locale = new Locale("pt","BR"); 
+								GregorianCalendar calendar = new GregorianCalendar(); 
+								SimpleDateFormat formatador = new SimpleDateFormat("dd'/'MM'/'yyyy' - 'HH':'mm",locale);
+								
+								if(Double.parseDouble(campoRecebido.getText().replaceAll(",",".")) > Double.parseDouble(campoTotal.getText().replaceAll(",",".")))
+									campoRecebido.setText(campoTotal.getText());
+								
+								c.get(Calendar.DAY_OF_WEEK);
+								
+								String formatacao;
+								Query envia = new Query();
+								formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id, data) VALUES('"
+								+ campoTotal.getText() +
+								"', '" + MenuLogin.logado +
+								"', " + c.get(Calendar.YEAR) + ", "
+								+ c.get(Calendar.MONTH) + ", "
+								+ c.get(Calendar.DAY_OF_MONTH) + ", "
+								+ c.get(Calendar.DAY_OF_WEEK) +
+								", '" + formatador.format(calendar.getTime()) + "', '" + campoForma.getSelectedItem() + "', '" + campoRecebido.getText() + "', '" + campoTroco.getText() + 
+								"', " + fiadorIDSalvo + ", CURDATE());";
+								envia.executaUpdate(formatacao);
+								
+								Query pega = new Query();
+								pega.executaQuery("SELECT vendas_id FROM vendas ORDER BY vendas_id DESC");
+								
+								if(pega.next())
+								{
+									venda_id = pega.getInt("vendas_id");
+									String pegaPreco = "";
+									
+									for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
+									{
+										pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade()));
+										pegaPreco.replaceAll(",", ".");						
+										
+										formatacao = "INSERT INTO vendas_produtos(id_link, nome_produto, adicionais_produto, preco_produto, quantidade_produto, dia, mes, ano, data) VALUES('"
+												+ venda_id +
+												"', '" + vendaRapida.getProduto(i).getNome() +
+												"', '" + vendaRapida.getProduto(i).getAllAdicionais() + "', '" + pegaPreco + "', '" + vendaRapida.getProduto(i).getQuantidade() +
+												"', " + c.get(Calendar.DAY_OF_MONTH) + ", " + c.get(Calendar.MONTH) + ", " + c.get(Calendar.YEAR) + ", CURDATE());";
+												envia.executaUpdate(formatacao);						
+									}
+								}
+								
+								envia.fechaConexao();
+								DiarioLog.add("Adicionou a Venda #" + venda_id + " de R$" + campoTotal.getText() + " (fiado).", 1);
+								JOptionPane.showMessageDialog(null, "A venda foi computada com sucesso!", "Venda #" + venda_id, JOptionPane.INFORMATION_MESSAGE);
+								MenuPrincipal.AbrirPrincipal(0, true);
+							}					
+						}
+						else
+						{
+							CadastrarFiado f = new CadastrarFiado();
+							f.setCallBack(1);
+							f.setVisible(true);					
+						}
+					}					
 				}
+			}
+		}
+		
+		if(e.getSource() == recibo)
+		{
+			if(criarRecibo())
+			{
+				VisualizarRecibo vs = new VisualizarRecibo();
 			}
 		}
 		
@@ -593,10 +870,16 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 				double pegaTotal = Double.parseDouble(campoTotal.getText().replaceAll(",", "."));
 				double pegaRecebido = Double.parseDouble(limpeza.replaceAll(",", "."));
 				
-				String resultado = String.format("%.2f", (pegaTotal - pegaRecebido)*-1);
-				resultado.replaceAll(",", ".");
-				
-				campoTroco.setText(resultado);
+				if(((pegaTotal - pegaRecebido)*-1) <= 0)
+				{
+					campoTroco.setText("0,00");
+				}
+				else
+				{
+					String resultado = String.format("%.2f", (pegaTotal - pegaRecebido)*-1);
+					resultado.replaceAll(",", ".");
+					campoTroco.setText(resultado);					
+				}
 				
 				MenuPrincipal.setarEnter(finalizarVenda);
 			}
@@ -680,7 +963,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	        if(forma == "Fiado")
 	        {
 	        	finalizarVenda.setText("Prosseguir");
-	    		ImageIcon iconeFinalizar = new ImageIcon("imgs/fiado24.png");
+	    		ImageIcon iconeFinalizar = new ImageIcon(getClass().getResource("imgs/fiado24.png"));
 	    		finalizarVenda.setIcon(iconeFinalizar);
 	    		
 	    		fiadoConcluido = false;
@@ -688,7 +971,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	        else
 	        {
 	        	finalizarVenda.setText("Concluir Venda");
-	    		ImageIcon iconeFinalizar = new ImageIcon("imgs/finalizar.png");
+	    		ImageIcon iconeFinalizar = new ImageIcon(getClass().getResource("imgs/finalizar.png"));
 	    		finalizarVenda.setIcon(iconeFinalizar);
 	        }
 		}
@@ -696,7 +979,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		if(e.getSource() == adicionarADC)
 		{
 			JButton botao = new JButton();
-			ImageIcon iconeRemove = new ImageIcon("imgs/remove.png");
+			ImageIcon iconeRemove = new ImageIcon(getClass().getResource("imgs/remove.png"));
 			botao.setIcon(iconeRemove);
 			botao.setBorder(BorderFactory.createEmptyBorder());
 			botao.setContentAreaFilled(false);
@@ -731,7 +1014,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + addProduto.getSelecionado() + "';");
 			
 			if(pega.next())
-				aDouble += Double.parseDouble(pega.getString("preco"));
+				aDouble += Double.parseDouble(pega.getString("preco").replaceAll(",", "."));
 			
 			for(int i = 0; i < addAdicional.size() ; i++)
 			{
@@ -740,7 +1023,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 					pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + addAdicional.get(i).getSelecionado() + "';");
 					
 					if(pega.next())
-						aDouble += Double.parseDouble(pega.getString("preco"));					
+						aDouble += Double.parseDouble(pega.getString("preco").replaceAll(",", "."));				
 				}
 			}
 			
@@ -762,7 +1045,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		  public Component getTableCellRendererComponent(JTable table, Object value,
 		      boolean isSelected, boolean hasFocus, int row, int column) {
 			  
-			  setIcon(new ImageIcon("imgs/delete.png"));
+			  setIcon(new ImageIcon(getClass().getResource("imgs/delete.png")));
 			  
 		    if (isSelected) {
 		    		setForeground(table.getSelectionForeground());
@@ -808,7 +1091,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		    	button.setBackground(table.getBackground());
 		    }
 		    label = (value == null) ? "" : value.toString();
-		    button.setIcon(new ImageIcon("imgs/delete.png"));
+		    button.setIcon(new ImageIcon(getClass().getResource("imgs/delete.png")));
 		    isPushed = true;
 		    return button;
 		  }
@@ -862,10 +1145,16 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 					double pegaTotal = Double.parseDouble(campoTotal.getText().replaceAll(",", "."));
 					double pegaRecebido = Double.parseDouble(limpeza.replaceAll(",", "."));
 					
-					String resultado = String.format("%.2f", (pegaTotal - pegaRecebido)*-1);
-					resultado.replaceAll(",", ".");
-					
-					campoTroco.setText(resultado);
+					if(((pegaTotal - pegaRecebido)*-1) <= 0)
+					{
+						campoTroco.setText("0,00");
+					}
+					else
+					{
+						String resultado = String.format("%.2f", (pegaTotal - pegaRecebido)*-1);
+						resultado.replaceAll(",", ".");
+						campoTroco.setText(resultado);					
+					}
 					
 					MenuPrincipal.setarEnter(finalizarVenda);
 				}			
@@ -882,7 +1171,6 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 				labelFiado2.setForeground(Color.BLUE);
 				
 	        	finalizarVenda.setText("Concluir Venda");
-	    		ImageIcon iconeFinalizar = new ImageIcon("imgs/finalizar.png");
 	    		finalizarVenda.setIcon(iconeFinalizar);	
 	    		
 	    		fiadoConcluido = true;
