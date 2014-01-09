@@ -1,59 +1,111 @@
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.border.EtchedBorder;
 import java.awt.event.*;
-
 
 public class PainelMenu extends JPanel implements MouseListener
 {
 	private JButton vendaRapida, consulta, inicio, produtos, funcionarios;
-	private int funcionario;
+	static private int funcionario;
 	
-	public PainelMenu(int level)
+	public PainelMenu()
 	{
-		this.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Menu"));
-		this.setLayout(new FlowLayout(FlowLayout.CENTER, 6, 5));
-		this.setMaximumSize(new Dimension(800, 100));
-		this.setMinimumSize(new Dimension(800, 100));
+		setLayout(new FlowLayout(FlowLayout.CENTER, 6, 20));
+		setMaximumSize(new Dimension(1920, 100));
+		setMinimumSize(new Dimension(800, 100));
 		
-		this.inicio = new JButton("Início");
-		this.inicio.setPreferredSize(new Dimension(130, 60));
-		ImageIcon iconeInicio = new ImageIcon("imgs/inicio.png");
-		this.inicio.setIcon(iconeInicio);
-		this.inicio.addMouseListener(this);
-		this.add(inicio);		
+		inicio = new JButton("Início");
+		inicio.setPreferredSize(new Dimension(130, 60));
+		ImageIcon iconeInicio = new ImageIcon(getClass().getResource("imgs/inicio.png"));
+		inicio.setIcon(iconeInicio);
+		inicio.addMouseListener(this);
+		add(inicio);		
 		
-		this.vendaRapida = new JButton("Venda Rï¿½pida");
-		ImageIcon iconeRapida = new ImageIcon("imgs/vrapida.png");
-		this.vendaRapida.setIcon(iconeRapida);
-		this.vendaRapida.setPreferredSize(new Dimension(170, 60));
-		this.vendaRapida.addMouseListener(this);
-		this.add(vendaRapida);
+		vendaRapida = new JButton("Venda Rápida");
+		ImageIcon iconeRapida = new ImageIcon(getClass().getResource("imgs/vrapida.png"));
+		vendaRapida.setIcon(iconeRapida);
+		vendaRapida.setPreferredSize(new Dimension(170, 60));
+		vendaRapida.addMouseListener(this);
+		add(vendaRapida);
 		
-		this.produtos = new JButton("Produtos");
-		this.produtos.setPreferredSize(new Dimension(140, 60));
-		ImageIcon iconeProdutos = new ImageIcon("imgs/produtos.png");
-		this.produtos.setIcon(iconeProdutos);
-		this.produtos.addMouseListener(this);
-		this.add(produtos);
+		produtos = new JButton("Produtos");
+		produtos.setPreferredSize(new Dimension(140, 60));
+		ImageIcon iconeProdutos = new ImageIcon(getClass().getResource("imgs/produtos.png"));
+		produtos.setIcon(iconeProdutos);
+		produtos.addMouseListener(this);
+		add(produtos);
 		
-		this.funcionarios = new JButton("Funcionï¿½rios");
-		this.funcionarios.setPreferredSize(new Dimension(170, 60));
-		ImageIcon iconeFuncionarios = new ImageIcon("imgs/funcionarios.png");
-		this.funcionarios.setIcon(iconeFuncionarios);
-		this.funcionarios.addMouseListener(this);
-		this.add(funcionarios);		
+		funcionarios = new JButton("Funcionários");
+		funcionarios.setPreferredSize(new Dimension(170, 60));
+		ImageIcon iconeFuncionarios = new ImageIcon(getClass().getResource("imgs/funcionarios.png"));
+		funcionarios.setIcon(iconeFuncionarios);
+		funcionarios.addMouseListener(this);
+		add(funcionarios);		
 		
-		this.consulta = new JButton("Vendas");
-		this.consulta.setPreferredSize(new Dimension(130, 60));
-		ImageIcon iconeVendas = new ImageIcon("imgs/consultar.png");
-		this.consulta.setIcon(iconeVendas);
-		this.consulta.addMouseListener(this);
-		this.add(consulta);
+		consulta = new JButton("Vendas");
+		consulta.setPreferredSize(new Dimension(130, 60));
+		ImageIcon iconeVendas = new ImageIcon(getClass().getResource("imgs/consultar.png"));
+		consulta.setIcon(iconeVendas);
+		consulta.addMouseListener(this);
+		add(consulta);
 		
-		this.funcionario = level;
+		funcionario = 1;
+		
+		ActionMap actionMap = getActionMap();
+		actionMap.put("botao1", new SpaceAction(4));
+		actionMap.put("botao2", new SpaceAction(0));
+		actionMap.put("botao3", new SpaceAction(1));
+		actionMap.put("botao4", new SpaceAction(2));
+		actionMap.put("botao5", new SpaceAction(3));
+		actionMap.put("botao6", new SpaceAction(999));
+		setActionMap(actionMap);
+		
+		InputMap imap = getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
+		imap.put(KeyStroke.getKeyStroke("F1"), "botao1");
+		imap.put(KeyStroke.getKeyStroke("F2"), "botao2");
+		imap.put(KeyStroke.getKeyStroke("F3"), "botao3"); 
+		imap.put(KeyStroke.getKeyStroke("F4"), "botao4"); 
+		imap.put(KeyStroke.getKeyStroke("F5"), "botao5");
+		imap.put(KeyStroke.getKeyStroke("ESCAPE"), "botao6");
 	}
 	
+	private class SpaceAction extends AbstractAction {
+		
+		private int tipo = 0;
+		
+		public SpaceAction() {
+	        super();
+	    }
+		
+		public SpaceAction(int tipo) {
+	        this.tipo = tipo;
+	    }		
+		
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        	
+        	if(this.tipo == 999)
+        	{
+    			int opcao = JOptionPane.showConfirmDialog(null, "Você tem certeza que deseja sair?", "Logout", JOptionPane.YES_NO_OPTION);
+    			
+    			if(opcao == JOptionPane.YES_OPTION)
+    			{
+    				DiarioLog.add("Saiu do sistema.", 9);
+    				MenuPrincipal.setarVisible(false);
+    				MenuLogin LoginNovo = new MenuLogin();
+    				LoginNovo.setVisible(true);	
+    			}        		
+        	}
+        	else
+        	{
+        		MenuPrincipal.AbrirPrincipal(this.tipo, false);
+        	}
+        }
+    }	
+	
+	static public void setarLevel(int lvl)
+	{
+		funcionario = lvl;
+	}
 	
 	@Override
 	public void mouseClicked(MouseEvent e)
@@ -64,27 +116,27 @@ public class PainelMenu extends JPanel implements MouseListener
 		}
 		else if(e.getSource() == produtos)
 		{
-			if(this.funcionario > 1)
+			if(funcionario > 1)
 				MenuPrincipal.AbrirPrincipal(1, false);
 			else
-				JOptionPane.showMessageDialog(null, "Vocï¿½ nï¿½o tem permissï¿½o para ver isso.");
+				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}
 		else if(e.getSource() == funcionarios)
 		{
-			if(this.funcionario > 1)
+			if(funcionario > 1)
 				MenuPrincipal.AbrirPrincipal(2, false);
 			else
-				JOptionPane.showMessageDialog(null, "Vocï¿½ nï¿½o tem permissï¿½o para ver isso.");
+				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}
 		else if(e.getSource() == consulta)
 		{
-			if(this.funcionario > 1)
+			if(funcionario > 1)
 				MenuPrincipal.AbrirPrincipal(3, false);
 			else
-				JOptionPane.showMessageDialog(null, "Vocï¿½ nï¿½o tem permissï¿½o para ver isso.");
+				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}
 		else if(e.getSource() == inicio)
-		{
+		{			
 			MenuPrincipal.AbrirPrincipal(4, false);
 		}		
 	}
@@ -104,7 +156,7 @@ public class PainelMenu extends JPanel implements MouseListener
 	{
 		if(e.getSource() == vendaRapida)
 		{
-			PainelLegenda.AtualizaLegenda("Venda RÃ¡pida, direto no balcÃ£o.");
+			PainelLegenda.AtualizaLegenda("Venda Rápida, direto no balcão.");
 		}
 		if(e.getSource() == produtos)
 		{
@@ -112,7 +164,7 @@ public class PainelMenu extends JPanel implements MouseListener
 		}
 		if(e.getSource() == funcionarios)
 		{
-			PainelLegenda.AtualizaLegenda("Gerenciamento de funcionÃ¡rios.");
+			PainelLegenda.AtualizaLegenda("Gerenciamento de funcionários.");
 		}
 		if(e.getSource() == consulta)
 		{

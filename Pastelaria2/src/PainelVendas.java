@@ -1,7 +1,9 @@
 import java.awt.*;
-import javax.swing.ImageIcon;
+
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -14,9 +16,10 @@ import java.awt.event.*;
 import java.io.Serializable;
 import java.util.Vector;
 
-public class PainelVendas extends JPanel implements ActionListener, TableModelListener
+public class PainelVendas extends JPanel implements TableModelListener
 {
 	private JTable tabelaFiados;
+	private static DefaultTableModel tabela;
 	
 	public PainelVendas()
 	{
@@ -36,7 +39,7 @@ public class PainelVendas extends JPanel implements ActionListener, TableModelLi
 		painelTabela.setMinimumSize(new Dimension(800, 200));		// Horizontal , Vertical
 		painelTabela.setMaximumSize(new Dimension(800, 200));		
 		
-		DefaultTableModel tabela = new DefaultTableModel() {
+		tabela = new DefaultTableModel() {
 
 		    @Override
 		    public boolean isCellEditable(int row, int column) {
@@ -91,7 +94,7 @@ public class PainelVendas extends JPanel implements ActionListener, TableModelLi
 		pega.fechaConexao();
 		
 		tabelaFiados = new JTable() {
-		    Color alternate = new Color(141, 182, 205);
+		    Color alternate = new Color(206, 220, 249);
 		    
 		    @Override
 		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -105,7 +108,6 @@ public class PainelVendas extends JPanel implements ActionListener, TableModelLi
 		};		
 		
 		tabelaFiados.setModel(tabela);
-		
 		
 		tabelaFiados.getColumnModel().getColumn(0).setMinWidth(120);
 		tabelaFiados.getColumnModel().getColumn(0).setMaxWidth(120);			
@@ -136,22 +138,98 @@ public class PainelVendas extends JPanel implements ActionListener, TableModelLi
 		tabelaFiados.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));
 		
 		tabelaFiados.getModel().addTableModelListener(this);
-		tabelaFiados.setPreferredScrollableViewportSize(new Dimension(750, 140));
+		tabelaFiados.setPreferredScrollableViewportSize(new Dimension(760, 140));
 		
 		JScrollPane scrolltabela = new JScrollPane(tabelaFiados);
 		painelTabela.add(scrolltabela);
+		
+		GraficoFiados graFiados = new GraficoFiados();
 		visualizarFiado.add(painelTabela);
+		visualizarFiado.add(graFiados);
 		
 		UltimasVendas painelUltimas = new UltimasVendas();
+		ConsultarVendas painelConsultar = new ConsultarVendas();
+		ConsultarDiario painelConsultarDiario = new ConsultarDiario();
 		
-		ImageIcon iconeUltimas = new ImageIcon("imgs/fiado24.png");
-		tabbedPane.addTab("Últimas Vendas", iconeUltimas, painelUltimas, "Últimas vendas realizadas.");		
+		ImageIcon iconeUltimas = new ImageIcon(getClass().getResource("imgs/ultimas_vendas_aba.png"));
+		tabbedPane.addTab("Últimas Vendas", iconeUltimas, painelUltimas, "Últimas vendas realizadas.");
+		
+		ImageIcon iconeConsultar = new ImageIcon(getClass().getResource("imgs/consultar_vendas_aba.png"));
+		tabbedPane.addTab("Consultar Vendas", iconeConsultar, painelConsultar, "Consultar vendas em determinada data.");			
 
-		ImageIcon iconeFinalizar = new ImageIcon("imgs/fiado24.png");
+		ImageIcon iconeFinalizar = new ImageIcon(getClass().getResource("imgs/fiados_aba.png"));
 		tabbedPane.addTab("Fiados", iconeFinalizar, visualizarFiado, "Todas as dívidas em aberto.");
+		
+		ImageIcon iconeDiario = new ImageIcon(getClass().getResource("imgs/diario.png"));
+		tabbedPane.addTab("Diário", iconeDiario, painelConsultarDiario, "Registro de todas as ações de funcionários.");	
+		
+		ChangeListener changeListener = new ChangeListener() {
+		      public void stateChanged(ChangeEvent changeEvent) {
+		        JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
+		        if(sourceTabbedPane.getSelectedIndex() == 0) // Ultimas Vendas
+		        {
+		        	UltimasVendas.refresh();
+		        }		        
+		        else if(sourceTabbedPane.getSelectedIndex() == 1) // Consultar Vendas
+		        {
+		        	ConsultarVendas.refresh();
+		        }
+		        else if(sourceTabbedPane.getSelectedIndex() == 2) // Fiados
+		        {
+		        	refresh();
+		        }
+		      }
+		};
+		
+		tabbedPane.addChangeListener(changeListener);
 
 		add(tabbedPane);
 		ToolTipManager.sharedInstance().setDismissDelay(40000);
+	}
+	
+	static public void refresh()
+	{
+	      SwingUtilities.invokeLater(new Runnable() {  
+	    	  public void run() {  
+	    			tabela.setNumRows(0);
+	    			
+	    			Query pega = new Query();
+	    			pega.executaQuery("SELECT * FROM fiados ORDER BY nome");
+	    			
+	    			while(pega.next())
+	    			{
+	    				Vector<Serializable> linha = new Vector<Serializable>();
+	    				
+	    				double totalDivida = 0.0;
+	    				Query pega2 = new Query();
+	    				pega2.executaQuery("SELECT * FROM vendas WHERE `fiado_id` = " + pega.getInt("fiador_id") + "");
+	    				
+	    				while(pega2.next())
+	    				{
+	    					totalDivida += (Double.parseDouble(pega2.getString("total").replaceAll(",", ".")) - Double.parseDouble(pega2.getString("valor_pago").replaceAll(",", ".")));
+	    				}
+	    				
+	    				String pegaPreco = String.format("%.2f", totalDivida);
+	    				pegaPreco.replaceAll(",", ".");
+	    				
+	    				linha.add(pegaPreco);
+	    				
+	    				linha.add(pega.getString("nome"));
+	    				linha.add(pega.getString("apelido"));
+	    				linha.add(pega.getString("telefone"));
+	    				linha.add(pega.getString("cpf"));			
+	    				
+	    				linha.add("");
+	    				
+	    				if(totalDivida > 0)
+	    				{
+	    					tabela.addRow(linha);
+	    				}
+	    			}
+	    			
+	    			pega.fechaConexao();
+	    	  }  
+	      });		
 	}
 	
 	class ButtonRenderer extends JButton implements TableCellRenderer {
@@ -166,9 +244,9 @@ public class PainelVendas extends JPanel implements ActionListener, TableModelLi
 			  setHorizontalTextPosition(AbstractButton.LEFT);
 			  
 			  if(column == 5)
-				  setIcon(new ImageIcon("imgs/delete.png"));
+				  setIcon(new ImageIcon(getClass().getResource("imgs/delete.png")));
 			  else
-				  setIcon(new ImageIcon("imgs/fiados1.png"));
+				  setIcon(new ImageIcon(getClass().getResource("imgs/fiados1.png")));
 			  
 			  	String pegaCPF = (String) table.getValueAt(row,4);
 			  	String formataTip = "<html>";
@@ -262,9 +340,9 @@ public class PainelVendas extends JPanel implements ActionListener, TableModelLi
 		    button.setText(label);
 		    
 			  if(column == 5)
-				  button.setIcon(new ImageIcon("imgs/delete.png"));
+				  button.setIcon(new ImageIcon(getClass().getResource("imgs/delete.png")));
 			  else
-				  button.setIcon(new ImageIcon("imgs/fiados1.png"));		    
+				  button.setIcon(new ImageIcon(getClass().getResource("imgs/fiados1.png")));		    
 		    
 		    isPushed = true;
 		    return button;
@@ -296,6 +374,8 @@ public class PainelVendas extends JPanel implements ActionListener, TableModelLi
 		    			  {
 		    				  String pegaCPF = (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 4);
 		    				  
+		    				  DiarioLog.add("Reduziu R$" + pegaResposta + " da dívida do " + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 1) + " (TEL: " + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 3) + " ) de R$" + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 0) + ".", 6);
+		    				  
 		    					Query pega = new Query();
 		    					pega.executaQuery("SELECT fiador_id FROM fiados WHERE `cpf` = '" + pegaCPF + "'");
 		    					
@@ -314,20 +394,22 @@ public class PainelVendas extends JPanel implements ActionListener, TableModelLi
 		    								if(conta >= deduzindo)
 		    								{
 		    									String atualizado = String.format("%.2f", (deduzindo + Double.parseDouble(pega.getString("valor_pago").replaceAll(",", "."))));
-		    									manda.executaUpdate("UPDATE vendas SET `valor_pago` = '" + atualizado + "' WHERE `vendas_id` = " + pega.getInt("vendas_id"));
+		    									manda.executaUpdate("UPDATE vendas SET `valor_pago` = '" + atualizado + "' WHERE `vendas_id` = " + pega.getInt("vendas_id"));				
 		    									manda.fechaConexao();
 		    									break;
 		    								}
 		    								else
 		    								{
 		    									deduzindo = (deduzindo + Double.parseDouble(pega.getString("valor_pago").replaceAll(",", "."))) - Double.parseDouble(pega.getString("total").replaceAll(",", "."));
-		    									
-		    									manda.executaUpdate("UPDATE vendas SET `valor_pago` = '" + pega.getString("valor_pago") + "' WHERE `vendas_id` = " + pega.getInt("vendas_id"));
+		    									manda.executaUpdate("UPDATE vendas SET `valor_pago` = '" + pega.getString("total") + "' WHERE `vendas_id` = " + pega.getInt("vendas_id"));
 		    									manda.fechaConexao();
 		    								}
 		    							}
 		    						}
 		    					}
+		    					
+		    					pega.fechaConexao();
+		    					refresh();
 		    			  }
 		    		  }
 		    	  }
@@ -337,7 +419,8 @@ public class PainelVendas extends JPanel implements ActionListener, TableModelLi
 		    		  
 		    		  if(opcao == JOptionPane.YES_OPTION)
 		    		  {
-		    			  String pegaCPF = (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 4);
+		    			DiarioLog.add("Quitou a dívida de " + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 1) + " (TEL: " + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 3) + " ) de R$" + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 0) + ".", 6);  
+		    			String pegaCPF = (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 4);
 		    				  
 		    			Query pega = new Query();
 		    			pega.executaQuery("SELECT fiador_id FROM fiados WHERE `cpf` = '" + pegaCPF + "'");
@@ -357,7 +440,9 @@ public class PainelVendas extends JPanel implements ActionListener, TableModelLi
 		    					}
 		    				}
 		    			}
-		    		 }		    		  
+		    			pega.fechaConexao();
+		    			refresh();
+		    		 }
 		    	  }
 		       }
 		    }
@@ -373,15 +458,7 @@ public class PainelVendas extends JPanel implements ActionListener, TableModelLi
 		  protected void fireEditingStopped() {
 		    super.fireEditingStopped();
 		  }
-		}	
-	
-	public void actionPerformed(ActionEvent e)
-	{
-		/*if(e.getSource() == procuraCPF)
-		{
-			
-		}*/
-	}
+		}
 
 	@Override
 	public void tableChanged(TableModelEvent e) {
@@ -407,6 +484,7 @@ public class PainelVendas extends JPanel implements ActionListener, TableModelLi
 		    Query envia = new Query();
 		    formatacao = "UPDATE fiados SET " + tipo + " = '" + data + "' WHERE cpf = '" + pega + "'";
 		    envia.executaUpdate(formatacao);
+		    DiarioLog.add("Atualizou o " + tipo + " do cliente fiado " + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 1) + "(TEL: )" + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 3) + " para " + data + ".", 6);
         }
 	}
 }

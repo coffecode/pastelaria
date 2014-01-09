@@ -86,7 +86,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		}
 		
 		tabelaProdutos = new JTable() {
-		    Color alternate = new Color(141, 182, 205);
+			Color alternate = new Color(206, 220, 249);
 		    
 		    @Override
 		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -139,7 +139,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		
 		JScrollPane scrolltabela = new JScrollPane(tabelaProdutos);
 		
-		ImageIcon iconeUltimas = new ImageIcon("imgs/fiado24.png");
+		ImageIcon iconeUltimas = new ImageIcon(getClass().getResource("imgs/produtos_aba.png"));
 		tabbedPane.addTab("Produtos", iconeUltimas, scrolltabela, "Gerenciar Produtos da loja.");
 		
 		//instance table model
@@ -191,7 +191,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		pega.fechaConexao();
 		
 		tabelaAdicionais = new JTable() {
-		    Color alternate = new Color(141, 182, 205);
+			Color alternate = new Color(206, 220, 249);
 		    
 		    @Override
 		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -238,11 +238,25 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 			tabelaAdicionais.setPreferredScrollableViewportSize(new Dimension(600, linhas2*16));
 		
 		JScrollPane scrolltabelaAdc = new JScrollPane(tabelaAdicionais);		
-		tabbedPane.addTab("Adicionais", iconeUltimas, scrolltabelaAdc, "Gerenciar Adicionais da loja.");
+		tabbedPane.addTab("Adicionais", new ImageIcon(getClass().getResource("imgs/adicionais_aba.png")), scrolltabelaAdc, "Gerenciar Adicionais da loja.");
 		
 		add(tabbedPane);
 		
-		addPainel = new JPanel();
+		addPainel = new JPanel() {
+			@Override
+		    public void paintComponent(Graphics g) {
+		        super.paintComponent(g);
+		        Graphics2D g2d = (Graphics2D) g;
+		        Color color1 = getBackground();
+		        Color color2 = new Color(207, 220, 249);
+		        int w = getWidth();
+		        int h = getHeight();
+		        GradientPaint gp = new GradientPaint(
+		            0, 0, color1, 0, h, color2);
+		        g2d.setPaint(gp);
+		        g2d.fillRect(0, 0, w, h);
+		    }			
+		};
 		addPainel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Adicionar"));
 		addPainel.setLayout(new GridBagLayout());
 		addPainel.setMinimumSize(new Dimension(790, 200));
@@ -251,7 +265,8 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(5,5,5,5);  //top padding
 		
-		campoTipo= new JComboBox(tiposProduto);
+		campoTipo = new JComboBox(tiposProduto);
+		((JLabel)campoTipo.getRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
 		campoTipo.setSelectedIndex(0);
 		campoTipo.setPreferredSize(new Dimension(150, 30));
 		
@@ -263,7 +278,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		campoPreco = new JTextField();
 		campoPreco.setPreferredSize(new Dimension(150, 30));
 	
-		ImageIcon iconePlus = new ImageIcon("imgs/plus2.png");
+		ImageIcon iconePlus = new ImageIcon(getClass().getResource("imgs/plus2.png"));
 		adicionar = new JButton("Adicionar");
 		adicionar.setIcon(iconePlus);
 		adicionar.setPreferredSize(new Dimension(150, 30));
@@ -297,8 +312,9 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		gbc.gridx = 2;	// colunas
 		gbc.gridy = 3;	// linhas			
 		
-		addPainel.add(adicionar, gbc);		
+		addPainel.add(adicionar, gbc);
 		
+		MenuPrincipal.setarEnter(adicionar);
 		add(addPainel);
 	}
 	
@@ -359,11 +375,10 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 						String formatacao;
 						Query envia = new Query();
 						formatacao = "INSERT INTO produtos(nome, preco, tipo) VALUES('"
-						+ campoNome.getText() +
+						+ (campoNome.getText().replaceAll("'", "")) +
 						"', '" + resultado + "', "+tipo+");";
 						
 						envia.executaUpdate(formatacao);
-						
 						int idProdutoNovo = 9999999;
 						
 						envia.executaQuery("SELECT produtos_id FROM produtos ORDER BY produtos_id DESC limit 0, 1");
@@ -373,6 +388,8 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 						}
 						
 						envia.fechaConexao();
+						DiarioLog.add("Adicionou o produto/adicional " + (campoNome.getText().replaceAll("'", "")) + " por R$" + resultado + ".", 3);						
+						
 						if(tipo == 1)
 						{
 							boolean flag = false;
@@ -437,7 +454,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		  public Component getTableCellRendererComponent(JTable table, Object value,
 		      boolean isSelected, boolean hasFocus, int row, int column) {
 			  
-			  setIcon(new ImageIcon("imgs/delete.png"));
+			  setIcon(new ImageIcon(getClass().getResource("imgs/delete.png")));
 			  
 		    if (isSelected) {
 		    		setForeground(table.getSelectionForeground());
@@ -482,7 +499,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		    	button.setBackground(table.getBackground());
 		    }
 		    label = (value == null) ? "" : value.toString();
-		    button.setIcon(new ImageIcon("imgs/delete.png"));
+		    button.setIcon(new ImageIcon(getClass().getResource("imgs/delete.png")));
 		    isPushed = true;
 		    return button;
 		  }
@@ -493,9 +510,10 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		      {
 			       String formatacao;
 			       Query envia = new Query();
-			       formatacao = "DELETE FROM produtos WHERE `produtos_id` = " + tabelaProdutos.getValueAt(tabelaProdutos.getSelectedRow(), 0) + ";";
+			       formatacao = "DELETE FROM produtos WHERE `produtos_id` = " + tabelaProdutos.getValueAt(tabelaProdutos.getSelectedRow(), 0) + ";";  
 			       envia.executaUpdate(formatacao);
 			       envia.fechaConexao();
+			       DiarioLog.add("Deletou o produto " + tabelaProdutos.getValueAt(tabelaProdutos.getSelectedRow(), 1) + ".", 3);
 			       
 				      SwingUtilities.invokeLater(new Runnable() {  
 				    	  public void run() {  
@@ -510,6 +528,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 			       formatacao = "DELETE FROM produtos WHERE `produtos_id` = " + tabelaAdicionais.getValueAt(tabelaAdicionais.getSelectedRow(), 0) + ";";
 			       envia.executaUpdate(formatacao);
 			       envia.fechaConexao();
+			       DiarioLog.add("Deletou o adicional " + tabelaAdicionais.getValueAt(tabelaAdicionais.getSelectedRow(), 1) + ".", 3);
 			       
 				      SwingUtilities.invokeLater(new Runnable() {  
 				    	  public void run() {  
@@ -543,9 +562,10 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 	        	{
 				    String formatacao;
 				    Query envia = new Query();
-				    formatacao = "UPDATE produtos SET nome = '" + (String) tabela.getValueAt(row, column) + "' WHERE produtos_id = " + tabela.getValueAt(row, 0);
+				    formatacao = "UPDATE produtos SET nome = '" + (((String) tabela.getValueAt(row, column)).replaceAll("'", "")) + "' WHERE produtos_id = " + tabela.getValueAt(row, 0);
 				    envia.executaUpdate(formatacao);
 				    envia.fechaConexao();
+				    DiarioLog.add("Atualizou o nome do produto #" + tabela.getValueAt(row, 0) + " para " + (((String) tabela.getValueAt(row, column)).replaceAll("'", "")) + ".", 3);
 	        	}
 	        	else if(column == 2)
 	        	{
@@ -565,6 +585,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 						    formatacao = "UPDATE produtos SET preco = '" + resultado + "' WHERE produtos_id = " + tabela.getValueAt(row, 0);
 						    envia.executaUpdate(formatacao);
 						    envia.fechaConexao();
+						    DiarioLog.add("Atualizou o preço do produto " + ((String) tabela.getValueAt(row, 1)) + " para R$" + resultado + ".", 3);
 						}
 					}
 	        	}
@@ -583,6 +604,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 				    formatacao = "UPDATE produtos SET tipo = " + tipo + " WHERE produtos_id = " + tabela.getValueAt(row, 0);
 				    envia.executaUpdate(formatacao);
 				    envia.fechaConexao();
+				    DiarioLog.add("Alterou o tipo de " + ((String) tabela.getValueAt(row, 1)) + " para adicional", 3);
 				    
 				    if(tipo == 2)
 				    {					    
@@ -620,9 +642,10 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 	        	{
 				    String formatacao;
 				    Query envia = new Query();
-				    formatacao = "UPDATE produtos SET nome = '" + (String) tabelaAdc.getValueAt(row, column) + "' WHERE produtos_id = " + tabelaAdc.getValueAt(row, 0);
+				    formatacao = "UPDATE produtos SET nome = '" + (((String) tabelaAdc.getValueAt(row, column)).replaceAll("'", "")) + "' WHERE produtos_id = " + tabelaAdc.getValueAt(row, 0);
 				    envia.executaUpdate(formatacao);
 				    envia.fechaConexao();
+				    DiarioLog.add("Atualizou o nome do adicional #" + tabelaAdc.getValueAt(row, 0) + " para " + (((String) tabelaAdc.getValueAt(row, column)).replaceAll("'", "")) + ".", 3);
 	        	}
 	        	else if(column == 2)
 	        	{
@@ -642,6 +665,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 						    formatacao = "UPDATE produtos SET preco = '" + resultado + "' WHERE produtos_id = " + tabelaAdc.getValueAt(row, 0);
 						    envia.executaUpdate(formatacao);
 						    envia.fechaConexao();
+						    DiarioLog.add("Atualizou o preço do adicional " + ((String) tabelaAdc.getValueAt(row, 1)) + " para R$" + resultado + ".", 3);
 						}
 					}
 	        	}
@@ -660,6 +684,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 				    formatacao = "UPDATE produtos SET tipo = " + tipo + " WHERE produtos_id = " + tabelaAdc.getValueAt(row, 0);
 				    envia.executaUpdate(formatacao);
 				    envia.fechaConexao();
+				    DiarioLog.add("Alterou o tipo de " + ((String) tabelaAdc.getValueAt(row, 1)) + " para produto", 3);
 				    
 				    if(tipo == 1)
 				    {					    

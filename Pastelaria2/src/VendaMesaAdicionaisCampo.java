@@ -1,17 +1,16 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.text.DecimalFormat;
 import java.util.*;
 
 import javax.swing.*;
 
-public class VendaRapidaAdicionaisCampo extends JPanel implements ActionListener
+public class VendaMesaAdicionaisCampo extends JPanel implements ActionListener
 {
     private final JTextField tf;
     private final JComboBox combo = new JComboBox();
     private final Vector<String> v = new Vector<String>();
     
-    public VendaRapidaAdicionaisCampo()
+    public VendaMesaAdicionaisCampo()
     {
         super(new BorderLayout());
         combo.setEditable(true);
@@ -129,7 +128,7 @@ public class VendaRapidaAdicionaisCampo extends JPanel implements ActionListener
 	public void actionPerformed(ActionEvent e) {
         if(e.getSource() == combo)
         {
-        	PainelVendaRapida.updateCampo();        	
+        	PainelVenda.updateCampo();        	
         }
 	}
 	

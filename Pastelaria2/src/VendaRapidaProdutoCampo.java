@@ -119,7 +119,7 @@ public class VendaRapidaProdutoCampo extends JPanel implements ActionListener
     	DefaultComboBoxModel m = new DefaultComboBoxModel();
     	for(String s: list)
     	{
-    		if(s.toLowerCase().startsWith(text)) m.addElement(s);
+    		if(s.toLowerCase().contains(text)) m.addElement(s);
     	}
     	
     	return m;

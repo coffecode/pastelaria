@@ -17,17 +17,33 @@ import java.util.Vector;
 public class UltimasVendas extends JPanel
 {
 	private JTable tabelaUltimasVendas;
+	static DefaultTableModel tabela;
 	
 	public UltimasVendas()
 	{
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		setPreferredSize(new Dimension(800, 435));
+		setPreferredSize(new Dimension(800, 435));		
 		
-		JPanel painelTabela = new JPanel();
+		JPanel painelTabela = new JPanel(){
+		
+			@Override
+		    public void paintComponent(Graphics g) {
+		        super.paintComponent(g);
+		        Graphics2D g2d = (Graphics2D) g;
+		        Color color1 = getBackground();
+		        Color color2 = new Color(207, 220, 249);
+		        int w = getWidth();
+		        int h = getHeight();
+		        GradientPaint gp = new GradientPaint(
+		            0, 0, color1, 0, h, color2);
+		        g2d.setPaint(gp);
+		        g2d.fillRect(0, 0, w, h);
+		    }			
+		};
 		painelTabela.setMinimumSize(new Dimension(800, 435));		// Horizontal , Vertical
 		painelTabela.setMaximumSize(new Dimension(800, 435));		
 		
-		DefaultTableModel tabela = new DefaultTableModel() {
+		tabela = new DefaultTableModel() {
 
 		    @Override
 		    public boolean isCellEditable(int row, int column) {
@@ -82,7 +98,7 @@ public class UltimasVendas extends JPanel
 		pega.fechaConexao();
 		
 		tabelaUltimasVendas = new JTable() {
-		    Color alternate = new Color(141, 182, 205);
+			Color alternate = new Color(206, 220, 249);
 		    
 		    @Override
 		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -142,6 +158,44 @@ public class UltimasVendas extends JPanel
 		ToolTipManager.sharedInstance().setDismissDelay(40000);
 	}
 	
+	static public void refresh()
+	{
+		tabela.setNumRows(0);
+		
+		Query pega = new Query();
+		pega.executaQuery("SELECT * FROM vendas ORDER BY vendas_id DESC limit 0, 25");
+		
+		while(pega.next())
+		{
+			Vector<Serializable> linha = new Vector<Serializable>();
+				
+			linha.add(pega.getInt("vendas_id"));
+			linha.add(pega.getString("horario"));
+			linha.add(pega.getString("forma_pagamento"));
+			linha.add(pega.getString("total"));
+			
+			if((Double.parseDouble(pega.getString("total").replaceAll(",", ".")) > Double.parseDouble(pega.getString("valor_pago").replaceAll(",", "."))))
+			{
+				if(pega.getString("forma_pagamento").equals("Fiado"))
+				{
+					linha.add("Não Pago");
+				}
+				else
+				{
+					linha.add("Pago");
+				}
+			}
+			else
+			{
+				linha.add("Pago");
+			}
+			
+			linha.add(pega.getString("atendente"));
+			linha.add("");
+			tabela.addRow(linha);
+		}		
+	}	
+	
 	class JLabelRenderer implements TableCellRenderer {
 		
 		private JLabel label;
@@ -156,7 +210,7 @@ public class UltimasVendas extends JPanel
 			  
 			  label.setHorizontalTextPosition(AbstractButton.LEFT);
 			  label.setHorizontalAlignment( JLabel.CENTER );
-			  label.setIcon(new ImageIcon("imgs/documento.png"));
+			  label.setIcon(new ImageIcon(getClass().getResource("imgs/documento.png")));
 			  
 			  	String formataTip = "<html>";
 			  	formataTip += "<b>Venda #" + table.getValueAt(row,0) + "</b>  (<i>" + table.getValueAt(row,1) +")</i><br>";
@@ -214,7 +268,7 @@ public class UltimasVendas extends JPanel
 		    	button.setBackground(table.getSelectionBackground());
 		    }
 		    
-		    button.setIcon(new ImageIcon("imgs/delete.png"));
+		    button.setIcon(new ImageIcon(getClass().getResource("imgs/delete.png")));
 		    
 			button.setText((value == null) ? "" : value.toString());
 		    return button;
@@ -253,7 +307,7 @@ public class UltimasVendas extends JPanel
 		    	button.setBackground(table.getBackground());
 		    }
 			  
-			button.setIcon(new ImageIcon("imgs/delete.png"));
+			button.setIcon(new ImageIcon(getClass().getResource("imgs/delete.png")));
 			  
 			button.setHorizontalTextPosition(AbstractButton.LEFT);
 		    label = (value == null) ? "" : value.toString();
@@ -330,6 +384,7 @@ public class UltimasVendas extends JPanel
 		    			Query pega = new Query();
 		    			pega.executaUpdate("DELETE FROM vendas WHERE `vendas_id` = " + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0));
 		    			pega.executaUpdate("DELETE FROM vendas_produtos WHERE `id_link` = " + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0));
+		    			DiarioLog.add("Deletou a venda #" + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0) + " de valor R$" + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 5) + ".", 7);
 		    			pega.fechaConexao();
 		    		 }		    		  
 		    	  }

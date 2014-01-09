@@ -1,7 +1,4 @@
-import java.awt.*;
-
 import javax.swing.*;
-
 import java.awt.Color;
 import java.awt.event.*;
 import java.awt.Graphics;
@@ -39,8 +36,7 @@ public class CadastrarFiado extends JFrame implements ActionListener, FocusListe
 		campoCPF.setBounds(57,41,125,30);
 		campoCPF.addFocusListener(this);
 		cadastroFiado.add(campoCPF);
-		
-        iconeConsulta = new ImageIcon("imgs/consultar2.png");
+        iconeConsulta = new ImageIcon(getClass().getResource("imgs/consultar2.png"));
         procuraCPF = new JButton(iconeConsulta);
         procuraCPF.addMouseListener(this);
         procuraCPF.addActionListener(this);
@@ -66,29 +62,29 @@ public class CadastrarFiado extends JFrame implements ActionListener, FocusListe
 		cadastroFiado.add(campoNome);		
 		
 		fiadorApelido = new JLabel("Apelido:");
-		fiadorApelido.setBounds(15,160,100,30); // Coluna, Linha, Largura, Altura!
+		fiadorApelido.setBounds(15,200,100,30); // Coluna, Linha, Largura, Altura!
 		fiadorApelido.setEnabled(false);
 		cadastroFiado.add(fiadorApelido);
 		
 		campoApelido = new JTextField();
-		campoApelido.setBounds(130,160,100,30);
+		campoApelido.setBounds(130,200,100,30);
 		campoApelido.setEnabled(false);
 		campoApelido.setHorizontalAlignment(JTextField.CENTER);
-		cadastroFiado.add(campoApelido);
 		
 		fiadorTelefone = new JLabel("*Telefone:");
-		fiadorTelefone.setBounds(15,200,100,30); // Coluna, Linha, Largura, Altura!
+		fiadorTelefone.setBounds(15,160,100,30); // Coluna, Linha, Largura, Altura!
 		fiadorTelefone.setEnabled(false);
 		cadastroFiado.add(fiadorTelefone);
 		
 		campoTelefone = new JTextField();
-		campoTelefone.setBounds(130,200,100,30);
+		campoTelefone.setBounds(130,160,100,30);
 		campoTelefone.setEnabled(false);
 		campoTelefone.setHorizontalAlignment(JTextField.CENTER);
 		campoTelefone.addFocusListener(this);
 		cadastroFiado.add(campoTelefone);
+		cadastroFiado.add(campoApelido);
 		
-		imagem = new JLabel(new ImageIcon("imgs/pessoa.png"));
+		imagem = new JLabel(new ImageIcon(getClass().getResource("imgs/pessoa.png")));
 		imagem.setBounds(350,115,128,128);
 		imagem.setEnabled(false);
 		cadastroFiado.add(imagem);
@@ -101,15 +97,16 @@ public class CadastrarFiado extends JFrame implements ActionListener, FocusListe
 		
 		concluir = new JButton("Cadastrar");
 		concluir.setBounds(105,325,130,50);
-		ImageIcon iconeConcluir = new ImageIcon("imgs/concluir.png");
+		ImageIcon iconeConcluir = new ImageIcon(getClass().getResource("imgs/concluir.png"));
 		concluir.setIcon(iconeConcluir);
 		concluir.setEnabled(false);
 		concluir.addMouseListener(this);
+		concluir.addActionListener(this);
 		cadastroFiado.add(concluir);
 		
 		cancelar = new JButton("Cancelar");
 		cancelar.setBounds(255,325,130,50);
-		ImageIcon iconeCancelar = new ImageIcon("imgs/cancelar.png");
+		ImageIcon iconeCancelar = new ImageIcon(getClass().getResource("imgs/cancelar.png"));
 		cancelar.setIcon(iconeCancelar);
 		cancelar.addMouseListener(this);
 		cadastroFiado.add(cancelar);
@@ -233,9 +230,9 @@ public class CadastrarFiado extends JFrame implements ActionListener, FocusListe
 		
 		Query envia = new Query();
 		formatacao = "INSERT INTO fiados(nome, apelido, telefone, cpf) VALUES('"
-		+ campoNome.getText() +
+		+ (campoNome.getText().replaceAll("'","")) +
 		"', '" + campoApelido.getText() +
-		"', " + Integer.parseInt(campoTelefone.getText()) + ", '" + pegaCPF + "');";
+		"', " + Integer.parseInt((campoTelefone.getText().replaceAll("[^0-9]+",""))) + ", '" + pegaCPF + "');";
 		
 		envia.executaUpdate(formatacao);
 		
@@ -247,8 +244,9 @@ public class CadastrarFiado extends JFrame implements ActionListener, FocusListe
 		}
 		
 		bancoNome = campoNome.getText();
-		
 		envia.fechaConexao();
+		
+		DiarioLog.add("Cadastrou o cliente fiado " + campoNome.getText() + " de CPF: " + pegaCPF + ".", 5);		
 		FinalizarCadastro();
 	}
 	
@@ -259,7 +257,11 @@ public class CadastrarFiado extends JFrame implements ActionListener, FocusListe
 			MenuPrincipal.Ativar(true);
 			PainelVendaRapida.setFiado(bancoNome, bancoFiadorID);
 		}
-		
+		else if(callBack == 2) // qm chamou foi venda mesa
+		{
+			MenuPrincipal.Ativar(true);
+			PainelVenda.setFiado(bancoNome, bancoFiadorID);
+		}		
 		Terminar();
 	}
 	
@@ -268,7 +270,7 @@ public class CadastrarFiado extends JFrame implements ActionListener, FocusListe
 		if(!("".equals(campoNome.getText().trim())) && !("".equals(campoTelefone.getText().trim())))
 		{
 			concluir.setEnabled(true);
-			getRootPane().setDefaultButton(concluir);
+			//getRootPane().setDefaultButton(concluir);
 		}
 	}
 	
@@ -278,6 +280,23 @@ public class CadastrarFiado extends JFrame implements ActionListener, FocusListe
 		{
 			CadastraFiado();
 		}
+		
+		if(e.getSource() == concluir)
+		{
+			if(!("".equals(campoNome.getText().trim())) && !("".equals(campoTelefone.getText().trim())))
+			{
+				if(cadastrar)
+					CadastrarClienteFiado();
+				else
+					FinalizarCadastro();
+			}
+		}
+		
+		if(e.getSource() == cancelar)
+		{
+			bancoFiadorID = 0;
+			FinalizarCadastro();
+		}		
 	}
 	
 	private void CadastraFiado()

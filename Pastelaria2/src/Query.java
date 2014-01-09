@@ -3,8 +3,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import javax.swing.JOptionPane;
 
 public class Query
 {
@@ -16,16 +16,18 @@ public class Query
 	{		
         try {
     		Class.forName("com.mysql.jdbc.Driver");
-    		this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/pastelaria", "adminpuc", "puc");	// URL, user, senha
-    		this.st = this.con.prepareStatement(query);
+    		this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/pastelaria", "root", "puc4321");	// URL, user, senha
     		
+    		this.st = this.con.prepareStatement(query);
     		this.resultado = this.st.executeQuery();
 
         } catch (SQLException ex) {
-            Logger lgr = Logger.getLogger(Query.class.getName());
-            lgr.log(Level.SEVERE, ex.getMessage(), ex);
+            //Logger lgr = Logger.getLogger(Query.class.getName());
+            //lgr.log(Level.SEVERE, ex.getMessage(), ex);
+            JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + ex.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
         } catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 	
@@ -33,16 +35,18 @@ public class Query
 	{		
         try {
     		Class.forName("com.mysql.jdbc.Driver");
-    		this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/pastelaria", "adminpuc", "puc");	// URL, user, senha
+    		this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/pastelaria", "root", "puc4321");	// URL, user, senha
     		this.st = this.con.prepareStatement(query);
-    		
+
     		this.st.executeUpdate();
 
         } catch (SQLException ex) {
-            Logger lgr = Logger.getLogger(Query.class.getName());
-            lgr.log(Level.SEVERE, ex.getMessage(), ex);
+            //Logger lgr = Logger.getLogger(Query.class.getName());
+            //lgr.log(Level.SEVERE, ex.getMessage(), ex);
+        	JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + ex.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
         } catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
 		}
 	}	
 	
@@ -55,7 +59,8 @@ public class Query
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
 		
@@ -68,7 +73,8 @@ public class Query
 			return this.resultado.getString(coluna);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
 			return null;
 		}
 	}
@@ -79,7 +85,20 @@ public class Query
 			return this.resultado.getInt(coluna);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
+			return 0;
+		}
+	}
+	
+	public int getInt(int coluna)
+	{
+		try {
+			return this.resultado.getInt(coluna);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
 			return 0;
 		}
 	}	
@@ -98,8 +117,9 @@ public class Query
             }
 
         } catch (SQLException ex) {
-            Logger lgr = Logger.getLogger(Query.class.getName());
-            lgr.log(Level.WARNING, ex.getMessage(), ex);
+            //Logger lgr = Logger.getLogger(Query.class.getName());
+            //lgr.log(Level.WARNING, ex.getMessage(), ex);
+            JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + ex.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
         }		
 	}
 }

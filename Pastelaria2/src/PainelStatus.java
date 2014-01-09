@@ -24,18 +24,17 @@ public class PainelStatus extends JPanel implements Runnable, MouseListener {
 
     protected TimerThread timerThread;
     static private JLabel leftLabel;
-    private JButton bSair;
+    private JButton bSair, bOpcoes;
     static private String nomeFun = "xastre";
     
-    public PainelStatus(String nomeFuncionario)
+    public PainelStatus()
     {
     	run();
-    	setNome(nomeFuncionario);
     }
     
     static public void setNome(String nomeFuncionario)
     {
-    	leftLabel.setText("OlÃ¡, " + nomeFuncionario + ".");
+    	leftLabel.setText("Olá, " + nomeFuncionario + ".");
     	nomeFun = nomeFuncionario;
     }
     
@@ -48,7 +47,7 @@ public class PainelStatus extends JPanel implements Runnable, MouseListener {
     public void run() {
 
         setLayout(new BorderLayout());
-		this.setMaximumSize(new Dimension(800, 40));
+		this.setMaximumSize(new Dimension(1920, 40));
 		this.setMinimumSize(new Dimension(800, 40));
 		
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "*"));
@@ -58,13 +57,19 @@ public class PainelStatus extends JPanel implements Runnable, MouseListener {
         leftLabel.setFont(new Font("sans-serif", Font.PLAIN, 12));
         statusBar.setLeftComponent(leftLabel);
         
-        ImageIcon iconeSair = new ImageIcon("imgs/sair.png");
+        ImageIcon iconeSair = new ImageIcon(getClass().getResource("imgs/sair.png"));
         bSair = new JButton(iconeSair);
         bSair.addMouseListener(this);
         bSair.setBorder(BorderFactory.createEmptyBorder());
         bSair.setContentAreaFilled(false);        
         statusBar.setLeftComponent(bSair);
 
+        ImageIcon iconeOpcoes = new ImageIcon(getClass().getResource("imgs/opcoes.png"));
+        bOpcoes = new JButton(iconeOpcoes);
+        bOpcoes.addMouseListener(this);
+        bOpcoes.setBorder(BorderFactory.createEmptyBorder());
+        bOpcoes.setContentAreaFilled(false);       
+        
         final JLabel dateLabel = new JLabel();
         dateLabel.setHorizontalAlignment(JLabel.CENTER);
         statusBar.addRightComponent(dateLabel);
@@ -72,6 +77,8 @@ public class PainelStatus extends JPanel implements Runnable, MouseListener {
         final JLabel timeLabel = new JLabel();
         timeLabel.setHorizontalAlignment(JLabel.CENTER);
         statusBar.addRightComponent(timeLabel);
+        
+        statusBar.addRightComponent(bOpcoes);
 
         add(statusBar, BorderLayout.SOUTH);
 
@@ -129,14 +136,19 @@ public class PainelStatus extends JPanel implements Runnable, MouseListener {
 	public void mouseClicked(MouseEvent e) {
 		if(e.getSource() == bSair)
 		{
-			int opcao = JOptionPane.showConfirmDialog(null, "VocÃª tem certeza que quer sair?", "Logout",JOptionPane.YES_NO_OPTION);
+			int opcao = JOptionPane.showConfirmDialog(null, "Você tem certeza que deseja sair?", "Logout", JOptionPane.YES_NO_OPTION);
 			
 			if(opcao == JOptionPane.YES_OPTION)
 			{
-				MenuPrincipal.DeletarPrincipal();
+				DiarioLog.add("Saiu do sistema.", 9);
+				MenuPrincipal.setarVisible(false);
 				MenuLogin LoginNovo = new MenuLogin();
 				LoginNovo.setVisible(true);	
 			}	
+		}
+		if(e.getSource() == bOpcoes)
+		{
+			FrameOpcoes opcoes = new FrameOpcoes();
 		}
 	}
 

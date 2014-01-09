@@ -1,17 +1,19 @@
 import java.awt.*;
+
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+
 import java.awt.event.*;
 
 public class PainelMesas extends JPanel implements MouseListener
 {
-	private int qntdmesas;
+	private static int qntdmesas;
 	private JPanel mesasPainel;
-	private JButton[] mesas;
+	private static BotaoMesa[] mesas;
 	
 	PainelMesas(int qntd)
 	{
-		this.qntdmesas = qntd;
+		qntdmesas = qntd;
 		mesasPainel = new JPanel();
 		
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Mesas"));
@@ -28,31 +30,90 @@ public class PainelMesas extends JPanel implements MouseListener
 		int colunas = 0;
 		int linhas  = 0;
 		int quebra_linhas = 0;
-		
-		mesas = new JButton[this.qntdmesas];
-		ImageIcon[] iconeMesas = new ImageIcon[this.qntdmesas];
-		for(int i = 0; i < this.qntdmesas; i++)
+	
+		mesas = new BotaoMesa[qntdmesas];
+
+		for(int i = 0; i < qntdmesas; i++)
 		{
 			String nomeMesa = "Mesa ";
-			mesas[i] = new JButton(nomeMesa + (i+1));
+			mesas[i] = new BotaoMesa(nomeMesa + (i+1));
 			mesas[i].setPreferredSize(new Dimension(100, 52));
-			iconeMesas[i] = new ImageIcon("imgs/mesa.png");
-			mesas[i].setIcon(iconeMesas[i]);
 			mesas[i].setHorizontalTextPosition(AbstractButton.CENTER);
 			mesas[i].setVerticalTextPosition(AbstractButton.BOTTOM);
 			mesas[i].addMouseListener(this);
 
 			Query pega = new Query();
-			pega.executaQuery("SELECT * FROM produtosMesa WHERE mesa_id = "+ (i+1) +";");
-			System.out.print(""+(i+1)+"==");
+			pega.executaQuery("SELECT mesa_id FROM produtosMesa WHERE mesa_id = "+ (i+1) +";");
+			
 			if(pega.next()){
-				//MESA SENDO USADA
-				System.out.print("USADA");
+				mesas[i].setIcon(new ImageIcon(getClass().getResource("imgs/mesa_ocupada.png")));
+				mesas[i].setFont(new Font("Verdana", Font.PLAIN, 12));
+				mesas[i].setForeground(new Color(191, 93, 12));
+				
+				Venda recibo = new Venda();
+				Query pega3 = new Query();
+				pega3.executaQuery("SELECT * FROM produtosMesa WHERE mesa_id = "+ (i+1) +";");		
+				
+				while(pega3.next())
+				{
+					String nomeProduto = pega3.getString("produto");
+					String adicionais = pega3.getString("adicionais");
+					String[] nome = adicionais.split(", ");
+					
+					int qntd2 = pega3.getInt("qntd");
+					Produto p = new Produto();
+					
+					Query pega1 = new Query();
+					pega1.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + nomeProduto + "';");
+					
+					if(pega1.next())
+					{
+						double precoProduto = Double.parseDouble(pega1.getString("preco").replaceAll(",", "."));
+						
+						p.setNome(nomeProduto);
+						p.setPreco(precoProduto);
+						
+						if(nome.length > 0)
+						{
+							for(int z = 0 ; z < nome.length ; z++)
+							{
+								Query pega2 = new Query();
+								pega2.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + nome[z] + "' AND `tipo` = 2;");
+								
+								if(pega2.next())
+								{
+									double pAdicional = Double.parseDouble(pega2.getString("preco").replaceAll(",", "."));
+									
+									Adicionais adcional = new Adicionais();
+									adcional.nomeAdicional = nome[z];
+									adcional.precoAdicional = pAdicional;
+									
+									p.adicionrAdc(adcional);
+								}
+								pega2.fechaConexao();
+							}
+						}
+						if(qntd2 > 0)
+							for(int z = 0; z < qntd2 ; z++)
+								recibo.adicionarProduto(p);
+
+					}	
+					pega1.fechaConexao();
+					//x++;
+				}
+				
+				pega3.fechaConexao();
+				recibo.calculaTotal();
+				
+				mesas[i].legendaBotao = nomeMesa + (i+1) + " - Total: R$" + String.format("%.2f", recibo.getTotal());// coloque a legenda aqui
 			}else{
-				//MESA FECHADA
-				System.out.print("LIVRE");
+				mesas[i].setIcon(new ImageIcon(getClass().getResource("imgs/mesa.png")));
+				mesas[i].setFont(new Font("Verdana", Font.PLAIN, 12));
+				mesas[i].setForeground(Color.BLACK);
+				mesas[i].legendaBotao = nomeMesa + (i+1);
 			}
 			
+			pega.fechaConexao();
 			
 			gbc.gridx = colunas;
 			gbc.gridy = linhas;
@@ -75,13 +136,114 @@ public class PainelMesas extends JPanel implements MouseListener
 		scroll.setMinimumSize(new Dimension(800, 390));
 		scroll.setMaximumSize(new Dimension(800, 390));
 		scroll.setBorder(BorderFactory.createEmptyBorder());
+		scroll.getVerticalScrollBar().setUnitIncrement(16);
 		add(scroll);
+	}
+	
+	private class BotaoMesa extends JButton
+	{
+		public String legendaBotao;
+		
+	    public BotaoMesa(String txt) {
+	        super(txt);
+	    }
+	}
+	
+	static public void refresh()
+	{
+		for(int i = 0; i < qntdmesas; i++)
+		{
+			Query pega = new Query();
+			pega.executaQuery("SELECT mesa_id FROM produtosMesa WHERE mesa_id = "+ (i+1) +";");
+			
+			if(pega.next()){
+				mesas[i].setIcon(new ImageIcon(mesas[i].getClass().getResource("imgs/mesa_ocupada.png")));
+				mesas[i].setFont(new Font("Verdana", Font.PLAIN, 12));
+				mesas[i].setForeground(new Color(191, 93, 12));
+
+				Query pega9 = new Query();
+				pega9.executaQuery("SELECT mesa_id FROM produtosMesa WHERE mesa_id = "+ (i+1) +";");
+				
+				if(pega9.next()){
+					mesas[i].setIcon(new ImageIcon(mesas[i].getClass().getResource("imgs/mesa_ocupada.png")));
+					mesas[i].setFont(new Font("Verdana", Font.PLAIN, 12));
+					mesas[i].setForeground(new Color(191, 93, 12));
+					
+					Venda recibo = new Venda();
+					Query pega3 = new Query();
+					pega3.executaQuery("SELECT * FROM produtosMesa WHERE mesa_id = "+ (i+1) +";");		
+					
+					while(pega3.next())
+					{
+						String nomeProduto = pega3.getString("produto");
+						String adicionais = pega3.getString("adicionais");
+						String[] nome = adicionais.split(", ");
+						
+						int qntd2 = pega3.getInt("qntd");
+						Produto p = new Produto();
+						
+						Query pega1 = new Query();
+						pega1.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + nomeProduto + "';");
+						
+						if(pega1.next())
+						{
+							double precoProduto = Double.parseDouble(pega1.getString("preco").replaceAll(",", "."));
+							
+							p.setNome(nomeProduto);
+							p.setPreco(precoProduto);
+							
+							if(nome.length > 0)
+							{
+								for(int z = 0 ; z < nome.length ; z++)
+								{
+									Query pega2 = new Query();
+									pega2.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + nome[z] + "' AND `tipo` = 2;");
+									
+									if(pega2.next())
+									{
+										double pAdicional = Double.parseDouble(pega2.getString("preco").replaceAll(",", "."));
+										
+										Adicionais adcional = new Adicionais();
+										adcional.nomeAdicional = nome[z];
+										adcional.precoAdicional = pAdicional;
+										
+										p.adicionrAdc(adcional);
+									}
+									pega2.fechaConexao();
+								}
+							}
+							if(qntd2 > 0)
+								for(int z = 0; z < qntd2 ; z++)
+									recibo.adicionarProduto(p);
+
+						}	
+						pega1.fechaConexao();
+						//x++;
+					}
+					
+					pega3.fechaConexao();
+					recibo.calculaTotal();
+					
+					mesas[i].legendaBotao = "Mesa " + (i+1) + " - Total: R$" + String.format("%.2f", recibo.getTotal());
+				
+				pega9.fechaConexao();
+			}
+				
+			}else{
+				mesas[i].setIcon(new ImageIcon(mesas[i].getClass().getResource("imgs/mesa.png")));
+				mesas[i].setFont(new Font("Verdana", Font.PLAIN, 12));
+				mesas[i].setForeground(Color.BLACK);
+				mesas[i].legendaBotao = "Mesa " + (i+1);
+			}
+			
+			pega.fechaConexao();
+		}
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e)
 	{
-		for(int i = 0; i < this.qntdmesas; i++)
+		for(int i = 0; i < qntdmesas; i++)
 		{
 			if(e.getSource() == mesas[i])
 			{
@@ -104,11 +266,11 @@ public class PainelMesas extends JPanel implements MouseListener
 	@Override
 	public void mouseEntered(MouseEvent e)
 	{
-		for(int i = 0; i < this.qntdmesas; i++)
+		for(int i = 0; i < qntdmesas; i++)
 		{
 			if(e.getSource() == mesas[i])
 			{
-				PainelLegenda.AtualizaLegenda("Mesa " + (i+1));
+				PainelLegenda.AtualizaLegenda(mesas[i].legendaBotao);
 				break;
 			}
 		}

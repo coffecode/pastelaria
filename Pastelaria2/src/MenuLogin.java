@@ -1,9 +1,5 @@
 import java.awt.*;
-
-//import com.jtattoo.plaf.smart.SmartLookAndFeel;
 import javax.swing.*;
-
-//import javax.swing.UIManager.*;
 import java.awt.event.*;
 
 public class MenuLogin extends JFrame implements ActionListener
@@ -12,52 +8,42 @@ public class MenuLogin extends JFrame implements ActionListener
 	private JTextField CampoUsername;
 	private JPasswordField CampoPassword;
 	private JButton Confere;
-	private JPanel Painel;
-	
-	static public String logado = "";
+	static public String logado;
 	
 	public MenuLogin()
-	{
-		/*try {
-			UIManager.setLookAndFeel("com.jtattoo.plaf.smart.SmartLookAndFeel");
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnsupportedLookAndFeelException e) {//
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-		
-		setTitle("Login");
+	{		
+		setTitle("Login do Sistema");
 		JPanel login = new JPanel();
 		login.setLayout(null);
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		LabelUsername = new JLabel("Usu·rio:");
+		LabelUsername.setFont(new Font("Verdana", Font.BOLD, 12));
 		LabelUsername.setBounds(15,20,70,30); // Coluna, Linha, Largura, Altura!
 		login.add(LabelUsername);
 		
 		CampoUsername = new JTextField();
+		CampoUsername.setHorizontalAlignment(SwingConstants.CENTER);
 		CampoUsername.setBounds(95,20,120,30);
 		login.add(CampoUsername);
 		
 		LabelPassword = new JLabel("Senha:");
+		LabelPassword.setFont(new Font("Verdana", Font.BOLD, 12));
 		LabelPassword.setBounds(15,60,70,30); // Coluna, Linha, Largura, Altura
 		login.add(LabelPassword);
 		
 		CampoPassword = new JPasswordField();
+		CampoPassword.setHorizontalAlignment(SwingConstants.CENTER);
 		CampoPassword.setBounds(95,60,120,30);
 		login.add(CampoPassword);
 		
-		Confere = new JButton("Entrar");
-		Confere.setBounds(100,110,85,40);
+		Confere = new JButton("Entrar ");
+		
+		Confere.setIcon(new ImageIcon(getClass().getResource("imgs/login.png")));
+		Confere.setFont(new Font("Helvetica", Font.BOLD, 16));
+		Confere.setHorizontalTextPosition(AbstractButton.LEFT);			
+		Confere.setBounds(95,110,120,40);
 		login.add(Confere);
 		
 		Creditos = new JLabel("Desenvolvido por CodeCoffe - 2013");
@@ -67,18 +53,13 @@ public class MenuLogin extends JFrame implements ActionListener
 		
 		add(login);
 		
-		setSize(280,220);							// Largura, Altura
+		setSize(260,220);							// Largura, Altura
 		setLocationRelativeTo(null);				// Abre no centro da tela
 		
 		Confere.addActionListener(this);
-		getRootPane().setDefaultButton(Confere);	// Ao apertar ENTER acione o bot√£o
+		getRootPane().setDefaultButton(Confere);
+		setIconImage(new ImageIcon(getClass().getResource("imgs/icone_programa.png")).getImage());
 		setResizable(false);
-	}
-	
-	public static void main(String[] args)
-	{
-		MenuLogin login = new MenuLogin();
-		login.setVisible(true);					// Mostrando o Frame
 	}
 	
 	public void actionPerformed(ActionEvent e)
@@ -97,9 +78,13 @@ public class MenuLogin extends JFrame implements ActionListener
 					dispose();		// Fecha o JFrame
 					
 					logado = teste.getString("nome");
-					
-					MenuPrincipal principal = new MenuPrincipal(teste.getInt("level"), teste.getString("nome"));
+
+					PainelStatus.setNome(teste.getString("nome"));
+					PainelMenu.setarLevel(teste.getInt("level"));
+					MenuPrincipal.setarVisible(true);
+
 					teste.fechaConexao();
+					DiarioLog.add("Fez login no sistema.", 8);
 				}
 				else
 				{

@@ -1,17 +1,16 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.text.DecimalFormat;
 import java.util.*;
 
 import javax.swing.*;
 
-public class VendaRapidaAdicionaisCampo extends JPanel implements ActionListener
+public class VendaMesaProdutoCampo extends JPanel implements ActionListener
 {
     private final JTextField tf;
-    private final JComboBox combo = new JComboBox();
+    private final static JComboBox combo = new JComboBox();
     private final Vector<String> v = new Vector<String>();
     
-    public VendaRapidaAdicionaisCampo()
+    public VendaMesaProdutoCampo()
     {
         super(new BorderLayout());
         combo.setEditable(true);
@@ -48,7 +47,6 @@ public class VendaRapidaAdicionaisCampo extends JPanel implements ActionListener
                    }
         		});
         	}
-        	
         	
         	public void keyPressed(KeyEvent e)
         	{
@@ -87,7 +85,7 @@ public class VendaRapidaAdicionaisCampo extends JPanel implements ActionListener
         String nomes;
         
 		Query pega = new Query();
-		pega.executaQuery("SELECT * FROM produtos WHERE `tipo` = 2");
+		pega.executaQuery("SELECT * FROM produtos WHERE `tipo` = 1");
 		
 		while(pega.next())
 		{
@@ -127,22 +125,19 @@ public class VendaRapidaAdicionaisCampo extends JPanel implements ActionListener
     }
 	@Override
 	public void actionPerformed(ActionEvent e) {
-        if(e.getSource() == combo)
-        {
-        	PainelVendaRapida.updateCampo();        	
-        }
+        PainelVenda.updateCampo();
 	}
 	
-	public String getSelecionado()
+	static public String getSelecionado()
 	{
 		if(combo.getSelectedIndex() == -1)
-			return null;		
+			return null;
 		
 		return combo.getSelectedItem().toString();
 	}
 	
-	public void setFocus()
+	static public void setFocus()
 	{
 		combo.requestFocus();
-	}	
+	}
 }

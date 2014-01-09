@@ -17,9 +17,11 @@ import java.awt.BorderLayout;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 
@@ -44,7 +46,7 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 	
 	PainelFuncionarios()
 	{
-		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Gerenciar FuncionÃ¡rios"));
+		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Gerenciar Funcionários"));
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setMinimumSize(new Dimension(800, 480));		// Horizontal , Vertical
 		setMaximumSize(new Dimension(800, 480));
@@ -71,9 +73,9 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 		};
 		
 		tabela.addColumn("Nome");
-		tabela.addColumn("UsuÃ¡rio");
+		tabela.addColumn("Usuário");
 		tabela.addColumn("Senha");
-		tabela.addColumn("NÃ­vel");
+		tabela.addColumn("Cargo");
 		tabela.addColumn("Deletar");
 		
 		Query pega = new Query();
@@ -91,7 +93,7 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 				linha.add(pega.getString("password"));
 				
 				if(pega.getInt("level") < 2)
-					linha.add("FuncionÃ¡rio");
+					linha.add("Funcionário");
 				else
 					linha.add("Gerente");
 				
@@ -103,7 +105,7 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 		}
 		
 		tabelaFuncionarios = new JTable() {
-		    Color alternate = new Color(141, 182, 205);
+			Color alternate = new Color(206, 220, 249);
 		    
 		    @Override
 		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
@@ -131,20 +133,20 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 		centraliza.setHorizontalAlignment( JLabel.CENTER );
 		
 		tabelaFuncionarios.getColumn("Nome").setCellRenderer(centraliza);
-		tabelaFuncionarios.getColumn("UsuÃ¡rio").setCellRenderer(centraliza);
+		tabelaFuncionarios.getColumn("Usuário").setCellRenderer(centraliza);
 		tabelaFuncionarios.getColumn("Senha").setCellRenderer(centraliza);
-		tabelaFuncionarios.getColumn("NÃ­vel").setCellRenderer(centraliza);
+		tabelaFuncionarios.getColumn("Cargo").setCellRenderer(centraliza);
 		tabelaFuncionarios.getColumn("Deletar").setCellRenderer(centraliza);
 		tabelaFuncionarios.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
 		tabelaFuncionarios.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));
 		
-		String[] tiposFuncionario = { "FuncionÃ¡rio", "Gerente" };
+		String[] tiposFuncionario = { "Funcionário", "Gerente" };
 		
-		tabelaFuncionarios.getColumn("NÃ­vel").setCellEditor(new MyComboBoxEditor(tiposFuncionario));
+		tabelaFuncionarios.getColumn("Cargo").setCellEditor(new MyComboBoxEditor(tiposFuncionario));
 		
 		MyComboBoxRenderer combo = new MyComboBoxRenderer(tiposFuncionario);
 		((JLabel)combo.getRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
-		tabelaFuncionarios.getColumn("NÃ­vel").setCellRenderer(combo);
+		tabelaFuncionarios.getColumn("Cargo").setCellRenderer(combo);
 		
 		tabelaFuncionarios.getModel().addTableModelListener(this);		
 		
@@ -156,7 +158,21 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 		JScrollPane scrolltabela = new JScrollPane(tabelaFuncionarios);
 		add(scrolltabela);
 		
-		addPainel = new JPanel();
+		addPainel = new JPanel(){
+			@Override
+		    public void paintComponent(Graphics g) {
+		        super.paintComponent(g);
+		        Graphics2D g2d = (Graphics2D) g;
+		        Color color1 = getBackground();
+		        Color color2 = new Color(207, 220, 249);
+		        int w = getWidth();
+		        int h = getHeight();
+		        GradientPaint gp = new GradientPaint(
+		            0, 0, color1, 0, h, color2);
+		        g2d.setPaint(gp);
+		        g2d.fillRect(0, 0, w, h);
+		    }
+		};
 		addPainel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Adicionar"));
 		addPainel.setLayout(new GridBagLayout());
 		addPainel.setMinimumSize(new Dimension(800, 200));
@@ -166,11 +182,12 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 		gbc.insets = new Insets(5,5,5,5);  //top padding
 		
 		campoLevel = new JComboBox(tiposFuncionario);
+		((JLabel)campoLevel.getRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
 		campoLevel.setSelectedIndex(0);
 		campoLevel.setPreferredSize(new Dimension(150, 30));
 		
 		adicionarNome = new JLabel("Nome: ");
-		adicionarUser = new JLabel("UsuÃ¡rio: ");
+		adicionarUser = new JLabel("Usuário: ");
 		adicionarSenha = new JLabel("Senha: ");
 		
 		campoNome = new JTextField();
@@ -180,7 +197,7 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 		campoSenha = new JTextField();
 		campoSenha.setPreferredSize(new Dimension(150, 30));
 		
-		ImageIcon iconePlus = new ImageIcon("imgs/plus2.png");
+		ImageIcon iconePlus = new ImageIcon(getClass().getResource("imgs/plus2.png"));
 		adicionar = new JButton("Adicionar");
 		adicionar.setIcon(iconePlus);
 		adicionar.setPreferredSize(new Dimension(150, 30));
@@ -223,6 +240,7 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 		
 		addPainel.add(adicionar, gbc);
 		
+		MenuPrincipal.setarEnter(adicionar);
 		add(addPainel);
 	}
 	
@@ -272,12 +290,13 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 				String formatacao;
 				Query envia = new Query();
 				formatacao = "INSERT INTO funcionarios(username, password, level, nome) VALUES('"
-				+ campoUser.getText() +
-				"', '" + campoSenha.getText() +
-				"', " + level + ", '" + campoNome.getText() + "');";
+				+ (campoUser.getText().replaceAll("'", "")) +
+				"', '" + (campoSenha.getText().replaceAll("'", "")) +
+				"', " + level + ", '" + (campoNome.getText().replaceAll("'", "")) + "');";
 				
 				envia.executaUpdate(formatacao);
 				envia.fechaConexao();
+				DiarioLog.add("Adicionou o funcionário " + (campoUser.getText().replaceAll("'", "")) + ".", 4);
 				
 				String tipo = "";
 				boolean flag = false;
@@ -318,7 +337,7 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 		  public Component getTableCellRendererComponent(JTable table, Object value,
 		      boolean isSelected, boolean hasFocus, int row, int column) {
 			  
-			  setIcon(new ImageIcon("imgs/delete.png"));
+			  setIcon(new ImageIcon(getClass().getResource("imgs/delete.png")));
 			  
 		    if (isSelected) {
 		    		setForeground(table.getSelectionForeground());
@@ -364,7 +383,7 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 		    	button.setBackground(table.getBackground());
 		    }
 		    label = (value == null) ? "" : value.toString();
-		    button.setIcon(new ImageIcon("imgs/delete.png"));
+		    button.setIcon(new ImageIcon(getClass().getResource("imgs/delete.png")));
 		    isPushed = true;
 		    return button;
 		  }
@@ -376,9 +395,10 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 		    	  String pega = (String) tabelaFuncionarios.getValueAt(tabelaFuncionarios.getSelectedRow(), 1);
 			      String formatacao;
 			      Query envia = new Query();
-			      formatacao = "DELETE FROM funcionarios WHERE `username` = '" + pega + "';";
+			      formatacao = "DELETE FROM funcionarios WHERE `username` = '" + (pega.replaceAll("'", "")) + "';";
 			      envia.executaUpdate(formatacao);
 			      envia.fechaConexao();
+			      DiarioLog.add("Deletou o funcionário " + (pega.replaceAll("'", "")) + ".", 4);
 			          
 			      SwingUtilities.invokeLater(new Runnable() {  
 			    	  public void run() {  
@@ -419,9 +439,11 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 		        
 			    String formatacao;
 			    Query envia = new Query();
-			    formatacao = "UPDATE funcionarios SET "+tipo+" = '" + data + "' WHERE nome = '"+pega+"' " ;
+			    formatacao = "UPDATE funcionarios SET "+tipo+" = '" + data + "' WHERE nome = '"+ (pega.replaceAll("'", "")) +"' " ;
 			    envia.executaUpdate(formatacao);
 			    envia.fechaConexao();
+			    DiarioLog.add("Atualizou o " + tipo + "do funcionário " + (pega.replaceAll("'", "")) + " para " + data + ".", 4);
+			    
 	        }else if(column == 3){
 	        	TableModel model = (TableModel)e.getSource();
 				String data = (String) model.getValueAt(row, column);
@@ -434,9 +456,10 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 				}
 				String formatacao;
 				Query envia = new Query();
-				formatacao = "UPDATE funcionarios SET level =  " + tipo + " WHERE nome = '"+pega+"' " ;
+				formatacao = "UPDATE funcionarios SET level =  " + tipo + " WHERE nome = '"+ (pega.replaceAll("'", "")) +"' " ;
 				envia.executaUpdate(formatacao);
-				envia.fechaConexao();  		  
+				envia.fechaConexao();
+				DiarioLog.add("Alterou o cargo de " + (pega.replaceAll("'", "")) + " para " + (tipo == 1 ? "funcionário" : "gerente") + ".", 4);					
 	        }
 	    }	
 }

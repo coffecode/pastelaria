@@ -427,18 +427,22 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		add(pedidoPainel);
 		add(pagamentoPainel);
 		
-		//MenuPrincipal.setarEnter(adicionarProduto);
-		
 		ActionMap actionMap = getActionMap();
 		actionMap.put("botao1", new AtalhoAction(0));
 		actionMap.put("botao2", new AtalhoAction(1));
 		actionMap.put("botao3", new AtalhoAction(2));
+		actionMap.put("botao4", new AtalhoAction(3));
 		setActionMap(actionMap);
 		
 		InputMap imap = getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
-		imap.put(KeyStroke.getKeyStroke("TAB"), "botao1");
-		imap.put(KeyStroke.getKeyStroke("PLUS"), "botao2");
-		imap.put(KeyStroke.getKeyStroke("MINUS"), "botao3");
+		imap.put(KeyStroke.getKeyStroke("control Q"), "botao1");
+		imap.put(KeyStroke.getKeyStroke("alt Q"), "botao1");
+		imap.put(KeyStroke.getKeyStroke("alt UP"), "botao1");
+		imap.put(KeyStroke.getKeyStroke("alt RIGHT"), "botao2");
+		imap.put(KeyStroke.getKeyStroke("alt LEFT"), "botao3");
+		imap.put(KeyStroke.getKeyStroke("alt DOWN"), "botao4");
+		imap.put(KeyStroke.getKeyStroke("alt ENTER"), "botao4");
+		imap.put(KeyStroke.getKeyStroke("control ENTER"), "botao4");
 	}
 	
 	private class AtalhoAction extends AbstractAction {
@@ -460,13 +464,12 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
         	{
         		case 0:	// tab
         		{
-        			System.out.println("passou aqui 0");
+        			campoQuantidade.setText("");
         			campoQuantidade.requestFocus();
         			break;
         		}
         		case 1: // plus
         		{
-        			System.out.println("passou aqui 1");
         			JButton botao = new JButton();
         			ImageIcon iconeRemove = new ImageIcon(getClass().getResource("imgs/remove.png"));
         			botao.setIcon(iconeRemove);
@@ -482,7 +485,6 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
         		}
         		case 2: // minus
         		{
-        			System.out.println("passou aqui 2");
         			if(addRemover.size() > 0)
         			{        				
 						addAdicional.remove((addRemover.size()-1));
@@ -514,6 +516,78 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
         				campoValor.setText(pegaPreco);
         				MenuPrincipal.AbrirPrincipal(0, false);        				
         			}        			
+        			break;
+        		}
+        		case 3: // adicionar
+        		{
+        			String nomeProduto = addProduto.getSelecionado();
+        			
+        			if(nomeProduto == null)
+        			{
+        				JOptionPane.showMessageDialog(null, "Você precisa selecionar um produto antes!");
+        			}
+        			else
+        			{
+        				Produto p = new Produto();
+        				
+        				Query pega = new Query();
+        				pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + nomeProduto + "';");
+        				
+        				if(pega.next())
+        				{
+        					double precoProduto = Double.parseDouble((pega.getString("preco").replaceAll(",", ".")));
+        					
+        					p.setNome(nomeProduto);
+        					p.setPreco(precoProduto);
+        					
+        					if(addAdicional.size() > 0)
+        					{
+        						for(int i = 0 ; i < addAdicional.size() ; i++)
+        						{
+        							String nomeAdicional = addAdicional.get(i).getSelecionado();
+        							pega.executaQuery("SELECT preco FROM produtos WHERE `nome` = '" + nomeAdicional + "' AND `tipo` = 2;");
+        							
+        							if(pega.next())
+        							{
+        								double pAdicional = Double.parseDouble((pega.getString("preco").replaceAll(",", ".")));
+        								
+        								Adicionais adcional = new Adicionais();
+        								adcional.nomeAdicional = nomeAdicional;
+        								adcional.precoAdicional = pAdicional;
+        								
+        								p.adicionrAdc(adcional);
+        							}
+        						}
+        					}
+        				}
+        				
+        				String limpeza = campoQuantidade.getText().replaceAll("[^0-9]+","");
+        				if(!"".equals(limpeza.trim()))
+        				{
+              				if(Integer.parseInt(limpeza) > 0)
+            					for(int i = 0; i < Integer.parseInt(limpeza) ; i++)
+            						vendaRapida.adicionarProduto(p);        					
+        				}
+        				
+        				vendaRapida.calculaTotal();
+        				String pegaPreco;
+        				pegaPreco = String.format("%.2f", vendaRapida.getTotal());		    	
+        		    	  
+        				pegaPreco.replaceAll(".", ",");	
+        				campoTotal.setText(pegaPreco);
+        				pega.fechaConexao();
+        				
+        				campoValor = new JTextField(5);
+        				campoQuantidade = new JTextField("1", 2);
+        				addProduto = new VendaRapidaProdutoCampo();
+        				campoValor = new JTextField(5);
+        				
+        				addAdicional = new ArrayList<>();
+        				addRemover = new ArrayList<>();				
+        				
+        				MenuPrincipal.AbrirPrincipal(0, false);
+        				addProduto.setFocus();
+        			}      			
         			break;
         		}        		
         		default:
@@ -893,7 +967,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			
 			if(nomeProduto == null)
 			{
-				JOptionPane.showMessageDialog(null, "VocÃª precisa selecionar um produto antes!");
+				JOptionPane.showMessageDialog(null, "Você precisa selecionar um produto antes!");
 			}
 			else
 			{
@@ -930,9 +1004,13 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 					}
 				}
 				
-				if(Integer.parseInt(campoQuantidade.getText()) > 0)
-					for(int i = 0; i < Integer.parseInt(campoQuantidade.getText()) ; i++)
-						vendaRapida.adicionarProduto(p);
+				String limpeza = campoQuantidade.getText().replaceAll("[^0-9]+","");
+				if(!"".equals(limpeza.trim()))
+				{
+      				if(Integer.parseInt(limpeza) > 0)
+    					for(int i = 0; i < Integer.parseInt(limpeza) ; i++)
+    						vendaRapida.adicionarProduto(p);        					
+				}
 				
 				vendaRapida.calculaTotal();
 				String pegaPreco;
