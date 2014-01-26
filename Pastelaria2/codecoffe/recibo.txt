@@ -1,20 +1,25 @@
 ===========================================
-              Pastelaço              
+              CodeCoffe              
 ===========================================
 *********** NAO TEM VALOR FISCAL **********
 ===========================================
 PRODUTO              QTDE  VALOR UN.  VALOR
+pastel de pizza       2      1,50      3,00    
+pastel de pizza       1      1,50      1,50    
++queijo               1      0,50      0,50    
 ===========================================
    INFORMACOES PARA FECHAMENTO DE CONTA    
 ===========================================
-Atendido por:     CodeCoffe
-Data:             Qua, 08/01/2014 - 13:03
+Atendido por:     André Alves
+Data:             Sáb, 18/01/2014 - 21:08
 ===========================================
+Taxa de Entrega                  R$2.0
+
                      ----------------------
-Total                            R$0,00
+Total                            R$7,00
 ===========================================
        OBRIGADO E VOLTE SEMPRE!	          
-       POWERED BY CodeCoffe V1.0    		  
+       POWERED BY CodeCoffe V1.5    		  
 
 
 

@@ -1,0 +1,401 @@
+package codecoffe.restaurantes.interfaceGrafica;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+
+import javax.swing.*;
+
+import codecoffe.restaurantes.mysql.Query;
+import codecoffe.restaurantes.primitivas.Venda;
+import codecoffe.restaurantes.sockets.BroadcastServer;
+import codecoffe.restaurantes.sockets.CacheTodasMesas;
+import codecoffe.restaurantes.sockets.CacheTodosProdutos;
+import codecoffe.restaurantes.sockets.Client;
+import codecoffe.restaurantes.utilitarios.Bartender;
+import codecoffe.restaurantes.utilitarios.Configuracao;
+import codecoffe.restaurantes.utilitarios.DiarioLog;
+import codecoffe.restaurantes.utilitarios.Usuario;
+import codecoffe.restaurantes.utilitarios.UtilCoffe;
+
+import com.alee.laf.panel.WebPanel;
+import com.alee.laf.rootpane.WebDialog;
+import com.alee.managers.hotkey.Hotkey;
+import com.alee.managers.hotkey.HotkeyManager;
+
+public class MenuPrincipal 
+{
+	private static JFrame janela;
+	private static JPanel principalPainel1, componentesCentrais;
+	private static Login menuLogin;
+	private static PainelMenu menuPainel;
+	private static PainelMesas menuMesas;
+	private static PainelLegenda menuFooter;
+	private static PainelStatus menuStatus;
+	private static PainelVendaRapida menuVendaRapida;
+	private static PainelProdutos menuProdutos;
+	private static PainelFuncionarios menuFuncionarios;
+	private static PainelVendas menuVendas;
+	private static PainelVendaMesa menuVendaMesa2;
+	private static PainelClientes menuClientes;
+	private static PainelCozinha menuCozinha;
+	
+	private Timer t;
+	private int loadingTime = 0;
+	
+	public MenuPrincipal(int modo, InetAddress host, int porta)
+	{
+		janela = new JFrame();
+		principalPainel1 = new JPanel();
+		
+		componentesCentrais = new JPanel(new CardLayout());
+		componentesCentrais.setMinimumSize(new Dimension(980, 400));
+		componentesCentrais.setMaximumSize(new Dimension(1920, 910));		
+		
+		if(modo == UtilCoffe.SERVER)
+		{
+			new Configuracao();
+			new Usuario();
+			new Bartender();
+			
+			janela.setTitle(Configuracao.getRestaurante() + " - Sistema de Restaurante (PRINCIPAL) " + UtilCoffe.VERSAO);
+			
+			menuVendaRapida = new PainelVendaRapida();		
+			menuPainel = new PainelMenu();
+			menuMesas = new PainelMesas();
+			menuFooter = new PainelLegenda();
+			menuStatus = new PainelStatus();
+			menuProdutos = new PainelProdutos();
+			menuFuncionarios = new PainelFuncionarios();
+			menuVendas = new PainelVendas();
+			menuVendaMesa2 = new PainelVendaMesa();
+			menuClientes = new PainelClientes();
+			menuCozinha = new PainelCozinha();
+			
+			componentesCentrais.add(menuMesas, "Menu Mesas");
+			componentesCentrais.add(menuVendaMesa2, "Menu Venda Mesa");
+			componentesCentrais.add(menuVendaRapida, "Menu Venda Rapida");
+			componentesCentrais.add(menuProdutos, "Menu Produtos");
+			componentesCentrais.add(menuFuncionarios, "Menu Funcionarios");
+			componentesCentrais.add(menuVendas, "Menu Vendas");
+			componentesCentrais.add(menuClientes, "Menu Clientes");
+			componentesCentrais.add(menuCozinha, "Menu Cozinha");
+        	
+        	CacheTodosProdutos todosP = new CacheTodosProdutos();
+        	todosP.atualizarProdutos();
+        	
+        	PainelVendaMesa.atualizaProdutos(todosP);
+			PainelVendaRapida.atualizaProdutos(todosP);
+			VendaRapidaProdutoCampo.AtualizaProdutos(todosP);
+			VendaRapidaAdicionaisCampo.AtualizaProdutos(todosP);
+			VendaMesaProdutoCampo.AtualizaProdutos(todosP);
+			VendaMesaAdicionaisCampo.AtualizaProdutos(todosP);	   			
+		}
+		else
+		{
+			new Usuario();
+			new Bartender();
+			
+			janela.setTitle(Configuracao.getRestaurante() + " - Sistema de Restaurante (TERMINAL) " + UtilCoffe.VERSAO);
+			
+			menuVendaRapida = new PainelVendaRapida();		
+			menuPainel = new PainelMenu();
+			menuMesas = new PainelMesas();
+			menuFooter = new PainelLegenda();
+			menuStatus = new PainelStatus();
+			menuVendaMesa2 = new PainelVendaMesa();
+			menuClientes = new PainelClientes();
+			menuCozinha = new PainelCozinha();
+			
+			componentesCentrais.add(menuMesas, "Menu Mesas");
+			componentesCentrais.add(menuVendaMesa2, "Menu Venda Mesa");
+			componentesCentrais.add(menuVendaRapida, "Menu Venda Rapida");
+			componentesCentrais.add(menuClientes, "Menu Clientes");
+			componentesCentrais.add(menuCozinha, "Menu Cozinha");
+			
+	    	System.out.println("Enviando pedido da lista de produtos atualizado.");
+	    	Client.enviarObjeto("UPDATE PRODUTOS");
+	    	
+	    	System.out.println("Enviando pedido da lista de mesas atualizada.");
+	    	Client.enviarObjeto("UPDATE MESAS");        	
+	    	
+	    	System.out.println("Enviando pedido da lista de pedidos atualizada.");
+	    	Client.enviarObjeto("UPDATE PEDIDOS");   			
+		}
+
+			janela.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+			janela.addWindowListener(new WindowAdapter()
+			{
+				public void windowClosing(WindowEvent e)
+				{
+					int opcao = JOptionPane.showConfirmDialog(null, "Você tem certeza que deseja sair?", "Logout",JOptionPane.YES_NO_OPTION);
+			
+					if(opcao == JOptionPane.YES_OPTION)
+						logout();
+				}
+			});
+	
+			janela.setMinimumSize(new Dimension(980, 650));	
+			janela.setMaximumSize(new Dimension(1920, 1080));	
+			janela.setLocationRelativeTo(null);
+			janela.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+	
+			principalPainel1.setLayout(new BoxLayout(principalPainel1, BoxLayout.Y_AXIS));
+			principalPainel1.setMaximumSize(new Dimension(980, 400));		
+	
+			principalPainel1.add(menuStatus);
+			principalPainel1.add(menuPainel);
+			principalPainel1.add(componentesCentrais);
+			principalPainel1.add(menuFooter);
+	
+			janela.add(principalPainel1);
+			janela.setResizable(true);
+			janela.setIconImage(new ImageIcon(getClass().getClassLoader().getResource("imgs/icone_programa.png")).getImage());
+			
+			menuLogin = new Login();
+			menuLogin.pack();
+			menuLogin.setLocationRelativeTo(null);
+			menuLogin.setVisible(true);
+			
+			/*Usuario.setNome("André Alves " + modo);
+			Usuario.setLevel(3);
+			PainelStatus.setNome(Usuario.getNome());
+			setarVisible(true);*/		
+		
+		/*
+   	 	t = new Timer(500, new ActionListener()
+   	 	{
+   	 		public void actionPerformed(ActionEvent ae)
+   	 		{	
+   	 			switch(loadingTime)
+   	 			{
+   	 				case 0:
+   	 				{
+   	 					Starter.setarProgresso("Carregando menu...", 25);
+   	 					menuPainel = new PainelMenu();
+   	 					break;
+   	 				}
+   	 				case 1:
+   	 				{
+   	 					Starter.setarProgresso("Carregando mesas...", 30);
+   	 					menuMesas = new PainelMesas(Configuracao.getMesas());
+   	 					break;
+   	 				}
+   	 				case 2:
+   	 				{
+   	 					Starter.setarProgresso("Carregando legenda...", 35);
+   	 					menuFooter = new PainelLegenda();
+   	 					break;
+   	 				}
+   	 				case 3:
+   	 				{
+   	 					Starter.setarProgresso("Carregando barra de status...", 40);
+   	 					menuStatus = new PainelStatus();
+   	 					break;
+   	 				}
+   	 				case 4:
+   	 				{
+   	 					Starter.setarProgresso("Carregando painel de venda rápida...", 50);
+   	 					menuVendaRapida = new PainelVendaRapida();
+   	 					break;
+   	 				}
+   	 				case 5:
+   	 				{
+   	 					Starter.setarProgresso("Carregando produtos & adicionais...", 60);
+   	 					menuProdutos = new PainelProdutos();
+   	 					break;
+   	 				}  
+   	 				case 6:
+   	 				{
+   	 					Starter.setarProgresso("Carregando funcionarios...", 70);
+   	 					menuFuncionarios = new PainelFuncionarios();
+   	 					break;
+   	 				}
+   	 				case 7:
+   	 				{
+   	 					Starter.setarProgresso("Carregando painel de vendas...", 80);
+   	 					menuVendas = new PainelVendas();
+   	 					break;
+   	 				}   	 				
+   	 				case 8:
+   	 				{
+   	 					Starter.setarProgresso("Carregando componentes do sistema...", 95);
+   	 					new Usuario();
+   	 					menuVendaMesa2 = new PainelVendaMesa();
+   	 					break;
+   	 				}    	 				
+   	 				case 9:
+   	 				{
+   	 					janela.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+   	 					janela.addWindowListener(new WindowAdapter()
+   	 					{
+   	 						public void windowClosing(WindowEvent e)
+   	 						{
+   	 							int opcao = JOptionPane.showConfirmDialog(null, "Você tem certeza que deseja sair??", "Logout",JOptionPane.YES_NO_OPTION);
+   	 	    			
+   	 							if(opcao == JOptionPane.YES_OPTION)
+   	 								logout();
+   	 						}
+   	 					});	
+   	 			
+   	 					componentesCentrais = new JPanel(new CardLayout());
+   	 					componentesCentrais.setMinimumSize(new Dimension(1020, 650));
+   	 					componentesCentrais.setMaximumSize(new Dimension(1920, 910));
+   	 			
+   	 					componentesCentrais.add(menuMesas, "Menu Mesas");
+   	 					componentesCentrais.add(menuVendaMesa2, "Menu Venda Mesa");
+   	 					componentesCentrais.add(menuVendaRapida, "Menu Venda Rapida");
+   	 					componentesCentrais.add(menuProdutos, "Menu Produtos");
+   	 					componentesCentrais.add(menuFuncionarios, "Menu Funcionarios");
+   	 					componentesCentrais.add(menuVendas, "Menu Vendas");			
+   	 			
+   	 					janela.setMinimumSize(new Dimension(1024, 720));	
+   	 					janela.setMaximumSize(new Dimension(1920, 1080));	
+   	 					janela.setLocationRelativeTo(null);
+   	 					janela.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+   	 			
+   	 					principalPainel1.setLayout(new BoxLayout(principalPainel1, BoxLayout.Y_AXIS));
+   	 					principalPainel1.setMaximumSize(new Dimension(800, 640));		
+   	 			
+   	 					principalPainel1.add(menuStatus);
+   	 					principalPainel1.add(menuPainel);
+   	 					principalPainel1.add(componentesCentrais);
+   	 					principalPainel1.add(menuFooter);
+   	 			
+   	 					janela.add(principalPainel1);
+   	 					janela.setResizable(true);
+   	 					janela.setIconImage(new ImageIcon(getClass().getClassLoader().getResource("imgs/icone_programa.png")).getImage());
+   	 					
+   	 					Starter.setarProgresso("Carregando login...", 95);
+   	 					menuLogin = new LoginDialog();
+   	 				
+   	 					try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e1) {
+							JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e1.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
+						}
+   	 					
+   	 					Starter.loadingFinalizado();
+   	 					menuLogin.pack ();
+   	 					menuLogin.setLocationRelativeTo(null);
+   	 					menuLogin.setVisible(true);   	 					
+   	 					break;
+   	 				}   	 				
+   	 				default:
+   	 				{
+   	 					t.stop();
+   	 				}
+   	 			}
+   	 			
+   	 			loadingTime++;
+   	 		}
+   	 	});
+   	 	
+   	 	t.start();*/
+	}
+	
+	static public JFrame getJanela()
+	{
+		return janela;
+	}
+	
+	static public void setarVisible(boolean set)
+	{
+		janela.setVisible(set);
+		
+		if(set)
+		{
+			menuLogin.setVisible(false);
+			menuLogin.dispose();			
+		}
+	}
+	
+	static public void setarEnter(JButton j)
+	{
+		janela.getRootPane().setDefaultButton(j);
+	}
+	
+	static public void DeletarPrincipal()
+	{
+		janela.dispose();
+	}
+	
+	static public void Ativar(boolean set)
+	{
+		janela.setEnabled(set);
+	}
+	
+	static public void atualizarTodasMesas(CacheTodasMesas tm)
+	{
+		menuMesas.atualizarTodasMesas(tm);
+	}
+	
+	static public void AbrirMesa(int mesa, Venda v, boolean refresh)
+	{
+		Usuario.setOlhando(mesa);
+		
+		if(refresh)
+			menuVendaMesa2.setarMesa(mesa, v);
+		
+		CardLayout cardLayout = (CardLayout) componentesCentrais.getLayout();
+		cardLayout.show(componentesCentrais, "Menu Venda Mesa");
+	}
+
+	static public void AbrirPrincipal(int modelo)
+	{
+		Usuario.setOlhando(-1);
+		
+		if(modelo == 0)			// Abre o menu venda rapida
+		{
+			CardLayout cardLayout = (CardLayout) componentesCentrais.getLayout();
+			cardLayout.show(componentesCentrais, "Menu Venda Rapida");
+			menuVendaRapida.setaFocusAdd();
+		}
+		else if(modelo == 1)			// Abre o menu de produtos
+		{
+			CardLayout cardLayout = (CardLayout) componentesCentrais.getLayout();
+			cardLayout.show(componentesCentrais, "Menu Produtos");
+		}
+		else if(modelo == 2)			// Abre o menu de funcionarios
+		{
+			CardLayout cardLayout = (CardLayout) componentesCentrais.getLayout();
+			cardLayout.show(componentesCentrais, "Menu Funcionarios");
+		}
+		else if(modelo == 3)			// Abre o menu de vendas
+		{
+			UltimasVendas.refresh();
+			CardLayout cardLayout = (CardLayout) componentesCentrais.getLayout();
+			cardLayout.show(componentesCentrais, "Menu Vendas");
+		}
+		else if(modelo == 4)			// Abre o inicio.
+		{
+			CardLayout cardLayout = (CardLayout) componentesCentrais.getLayout();
+			cardLayout.show(componentesCentrais, "Menu Mesas");
+		}
+		else if(modelo == 5)			// Abre o menu de clientes.
+		{
+			CardLayout cardLayout = (CardLayout) componentesCentrais.getLayout();
+			cardLayout.show(componentesCentrais, "Menu Clientes");
+		}
+		else if(modelo == 6)			// Abre o menu de cozinha.
+		{
+			CardLayout cardLayout = (CardLayout) componentesCentrais.getLayout();
+			cardLayout.show(componentesCentrais, "Menu Cozinha");
+		}		
+	}
+	
+	public static void logout()
+	{
+        menuLogin.pack ();
+        menuLogin.setVisible(true);
+        janela.setVisible(false);
+	}		
+}
