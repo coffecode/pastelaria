@@ -23,11 +23,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Iterator;
-import java.util.List;
-
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 
@@ -43,15 +39,15 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static DefaultTableModel tabela, tabelaAdc;
-	private static JTable tabelaProdutos, tabelaAdicionais;
-	private static JLabel adicionarNome, adicionarPreco;
-	private static JTextField campoNome, campoPreco;
-	private static JComboBox<?> campoTipo;
-	private static JButton adicionar;
-	private static JPanel addPainel;
+	private DefaultTableModel tabela, tabelaAdc;
+	private JTable tabelaProdutos, tabelaAdicionais;
+	private JLabel adicionarNome, adicionarPreco;
+	private JTextField campoNome, campoPreco;
+	private JComboBox<?> campoTipo;
+	private JButton adicionar;
+	private JPanel addPainel;
 	
-	PainelProdutos()
+	private PainelProdutos()
 	{
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setMinimumSize(new Dimension(1024, 650));		// Horizontal , Vertical
@@ -61,7 +57,6 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		tabbedPane.setMinimumSize(new Dimension(1020, 650));
 		tabbedPane.setMaximumSize(new Dimension(1920, 910));
         
-		//instance table model
 		tabela = new DefaultTableModel() {
 			/**
 			 * 
@@ -369,6 +364,14 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		add(addPainel);
 	}
 	
+	private static class ProdutosSingletonHolder { 
+		public static final PainelProdutos INSTANCE = new PainelProdutos();
+	}
+ 
+	public static PainelProdutos getInstance() {
+		return ProdutosSingletonHolder.INSTANCE;
+	}	
+	
 	class CustomRenderer extends DefaultTableCellRenderer 
 	{
 	    /**
@@ -478,7 +481,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 							}
 							
 							envia.fechaConexao();
-							DiarioLog.add(Usuario.getNome(), "Adicionou o produto/adicional " + (campoNome.getText().replaceAll("'", "")) + " por R$" + resultado + ".", 3);
+							DiarioLog.add(Usuario.INSTANCE.getNome(), "Adicionou o produto/adicional " + (campoNome.getText().replaceAll("'", "")) + " por R$" + resultado + ".", 3);
 						} catch (ClassNotFoundException | SQLException e1) {
 							e1.printStackTrace();
 							new PainelErro(e1);
@@ -506,12 +509,10 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 				        	CacheTodosProdutos todosP = new CacheTodosProdutos();
 				        	todosP.atualizarProdutos();
 				        	
-				        	PainelVendaMesa.atualizaProdutos(todosP);
-							PainelVendaRapida.atualizaProdutos(todosP);
-							VendaRapidaProdutoCampo.AtualizaProdutos(todosP);
-							VendaMesaProdutoCampo.AtualizaProdutos(todosP);
+				        	PainelVendaMesa.getInstance().atualizaProdutos(todosP);
+							PainelVendaRapida.getInstance().atualizaProdutos(todosP);
 							
-							Server.enviaTodos(todosP);
+							Server.getInstance().enviaTodos(todosP);
 						}
 						else
 						{
@@ -535,12 +536,10 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 				        	CacheTodosProdutos todosP = new CacheTodosProdutos();
 				        	todosP.atualizarProdutos();
 				        	
-				        	PainelVendaMesa.atualizaProdutos(todosP);
-							PainelVendaRapida.atualizaProdutos(todosP);
-							VendaRapidaAdicionaisCampo.AtualizaProdutos(todosP);
-							VendaMesaAdicionaisCampo.AtualizaProdutos(todosP);
+				        	PainelVendaMesa.getInstance().atualizaProdutos(todosP);
+							PainelVendaRapida.getInstance().atualizaProdutos(todosP);
 							
-							Server.enviaTodos(todosP);
+							Server.getInstance().enviaTodos(todosP);
 						}
 						
 						campoNome.setText("");
@@ -639,7 +638,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 					   formatacao = "DELETE FROM produtos WHERE `produtos_id` = " + tabelaProdutos.getValueAt(tabelaProdutos.getSelectedRow(), 0) + ";";  
 					   envia.executaUpdate(formatacao);
 					   envia.fechaConexao();
-					   DiarioLog.add(Usuario.getNome(), "Deletou o produto " + tabelaProdutos.getValueAt(tabelaProdutos.getSelectedRow(), 1) + ".", 3);
+					   DiarioLog.add(Usuario.INSTANCE.getNome(), "Deletou o produto " + tabelaProdutos.getValueAt(tabelaProdutos.getSelectedRow(), 1) + ".", 3);
 					   
 					   SwingUtilities.invokeLater(new Runnable() {  
 						   public void run() {  
@@ -650,12 +649,10 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 						CacheTodosProdutos todosP = new CacheTodosProdutos();
 						todosP.atualizarProdutos();
 						
-						PainelVendaMesa.atualizaProdutos(todosP);
-						PainelVendaRapida.atualizaProdutos(todosP);
-						VendaRapidaProdutoCampo.AtualizaProdutos(todosP);
-						VendaMesaProdutoCampo.AtualizaProdutos(todosP);
+						PainelVendaMesa.getInstance().atualizaProdutos(todosP);
+						PainelVendaRapida.getInstance().atualizaProdutos(todosP);
 						
-						Server.enviaTodos(todosP);
+						Server.getInstance().enviaTodos(todosP);
 				} catch (ClassNotFoundException | SQLException e) {
 					e.printStackTrace();
 					new PainelErro(e);
@@ -669,7 +666,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 					   formatacao = "DELETE FROM produtos WHERE `produtos_id` = " + tabelaAdicionais.getValueAt(tabelaAdicionais.getSelectedRow(), 0) + ";";
 					   envia.executaUpdate(formatacao);
 					   envia.fechaConexao();
-					   DiarioLog.add(Usuario.getNome(), "Deletou o adicional " + tabelaAdicionais.getValueAt(tabelaAdicionais.getSelectedRow(), 1) + ".", 3);
+					   DiarioLog.add(Usuario.INSTANCE.getNome(), "Deletou o adicional " + tabelaAdicionais.getValueAt(tabelaAdicionais.getSelectedRow(), 1) + ".", 3);
 					   
 					   SwingUtilities.invokeLater(new Runnable() {  
 						   public void run() {  
@@ -680,12 +677,10 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 						CacheTodosProdutos todosP = new CacheTodosProdutos();
 						todosP.atualizarProdutos();
 						
-						PainelVendaMesa.atualizaProdutos(todosP);
-						PainelVendaRapida.atualizaProdutos(todosP);
-						VendaRapidaAdicionaisCampo.AtualizaProdutos(todosP);
-						VendaMesaAdicionaisCampo.AtualizaProdutos(todosP);
+						PainelVendaMesa.getInstance().atualizaProdutos(todosP);
+						PainelVendaRapida.getInstance().atualizaProdutos(todosP);
 						
-						Server.enviaTodos(todosP);
+						Server.getInstance().enviaTodos(todosP);
 				} catch (ClassNotFoundException | SQLException e) {
 					e.printStackTrace();
 					new PainelErro(e);
@@ -721,17 +716,15 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 						formatacao = "UPDATE produtos SET nome = '" + (((String) tabela.getValueAt(row, column)).replaceAll("'", "")) + "' WHERE produtos_id = " + tabela.getValueAt(row, 0);
 						envia.executaUpdate(formatacao);
 						envia.fechaConexao();
-						DiarioLog.add(Usuario.getNome(), "Atualizou o nome do produto #" + tabela.getValueAt(row, 0) + " para " + (((String) tabela.getValueAt(row, column)).replaceAll("'", "")) + ".", 3);
+						DiarioLog.add(Usuario.INSTANCE.getNome(), "Atualizou o nome do produto #" + tabela.getValueAt(row, 0) + " para " + (((String) tabela.getValueAt(row, column)).replaceAll("'", "")) + ".", 3);
 						
 						CacheTodosProdutos todosP = new CacheTodosProdutos();
 						todosP.atualizarProdutos();
 						
-						PainelVendaMesa.atualizaProdutos(todosP);
-						PainelVendaRapida.atualizaProdutos(todosP);
-						VendaRapidaProdutoCampo.AtualizaProdutos(todosP);
-						VendaMesaProdutoCampo.AtualizaProdutos(todosP);
+						PainelVendaMesa.getInstance().atualizaProdutos(todosP);
+						PainelVendaRapida.getInstance().atualizaProdutos(todosP);
 						
-						Server.enviaTodos(todosP);
+						Server.getInstance().enviaTodos(todosP);
 					} catch (ClassNotFoundException | SQLException e1) {
 						e1.printStackTrace();
 						new PainelErro(e1);
@@ -756,17 +749,15 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 								formatacao = "UPDATE produtos SET preco = '" + resultado + "' WHERE produtos_id = " + tabela.getValueAt(row, 0);
 								envia.executaUpdate(formatacao);
 								envia.fechaConexao();
-								DiarioLog.add(Usuario.getNome(), "Atualizou o preço do produto " + ((String) tabela.getValueAt(row, 1)) + " para R$" + resultado + ".", 3);
+								DiarioLog.add(Usuario.INSTANCE.getNome(), "Atualizou o preço do produto " + ((String) tabela.getValueAt(row, 1)) + " para R$" + resultado + ".", 3);
 								
 								CacheTodosProdutos todosP = new CacheTodosProdutos();
 								todosP.atualizarProdutos();
 								
-								PainelVendaMesa.atualizaProdutos(todosP);
-								PainelVendaRapida.atualizaProdutos(todosP);
-								VendaRapidaProdutoCampo.AtualizaProdutos(todosP);
-								VendaMesaProdutoCampo.AtualizaProdutos(todosP);
+								PainelVendaMesa.getInstance().atualizaProdutos(todosP);
+								PainelVendaRapida.getInstance().atualizaProdutos(todosP);
 								
-								Server.enviaTodos(todosP);
+								Server.getInstance().enviaTodos(todosP);
 							} catch (ClassNotFoundException | SQLException e1) {
 								e1.printStackTrace();
 								new PainelErro(e1);
@@ -790,7 +781,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 						formatacao = "UPDATE produtos SET tipo = " + tipo + " WHERE produtos_id = " + tabela.getValueAt(row, 0);
 						envia.executaUpdate(formatacao);
 						envia.fechaConexao();
-						DiarioLog.add(Usuario.getNome(), "Alterou o tipo de " + ((String) tabela.getValueAt(row, 1)) + " para adicional", 3);
+						DiarioLog.add(Usuario.INSTANCE.getNome(), "Alterou o tipo de " + ((String) tabela.getValueAt(row, 1)) + " para adicional", 3);
 					} catch (ClassNotFoundException | SQLException e1) {
 						e1.printStackTrace();
 						new PainelErro(e1);
@@ -828,14 +819,10 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		        	CacheTodosProdutos todosP = new CacheTodosProdutos();
 		        	todosP.atualizarProdutos();
 		        	
-		        	PainelVendaMesa.atualizaProdutos(todosP);
-					PainelVendaRapida.atualizaProdutos(todosP);
-					VendaRapidaProdutoCampo.AtualizaProdutos(todosP);
-					VendaRapidaAdicionaisCampo.AtualizaProdutos(todosP);
-					VendaMesaProdutoCampo.AtualizaProdutos(todosP);
-					VendaMesaAdicionaisCampo.AtualizaProdutos(todosP);
+		        	PainelVendaMesa.getInstance().atualizaProdutos(todosP);
+					PainelVendaRapida.getInstance().atualizaProdutos(todosP);
 					
-					Server.enviaTodos(todosP);
+					Server.getInstance().enviaTodos(todosP);
 	        	}
 	        }
 	        if((TableModel)e.getSource() == tabelaAdc)
@@ -848,17 +835,15 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 						formatacao = "UPDATE produtos SET nome = '" + (((String) tabelaAdc.getValueAt(row, column)).replaceAll("'", "")) + "' WHERE produtos_id = " + tabelaAdc.getValueAt(row, 0);
 						envia.executaUpdate(formatacao);
 						envia.fechaConexao();
-						DiarioLog.add(Usuario.getNome(), "Atualizou o nome do adicional #" + tabelaAdc.getValueAt(row, 0) + " para " + (((String) tabelaAdc.getValueAt(row, column)).replaceAll("'", "")) + ".", 3);
+						DiarioLog.add(Usuario.INSTANCE.getNome(), "Atualizou o nome do adicional #" + tabelaAdc.getValueAt(row, 0) + " para " + (((String) tabelaAdc.getValueAt(row, column)).replaceAll("'", "")) + ".", 3);
 						
 						CacheTodosProdutos todosP = new CacheTodosProdutos();
 						todosP.atualizarProdutos();
 						
-						PainelVendaMesa.atualizaProdutos(todosP);
-						PainelVendaRapida.atualizaProdutos(todosP);
-						VendaRapidaAdicionaisCampo.AtualizaProdutos(todosP);
-						VendaMesaAdicionaisCampo.AtualizaProdutos(todosP);
+						PainelVendaMesa.getInstance().atualizaProdutos(todosP);
+						PainelVendaRapida.getInstance().atualizaProdutos(todosP);
 						
-						Server.enviaTodos(todosP);
+						Server.getInstance().enviaTodos(todosP);
 					} catch (ClassNotFoundException | SQLException e1) {
 						e1.printStackTrace();
 						new PainelErro(e1);
@@ -883,17 +868,15 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 								formatacao = "UPDATE produtos SET preco = '" + resultado + "' WHERE produtos_id = " + tabelaAdc.getValueAt(row, 0);
 								envia.executaUpdate(formatacao);
 								envia.fechaConexao();
-								DiarioLog.add(Usuario.getNome(), "Atualizou o preço do adicional " + ((String) tabelaAdc.getValueAt(row, 1)) + " para R$" + resultado + ".", 3);
+								DiarioLog.add(Usuario.INSTANCE.getNome(), "Atualizou o preço do adicional " + ((String) tabelaAdc.getValueAt(row, 1)) + " para R$" + resultado + ".", 3);
 								
 								CacheTodosProdutos todosP = new CacheTodosProdutos();
 								todosP.atualizarProdutos();
 								
-								PainelVendaMesa.atualizaProdutos(todosP);
-								PainelVendaRapida.atualizaProdutos(todosP);
-								VendaRapidaAdicionaisCampo.AtualizaProdutos(todosP);
-								VendaMesaAdicionaisCampo.AtualizaProdutos(todosP);
+								PainelVendaMesa.getInstance().atualizaProdutos(todosP);
+								PainelVendaRapida.getInstance().atualizaProdutos(todosP);
 								
-								Server.enviaTodos(todosP);
+								Server.getInstance().enviaTodos(todosP);
 							} catch (ClassNotFoundException | SQLException e1) {
 								e1.printStackTrace();
 								new PainelErro(e1);
@@ -917,7 +900,7 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 						formatacao = "UPDATE produtos SET tipo = " + tipo + " WHERE produtos_id = " + tabelaAdc.getValueAt(row, 0);
 						envia.executaUpdate(formatacao);
 						envia.fechaConexao();
-						DiarioLog.add(Usuario.getNome(), "Alterou o tipo de " + ((String) tabelaAdc.getValueAt(row, 1)) + " para produto", 3);
+						DiarioLog.add(Usuario.INSTANCE.getNome(), "Alterou o tipo de " + ((String) tabelaAdc.getValueAt(row, 1)) + " para produto", 3);
 					} catch (ClassNotFoundException | SQLException e1) {
 						e1.printStackTrace();
 						new PainelErro(e1);
@@ -955,14 +938,10 @@ public class PainelProdutos extends JPanel implements ActionListener, TableModel
 		        	CacheTodosProdutos todosP = new CacheTodosProdutos();
 		        	todosP.atualizarProdutos();
 		        	
-		        	PainelVendaMesa.atualizaProdutos(todosP);
-					PainelVendaRapida.atualizaProdutos(todosP);
-					VendaRapidaProdutoCampo.AtualizaProdutos(todosP);
-					VendaRapidaAdicionaisCampo.AtualizaProdutos(todosP);
-					VendaMesaProdutoCampo.AtualizaProdutos(todosP);
-					VendaMesaAdicionaisCampo.AtualizaProdutos(todosP);	
+		        	PainelVendaMesa.getInstance().atualizaProdutos(todosP);
+					PainelVendaRapida.getInstance().atualizaProdutos(todosP);
 					
-					Server.enviaTodos(todosP);
+					Server.getInstance().enviaTodos(todosP);
 	        	}	        	
 	        }
 	    }

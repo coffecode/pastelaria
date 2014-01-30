@@ -7,14 +7,12 @@ import java.awt.FlowLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import codecoffe.restaurantes.sockets.SeparatorPanel;
-
 public class JStatusBar extends JPanel {
 
     private static final long serialVersionUID = 1L;
-    protected static JPanel leftPanel;
-    protected static JPanel rightPanel;
-    private static boolean firstTime;
+    protected JPanel leftPanel;
+    protected JPanel rightPanel;
+    private boolean firstTime;
 
     public JStatusBar() {
         createPartControl();

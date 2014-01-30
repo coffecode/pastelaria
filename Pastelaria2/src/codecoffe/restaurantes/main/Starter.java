@@ -41,12 +41,12 @@ import com.alee.managers.language.LanguageManager;
 
 public class Starter implements ActionListener
 {
-	private static JFrame seleciona, splash;
-	private static JPanel selecionaPanel, inicio;
-	private static JProgressBar progressBar;
-	private static JLabel descricaoOperacao, statusProgress;
-	private static WebButton bTerminal, bPrincipal;
-	private static WebProgressBar verificandoBar;
+	private JFrame seleciona, splash;
+	private JPanel selecionaPanel, inicio;
+	private JProgressBar progressBar;
+	private JLabel descricaoOperacao, statusProgress;
+	private WebButton bTerminal, bPrincipal;
+	private WebProgressBar verificandoBar;
 	private static final int portaConnect = 12345;
 	
 	public Starter()
@@ -55,7 +55,7 @@ public class Starter implements ActionListener
 		LanguageManager.DEFAULT = LanguageManager.PORTUGUESE;
 		WebLookAndFeel.install();
 		
-		seleciona = new JFrame("CodeCoffe v2.0");
+		seleciona = new JFrame("CodeCoffe " + UtilCoffe.VERSAO);
 		seleciona.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		selecionaPanel = new JPanel();
 		selecionaPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Modo de Operação"));
@@ -243,25 +243,28 @@ public class Starter implements ActionListener
 		}
 	}
 	
-	static public void comecarLoading(int modo, InetAddress host, int porta)
+	public void comecarLoading(int modo, InetAddress host, int porta)
 	{
 		seleciona.dispose();
 		//try
 		//{
 			if(modo == UtilCoffe.CLIENT)
 			{
-	        	Client cliente = new Client(host, porta);
-	        	new Thread(cliente).start();				
+				Configuracao.INSTANCE.setModo(UtilCoffe.CLIENT);
+				
+				Client.getInstance().atualizaConexao(host, porta);
+	        	new Thread(Client.getInstance()).start();				
 			}
 			else
 			{
+				Configuracao.INSTANCE.setModo(UtilCoffe.SERVER);
+				MenuPrincipal.getInstance(); 				
+				
+				Server.getInstance().atualizaConexao(porta);
+	        	new Thread(Server.getInstance()).start();
+	        	
 	        	BroadcastServer serverUDP = new BroadcastServer(porta);
 	        	new Thread(serverUDP).start();
-	        	
-	        	Server serverTCP = new Server(porta);
-	        	new Thread(serverTCP).start();
-	        	
-	        	new MenuPrincipal(modo, host, porta);
 			}
 		/*}
 		catch(Exception ex)
@@ -270,13 +273,13 @@ public class Starter implements ActionListener
 		}*/
 	}
 	
-	static public void setarProgresso(String texto, int valor)
+	public void setarProgresso(String texto, int valor)
 	{
 		progressBar.setValue(valor);
 		statusProgress.setText(texto);
 	}
 	
-	static public void loadingFinalizado()
+	public void loadingFinalizado()
 	{
 		splash.dispose();
 	}

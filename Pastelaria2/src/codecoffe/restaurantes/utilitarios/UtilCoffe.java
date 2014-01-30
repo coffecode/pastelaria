@@ -1,7 +1,7 @@
 package codecoffe.restaurantes.utilitarios;
 public abstract class UtilCoffe
 {
-	public static final String VERSAO = "v1.50";
+	public static final String VERSAO = "v2.00";
 	
 	public static final int SERVER = 1;
 	public static final int CLIENT = 2;

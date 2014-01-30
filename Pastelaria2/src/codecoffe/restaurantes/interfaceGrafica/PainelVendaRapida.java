@@ -41,31 +41,30 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static JPanel pedidoPainel, painelProdutos, painelProdutos1, painelPagamento;
-	private static JLabel labelQuantidade, labelProduto, labelValor, labelTotal, labelRecebido, labelTroco, labelForma, labelCliente;
-	private static JTabbedPane divisaoPainel;
-	private static DefaultTableModel tabela;
-	private static JTable tabelaPedido;
-	private static JCheckBox campoEntrega;
-	private static JTextField campoTotal, campoRecebido, campoTroco;
-	private static JTextField campoValor = new JTextField(5);
-	private static JTextField campoQuantidade = new JTextField("1", 2);
-	private static VendaRapidaProdutoCampo addProduto = new VendaRapidaProdutoCampo();
-	private static ArrayList<VendaRapidaAdicionaisCampo> addAdicional = new ArrayList<>();
-	private static ArrayList<JButton> addRemover = new ArrayList<>();
-	private static Venda vendaRapida = new Venda();
-	private static int fiadorIDSalvo;
-	private static WebPanel adicionaisPainel, adicionaisPainel1;
-	private static WebButton adicionarADC, adicionarProduto, finalizarVenda, imprimir, escolherCliente, deletarCliente, calcular;
-	private static JEditorPane campoRecibo;
-	private static WebComboBox campoForma;
-	private static ImageIcon iconeFinalizar;
-	private static double taxaEntrega;
-	private static CacheTodosProdutos todosProdutos;
-	private static String fiadorTelefone, fiadorEndereco, fiadorNumero, fiadorComplemento;
+	private JPanel pedidoPainel, painelProdutos, painelProdutos1, painelPagamento;
+	private JLabel labelQuantidade, labelProduto, labelValor, labelTotal, labelRecebido, labelTroco, labelForma, labelCliente;
+	private JTabbedPane divisaoPainel;
+	private DefaultTableModel tabela;
+	private JTable tabelaPedido;
+	private JCheckBox campoEntrega;
+	private JTextField campoTotal, campoRecebido, campoTroco;
+	private JTextField campoValor;
+	private JTextField campoQuantidade;
+	private VendaRapidaProdutoCampo addProduto;
+	private ArrayList<VendaRapidaAdicionaisCampo> addAdicional;
+	private ArrayList<JButton> addRemover;
+	private Venda vendaRapida;
+	private int fiadorIDSalvo;
+	private WebPanel adicionaisPainel, adicionaisPainel1;
+	private WebButton adicionarADC, adicionarProduto, finalizarVenda, imprimir, escolherCliente, deletarCliente, calcular;
+	private JEditorPane campoRecibo;
+	private WebComboBox campoForma;
+	private ImageIcon iconeFinalizar;
+	private double taxaEntrega;
+	private CacheTodosProdutos todosProdutos;
+	private String fiadorTelefone, fiadorEndereco, fiadorNumero, fiadorComplemento;
 
-	@SuppressWarnings("rawtypes")
-	PainelVendaRapida()
+	private PainelVendaRapida()
 	{		
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));	
 		iconeFinalizar = new ImageIcon(getClass().getClassLoader().getResource("imgs/finalizar.png"));
@@ -89,6 +88,12 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		labelQuantidade = new JLabel("Qntd:");
 		labelQuantidade.setFont(new Font("Helvetica", Font.BOLD, 16));
 		
+		campoValor = new JTextField(5);
+		campoQuantidade = new JTextField("1", 2);
+		addAdicional = new ArrayList<>();
+		addRemover = new ArrayList<>();
+		vendaRapida = new Venda();		
+		
 		campoValor = new JTextField("");
 		campoValor.setEditable(false);
 		campoValor.setHorizontalAlignment(SwingConstants.CENTER);
@@ -96,7 +101,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		campoQuantidade = new JTextField("1");
 		campoQuantidade.setHorizontalAlignment(SwingConstants.CENTER);
 		campoQuantidade.setPreferredSize(new Dimension(40, 35));
-		addProduto = new VendaRapidaProdutoCampo();
+		addProduto = new VendaRapidaProdutoCampo(new CacheTodosProdutos());
 		
 		adicionarADC = new WebButton("Adicionais");
 		adicionarADC.setHorizontalTextPosition(AbstractButton.CENTER);
@@ -127,10 +132,10 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		adicionaisPainel = new WebPanel();
 		adicionaisPainel.setLayout(new GridBagLayout());
 		
-        DashedBorderPainter bp4 = new DashedBorderPainter ( new float[]{ 3f, 3f } );
-        bp4.setRound ( 12 );
-        bp4.setWidth ( 2 );
-        bp4.setColor ( new Color ( 205, 205, 205 ) );		
+        DashedBorderPainter<JComponent> bp4 = new DashedBorderPainter<>(new float[]{ 3f, 3f });
+        bp4.setRound(12);
+        bp4.setWidth(2);
+        bp4.setColor(new Color( 205, 205, 205 ));		
 		
 		WebScrollPane scroll = new WebScrollPane(adicionaisPainel, false);
 		scroll.setMinimumSize(new Dimension(280,100));
@@ -233,23 +238,17 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		tabelaPedido.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
 		tabelaPedido.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));	
 		tabelaPedido.setPreferredScrollableViewportSize(new Dimension(800, 150));
-		WebScrollPane scrolltabela = new WebScrollPane(tabelaPedido, true);
-		//scrolltabela.setMinimumSize(new Dimension(1020, 225));
-		//scrolltabela.setMaximumSize(new Dimension(1500, 225));		
+		WebScrollPane scrolltabela = new WebScrollPane(tabelaPedido, true);	
 		pedidoPainel.add(scrolltabela, BorderLayout.CENTER);
 		
 		painelProdutos1 = new JPanel();
-		painelProdutos1.setLayout(new BoxLayout(painelProdutos1, BoxLayout.Y_AXIS));
-		//painelProdutos1.setMinimumSize(new Dimension(1020, 650));
-		//painelProdutos1.setMaximumSize(new Dimension(1920, 910));			
-		
+		painelProdutos1.setLayout(new BoxLayout(painelProdutos1, BoxLayout.Y_AXIS));	
+	
 		painelProdutos1.add(painelProdutos);
 		painelProdutos1.add(pedidoPainel);
 		
 		painelPagamento = new JPanel();
 		painelPagamento.setLayout(new GridBagLayout());
-		//painelPagamento.setMinimumSize(new Dimension(975, 400));
-		//painelPagamento.setMaximumSize(new Dimension(1920, 910));		
 		
 		gbc.insets = new Insets(5,5,5,5);
 		
@@ -301,7 +300,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		labelForma = new JLabel("Pagamento:");
 		labelForma.setFont(new Font("Helvetica", Font.BOLD, 16));
 		
-		campoEntrega = new JCheckBox("Delivery (+ " + UtilCoffe.doubleToPreco( Configuracao.getTaxaEntrega()) + ")");
+		campoEntrega = new JCheckBox("Delivery (+ " + UtilCoffe.doubleToPreco( Configuracao.INSTANCE.getTaxaEntrega()) + ")");
 		campoEntrega.setPreferredSize(new Dimension(140, 30));
 		campoEntrega.setFont(new Font("Helvetica", Font.BOLD, 16));
 		campoEntrega.addItemListener(this);
@@ -434,9 +433,21 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		todosProdutos = new CacheTodosProdutos();
 	}
 	
-	public static void atualizaProdutos(CacheTodosProdutos tp)
+	private static class VendaRapidaSingletonHolder { 
+		public static final PainelVendaRapida INSTANCE = new PainelVendaRapida();
+	}
+ 
+	public static PainelVendaRapida getInstance() {
+		return VendaRapidaSingletonHolder.INSTANCE;
+	}	
+	
+	public void atualizaProdutos(CacheTodosProdutos tp)
 	{
 		todosProdutos = tp;
+		addProduto.AtualizaProdutosCampo(tp);
+		
+		for(int i = 0; i < addAdicional.size(); i++)
+			addAdicional.get(i).AtualizaProdutosCampo(tp);
 	}
 	
 	class CustomRenderer extends DefaultTableCellRenderer 
@@ -474,18 +485,18 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	
 	public void setaFocusAdd()
 	{
-		VendaRapidaProdutoCampo.setFocus();
+		addProduto.setFocus();
 	}
 
-	static public void updateCampo()
+	public void updateCampo()
 	{
-		if(VendaRapidaProdutoCampo.getSelecionado() != null)
+		if(addProduto.getSelecionado() != null)
 		{
 			double aDouble = 0;
 			
 			for(int i = 0; i < todosProdutos.getProdutos().size(); i++)
 			{
-				if(VendaRapidaProdutoCampo.getSelecionado().equals(todosProdutos.getProdutos().get(i).getNome()))
+				if(addProduto.getSelecionado().equals(todosProdutos.getProdutos().get(i).getNome()))
 				{
 					aDouble += todosProdutos.getProdutos().get(i).getPreco();
 					break;
@@ -516,7 +527,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
   	  String formataRecibo = "";
       String pegaPreco = "";
       formataRecibo += ("===========================\n");
-      formataRecibo += (String.format("              %s              \n", Configuracao.getRestaurante()));
+      formataRecibo += (String.format("              %s              \n", Configuracao.INSTANCE.getRestaurante()));
       formataRecibo += ("===========================\n");
       formataRecibo += ("********* NAO TEM VALOR FISCAL ********\n");
       formataRecibo += ("===========================\n");		                	
@@ -560,7 +571,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		formataRecibo += ("===========================\n");
       
 		formataRecibo += (String.format("%-18.18s", "Atendido por: "));
-		formataRecibo += (Usuario.getNome() + "\n");
+		formataRecibo += (Usuario.INSTANCE.getNome() + "\n");
       
 		Locale locale = new Locale("pt","BR"); 
 		GregorianCalendar calendar = new GregorianCalendar(); 
@@ -590,11 +601,11 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		campoRecibo.setText(formataRecibo);		
 	}	
 	
-	private static void criarRecibo()
+	private void criarRecibo()
 	{
 		CacheVendaFeita criaImpressao		= new CacheVendaFeita(vendaRapida);
 		criaImpressao.total 				= campoTotal.getText();
-		criaImpressao.atendente 			= Usuario.getNome();
+		criaImpressao.atendente 			= Usuario.INSTANCE.getNome();
 		criaImpressao.fiado_id 				= fiadorIDSalvo;
 		criaImpressao.caixa 				= 0;
 		criaImpressao.delivery 				= UtilCoffe.doubleToPreco(taxaEntrega);
@@ -602,12 +613,12 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		criaImpressao.classe				= 2;
 		criaImpressao.imprimir 				= true;
 		
-		Bartender.criarImpressao(criaImpressao);
+		Bartender.INSTANCE.criarImpressao(criaImpressao);
 	}
 	
-	public static void receberAviso(CacheAviso aviso)
+	public void receberAviso(CacheAviso aviso)
 	{
-		if(!Configuracao.getReciboFim())
+		if(!Configuracao.INSTANCE.getReciboFim())
 			JOptionPane.showMessageDialog(null, aviso.getMensagem(), aviso.getTitulo(), JOptionPane.INFORMATION_MESSAGE);
 		else
 		{
@@ -621,8 +632,8 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		
 		for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
 		{
-			Pedido ped = new Pedido(vendaRapida.getProduto(i), Usuario.getNome(), "", 0, i);
-			Bartender.enviarPedido(ped);
+			Pedido ped = new Pedido(vendaRapida.getProduto(i), Usuario.INSTANCE.getNome(), "", 0, i);
+			Bartender.INSTANCE.enviarPedido(ped);
 		}			
 		
 		vendaRapida.clear();
@@ -661,8 +672,8 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		}
 		else if(e.getSource() == escolherCliente)
 		{
-			MenuPrincipal.AbrirPrincipal(5);
-			PainelClientes.setCallBack(0);
+			MenuPrincipal.getInstance().AbrirPrincipal(5);
+			PainelClientes.getInstance().setCallBack(0);
 		}
 		else if(e.getSource() == finalizarVenda)
 		{			
@@ -720,7 +731,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 							
 							CacheVendaFeita vendaRapidaFeita= new CacheVendaFeita(vendaRapida);
 							vendaRapidaFeita.total 				= campoTotal.getText();
-							vendaRapidaFeita.atendente 			= Usuario.getNome();
+							vendaRapidaFeita.atendente 			= Usuario.INSTANCE.getNome();
 							vendaRapidaFeita.ano 				= c.get(Calendar.YEAR);
 							vendaRapidaFeita.mes 				= c.get(Calendar.MONTH);
 							vendaRapidaFeita.dia_mes 			= c.get(Calendar.DAY_OF_MONTH);
@@ -735,7 +746,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 							vendaRapidaFeita.dezporcento		= "0,00";
 							vendaRapidaFeita.classe				= UtilCoffe.VENDA_RAPIDA;
 							
-							Bartender.enviarVenda(vendaRapidaFeita);	// agora aguarda a resposta.
+							Bartender.INSTANCE.enviarVenda(vendaRapidaFeita);	// agora aguarda a resposta.
 						}
 					}
 					else
@@ -765,14 +776,14 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 					campoTroco.setText(resultado);					
 				}
 				
-				MenuPrincipal.setarEnter(finalizarVenda);
+				MenuPrincipal.getInstance().setarEnter(finalizarVenda);
 			}
 			
 			finalizarVenda.requestFocus();
 		}
 		else if(e.getSource() == adicionarProduto)
 		{
-			String nomeProduto = VendaRapidaProdutoCampo.getSelecionado();
+			String nomeProduto = addProduto.getSelecionado();
 			
 			if(nomeProduto == null)
 			{
@@ -890,7 +901,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 				adicionaisPainel.removeAll();
 				adicionaisPainel.revalidate();
 				adicionaisPainel.repaint();
-				VendaRapidaProdutoCampo.setFocus();
+				addProduto.setFocus();
 			}
 		}
 		else if(e.getSource() == adicionarADC)
@@ -901,7 +912,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			botao.setContentAreaFilled(false);
 			botao.addActionListener(this);
 			
-			addAdicional.add(new VendaRapidaAdicionaisCampo());
+			addAdicional.add(new VendaRapidaAdicionaisCampo(todosProdutos));
 			addRemover.add(botao);
 			
 			GridBagConstraints gbc = new GridBagConstraints();
@@ -940,7 +951,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			
 			for(int i = 0; i < todosProdutos.getProdutos().size(); i++)
 			{
-				if(VendaRapidaProdutoCampo.getSelecionado().equals(todosProdutos.getProdutos().get(i).getNome()))
+				if(addProduto.getSelecionado().equals(todosProdutos.getProdutos().get(i).getNome()))
 				{
 					aDouble += todosProdutos.getProdutos().get(i).getPreco();
 					break;
@@ -1108,12 +1119,12 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 						campoTroco.setText(resultado);					
 					}
 					
-					MenuPrincipal.setarEnter(finalizarVenda);
+					MenuPrincipal.getInstance().setarEnter(finalizarVenda);
 				}			
 			}
 		}
 		
-		static public void setFiado(String fiador, int fiadoID, String telefone, String endereco, String numero, String complemento)
+		public void setFiado(String fiador, int fiadoID, String telefone, String endereco, String numero, String complemento)
 		{
 			if(fiadoID > 0)
 			{
@@ -1132,7 +1143,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			{
 				if(campoEntrega.isSelected())
 				{
-					taxaEntrega = Configuracao.getTaxaEntrega();
+					taxaEntrega = Configuracao.INSTANCE.getTaxaEntrega();
 					campoTotal.setText(UtilCoffe.doubleToPreco((UtilCoffe.precoToDouble(campoTotal.getText()) + taxaEntrega)));
 					atualizarCampoRecibo();
 				}
@@ -1144,4 +1155,316 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 				}
 			}
 		}
+		
+		class VendaRapidaProdutoCampo extends JPanel implements ActionListener
+		{
+		    /**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+			private  JComboBox<String> combo;
+			private JTextField tf;
+		    private  Vector<String> v;
+		    
+		    public VendaRapidaProdutoCampo(CacheTodosProdutos produtos)
+		    {
+		        super(new BorderLayout());
+		        combo = new JComboBox<String>();
+		        tf = (JTextField) combo.getEditor().getEditorComponent();
+		        v = new Vector<String>();
+		        combo.setEditable(true);
+		        combo.addActionListener(this);
+		        tf.addKeyListener(new KeyAdapter()
+		        {
+		        	public void keyTyped(KeyEvent e)
+		        	{
+		        		EventQueue.invokeLater(new Runnable()
+		        		{
+		        			public void run()
+		        			{
+		        				String text = tf.getText();
+		                        if(text.length()==0)
+		                        {
+		                        	combo.hidePopup();
+		                        	setModel(new DefaultComboBoxModel<String>(v), "");
+		                        }
+		                        else
+		                        {
+		                        	DefaultComboBoxModel<String> m = getSuggestedModel(v, text);
+		                        	if(m.getSize()==0 || hide_flag)
+		                        	{
+		                        		combo.hidePopup();
+		                        		hide_flag = false;
+		                        	}
+		                        	else
+		                        	{
+		                        		setModel(m, text);
+		                        		combo.showPopup();
+		                        	}
+		                        }
+		                   }
+		        		});
+		        	}
+		        	
+		        	public void keyPressed(KeyEvent e)
+		        	{
+		        		String text = tf.getText();
+		        		int code = e.getKeyCode();
+		        		if(code==KeyEvent.VK_ENTER)
+		        		{
+		        			if(!v.contains(text))
+		        			{
+		        				//v.addElement(text);
+		        				//Collections.sort(v);
+		        				setModel(getSuggestedModel(v, text), text);
+		        			}
+		        			
+		        			hide_flag = true; 
+		        		}else if(code==KeyEvent.VK_ESCAPE)
+		        		{
+		        			hide_flag = true; 
+		        		}else if(code==KeyEvent.VK_RIGHT)
+		        		{
+		        			for(int i=0;i<v.size();i++)
+		        			{
+		        				String str = v.elementAt(i);
+		        				if(str.startsWith(text))
+		        				{
+		        					combo.setSelectedIndex(-1);
+		        					tf.setText(str);
+		        					return;
+		        				}
+		        			}
+		        		}
+		            }
+		        });
+		        
+				v.removeAllElements();
+				
+				for(int i = 0; i < produtos.getProdutos().size(); i++)
+				{
+					v.addElement(produtos.getProdutos().get(i).getNome());
+				}
+				
+				//setModel(new DefaultComboBoxModel<String>(v), "");
+		        JPanel p = new JPanel(new BorderLayout());
+		        p.setPreferredSize(new Dimension(300, 50));
+		        combo.setPreferredSize(new Dimension(300, 40));
+		        p.add(combo, BorderLayout.NORTH);
+		        add(p);
+		        setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+		        setPreferredSize(new Dimension(300, 50));
+		    }
+		    	
+		    private boolean hide_flag = false;
+		    private void setModel(DefaultComboBoxModel<String> mdl, String str)
+		    {
+				combo.setModel(mdl);
+				combo.setSelectedIndex(-1);
+				tf.setText(str);   	
+		    }
+		    
+		    private DefaultComboBoxModel<String> getSuggestedModel(java.util.List<String> list, String text)
+		    {
+		    	DefaultComboBoxModel<String> m = new DefaultComboBoxModel<String>();
+		    	for(String s: list)
+		    	{
+		    		if(s.toLowerCase().contains(text)) m.addElement(s);
+		    	}
+		    	
+		    	return m;
+		    }
+			
+			public void actionPerformed(ActionEvent e) {
+				if(e.getSource() == combo)
+				{
+					updateCampo();
+				}
+			}
+			
+			public void zeraString()
+			{
+				combo.setSelectedIndex(-1);
+				tf.setText("");   
+			}
+			
+			public String getSelecionado()
+			{
+				if(combo.getSelectedIndex() == -1)
+					return null;
+				
+				return combo.getSelectedItem().toString();
+			}
+			
+			public void setFocus()
+			{
+				combo.requestFocus();
+			}
+			
+			public void AtualizaProdutosCampo(CacheTodosProdutos produtos)
+			{
+				v.removeAllElements();
+				
+				for(int i = 0; i < produtos.getProdutos().size(); i++)
+				{
+					v.addElement(produtos.getProdutos().get(i).getNome());
+				}
+				
+				setModel(new DefaultComboBoxModel<String>(v), "");
+			}
+		}
+		
+		class VendaRapidaAdicionaisCampo extends JPanel implements ActionListener
+		{
+		    /**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+			private JComboBox<String> combo;
+			private JTextField tf;
+		    private Vector<String> v;
+		    
+		    public VendaRapidaAdicionaisCampo(CacheTodosProdutos produtos)
+		    {
+		        super(new BorderLayout());
+		        
+		        combo = new JComboBox<String>();
+		        v = new Vector<String>();
+		        combo.setEditable(true);
+		        combo.addActionListener(this);
+		        tf = (JTextField) combo.getEditor().getEditorComponent();
+		        tf.addKeyListener(new KeyAdapter()
+		        {
+		        	public void keyTyped(KeyEvent e)
+		        	{
+		        		EventQueue.invokeLater(new Runnable()
+		        		{
+		        			public void run()
+		        			{
+		        				String text = tf.getText();
+		                        if(text.length()==0)
+		                        {
+		                        	combo.hidePopup();
+		                        	setModel(new DefaultComboBoxModel<String>(v), "");
+		                        }
+		                        else
+		                        {
+		                        	DefaultComboBoxModel<String> m = getSuggestedModel(v, text);
+		                        	if(m.getSize()==0 || hide_flag)
+		                        	{
+		                        		combo.hidePopup();
+		                        		hide_flag = false;
+		                        	}
+		                        	else
+		                        	{
+		                        		setModel(m, text);
+		                        		combo.showPopup();
+		                        	}
+		                        }
+		                   }
+		        		});
+		        	}
+		        	
+		        	
+		        	public void keyPressed(KeyEvent e)
+		        	{
+		        		String text = tf.getText();
+		        		int code = e.getKeyCode();
+		        		if(code==KeyEvent.VK_ENTER)
+		        		{
+		        			if(!v.contains(text))
+		        			{
+		        				//v.addElement(text);
+		        				//Collections.sort(v);
+		        				setModel(getSuggestedModel(v, text), text);
+		        			}
+		        			
+		        			hide_flag = true; 
+		        		}else if(code==KeyEvent.VK_ESCAPE)
+		        		{
+		        			hide_flag = true; 
+		        		}else if(code==KeyEvent.VK_RIGHT)
+		        		{
+		        			for(int i=0;i<v.size();i++)
+		        			{
+		        				String str = v.elementAt(i);
+		        				if(str.startsWith(text))
+		        				{
+		        					combo.setSelectedIndex(-1);
+		        					tf.setText(str);
+		        					return;
+		        				}
+		        			}
+		        		}
+		            }
+		        });
+		        
+				v.removeAllElements();
+				
+				for(int i = 0; i < produtos.getAdicionais().size(); i++)
+				{
+					v.addElement(produtos.getAdicionais().get(i).getNome());
+				}
+		        
+		        setModel(new DefaultComboBoxModel<String>(v), "");
+		        JPanel p = new JPanel(new BorderLayout());
+		        p.setPreferredSize(new Dimension(220, 45));
+		        combo.setPreferredSize(new Dimension(220, 35));
+		        p.add(combo, BorderLayout.NORTH);
+		        add(p);
+		        setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+		        setPreferredSize(new Dimension(220, 45));
+		    }
+		    	
+		    private boolean hide_flag = false;
+		    private void setModel(DefaultComboBoxModel<String> mdl, String str)
+		    {
+				combo.setModel(mdl);
+				combo.setSelectedIndex(-1);
+				tf.setText(str);   	
+		    }
+		    
+		    private DefaultComboBoxModel<String> getSuggestedModel(java.util.List<String> list, String text)
+		    {
+		    	DefaultComboBoxModel<String> m = new DefaultComboBoxModel<String>();
+		    	for(String s: list)
+		    	{
+		    		if(s.toLowerCase().contains(text)) m.addElement(s);
+		    	}
+		    	
+		    	return m;
+		    }
+
+			public void actionPerformed(ActionEvent e) {
+				if(e.getSource() == combo)
+				{
+					updateCampo();
+				}
+			}
+			
+			public String getSelecionado()
+			{
+				if(combo.getSelectedIndex() == -1)
+					return null;		
+				
+				return combo.getSelectedItem().toString();
+			}
+			
+			public void setFocus()
+			{
+				combo.requestFocus();
+			}
+			
+			public void AtualizaProdutosCampo(CacheTodosProdutos produtos)
+			{
+				v.removeAllElements();
+				
+				for(int i = 0; i < produtos.getAdicionais().size(); i++)
+				{
+					v.addElement(produtos.getAdicionais().get(i).getNome());
+				}
+				
+				setModel(new DefaultComboBoxModel<String>(v), "");
+			}
+		}		
 }

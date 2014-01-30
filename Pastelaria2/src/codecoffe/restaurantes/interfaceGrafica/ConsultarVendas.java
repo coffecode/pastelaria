@@ -44,23 +44,23 @@ public class ConsultarVendas extends JPanel implements ActionListener
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static JLabel labelDataInicio, labelDataFim, labelProgresso;
-	private static JTable tabelaUltimasVendas;
-	private static DefaultTableModel tabela;
-	private static WebDateField campoInicio, campoFim;
+	private JLabel labelDataInicio, labelDataFim, labelProgresso;
+	private JTable tabelaUltimasVendas;
+	private DefaultTableModel tabela;
+	private WebDateField campoInicio, campoFim;
 	Date dataFim, dataInicio;
-	private static WebButton botaoPesquisar, botaoExportar, botaoExportar2;
-	private static JPanel painelBotoes, painelImportar;
+	private WebButton botaoPesquisar, botaoExportar, botaoExportar2;
+	private JPanel painelBotoes, painelImportar;
 	
-	private static com.itextpdf.text.Font catFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 18, com.itextpdf.text.Font.BOLD, BaseColor.BLUE);
-	private static com.itextpdf.text.Font catFont2 = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 18, com.itextpdf.text.Font.BOLD);
-	private static com.itextpdf.text.Font catFont3 = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 16, com.itextpdf.text.Font.BOLD);
-	private static com.itextpdf.text.Font paFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 16, com.itextpdf.text.Font.BOLD);
-	private static com.itextpdf.text.Font vendaFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 12, com.itextpdf.text.Font.BOLD);
-	private static com.itextpdf.text.Font vendaFontRed = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 12, com.itextpdf.text.Font.BOLD, BaseColor.RED);
-	private static com.itextpdf.text.Font subFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 9, com.itextpdf.text.Font.ITALIC);
-	private static com.itextpdf.text.Font vendaFontFiado = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 9, com.itextpdf.text.Font.NORMAL);
-	private static com.itextpdf.text.Font fontDivisao = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 14, com.itextpdf.text.Font.BOLD, BaseColor.BLUE);
+	private com.itextpdf.text.Font catFont;
+	private com.itextpdf.text.Font catFont2;
+	private com.itextpdf.text.Font catFont3;
+	private com.itextpdf.text.Font paFont;
+	private com.itextpdf.text.Font vendaFont;
+	private com.itextpdf.text.Font vendaFontRed;
+	private com.itextpdf.text.Font subFont;
+	private com.itextpdf.text.Font vendaFontFiado;
+	private com.itextpdf.text.Font fontDivisao;
 	
 	private Document document;
 	private Paragraph escrever;	
@@ -73,12 +73,22 @@ public class ConsultarVendas extends JPanel implements ActionListener
 	private HSSFWorkbook wb;
 	private String nomeArquivo, dataDia;
 	
-	private static double totalTudo;
-	private static double totalPago;
-	private static double totalTroco;	
+	private double totalTudo;
+	private double totalPago;
+	private double totalTroco;	
 	
 	public ConsultarVendas()
 	{
+		catFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 18, com.itextpdf.text.Font.BOLD, BaseColor.BLUE);
+		catFont2 = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 18, com.itextpdf.text.Font.BOLD);
+		catFont3 = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 16, com.itextpdf.text.Font.BOLD);
+		paFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 16, com.itextpdf.text.Font.BOLD);
+		vendaFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 12, com.itextpdf.text.Font.BOLD);
+		vendaFontRed = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 12, com.itextpdf.text.Font.BOLD, BaseColor.RED);
+		subFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 9, com.itextpdf.text.Font.ITALIC);
+		vendaFontFiado = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 9, com.itextpdf.text.Font.NORMAL);
+		fontDivisao = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 14, com.itextpdf.text.Font.BOLD, BaseColor.BLUE);		
+		
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		
 		painelBotoes = new JPanel(new GridBagLayout());
@@ -510,7 +520,7 @@ public class ConsultarVendas extends JPanel implements ActionListener
 							Query pega = new Query();
 							pega.executaUpdate("DELETE FROM vendas WHERE `vendas_id` = " + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0));
 							pega.executaUpdate("DELETE FROM vendas_produtos WHERE `id_link` = " + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0));
-							DiarioLog.add(Usuario.getNome(), "Deletou a venda #" + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0) + " de valor R$" + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 5) + ".", 7);	
+							DiarioLog.add(Usuario.INSTANCE.getNome(), "Deletou a venda #" + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0) + " de valor R$" + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 5) + ".", 7);	
 							pega.fechaConexao();
 							
 							SwingUtilities.invokeLater(new Runnable() {  
@@ -917,7 +927,7 @@ public class ConsultarVendas extends JPanel implements ActionListener
 					    addEmptyLine(preface, 1);
 					    preface.add(new Paragraph("Vendas do Sistema " + campoInicio.getText() + " - " + campoFim.getText(), catFont2));
 					    addEmptyLine(preface, 1);
-					    preface.add(new Paragraph("Relatório gerado por: " + Usuario.getNome() + ", " + new Date(), paFont));
+					    preface.add(new Paragraph("Relatório gerado por: " + Usuario.INSTANCE.getNome() + ", " + new Date(), paFont));
 					    addEmptyLine(preface, 15);
 					    preface.add(new Paragraph("Total de Vendas: " + totalVendas, catFont3));
 					    preface.add(new Paragraph("Total de Fiados: " + totalFiados, catFont3));

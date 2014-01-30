@@ -38,22 +38,19 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static DefaultTableModel tabela;
-	private static JTable tabelaFuncionarios;
-	private static JLabel adicionarNome, adicionarUser, adicionarSenha;
-	private static JTextField campoNome, campoUser, campoSenha;
-	private static JComboBox<?> campoLevel;
-	private static JButton adicionar;
-	private static JPanel addPainel;
+	private DefaultTableModel tabela;
+	private JTable tabelaFuncionarios;
+	private JLabel adicionarNome, adicionarUser, adicionarSenha;
+	private JTextField campoNome, campoUser, campoSenha;
+	private JComboBox<String> campoLevel;
+	private JButton adicionar;
+	private JPanel addPainel;
 	
-	PainelFuncionarios()
+	private PainelFuncionarios()
 	{
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Gerenciar Funcionários"));
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		//setMinimumSize(new Dimension(1020, 650));
-		//setMaximumSize(new Dimension(1920, 910));
-		
-		//instance table model
+
 		tabela = new DefaultTableModel() {
 
 		    /**
@@ -69,7 +66,7 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 		    	
 		    	String pega = (String) tabela.getValueAt(row, 0);
 		    	
-		    	if(pega.equals(Usuario.getNome()))
+		    	if(pega.equals(Usuario.INSTANCE.getNome()))
 		    		return false;
 		    	
 		       if(column == 4 || column == 3)
@@ -209,7 +206,7 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(5,5,5,5);  //top padding
 		
-		campoLevel = new JComboBox<Object>(tiposFuncionario);
+		campoLevel = new JComboBox<String>(tiposFuncionario);
 		((JLabel)campoLevel.getRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
 		campoLevel.setSelectedIndex(0);
 		campoLevel.setPreferredSize(new Dimension(150, 30));
@@ -269,6 +266,14 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 		addPainel.add(adicionar, gbc);
 		add(addPainel);
 	}
+	
+	private static class FuncionariosSingletonHolder { 
+		public static final PainelFuncionarios INSTANCE = new PainelFuncionarios();
+	}
+ 
+	public static PainelFuncionarios getInstance() {
+		return FuncionariosSingletonHolder.INSTANCE;
+	}	
 	
 	class CustomRenderer extends DefaultTableCellRenderer 
 	{
@@ -358,7 +363,7 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 					
 					envia.executaUpdate(formatacao);
 					envia.fechaConexao();
-					DiarioLog.add(Usuario.getNome(), "Adicionou o funcionário " + (campoUser.getText().replaceAll("'", "")) + ".", 4);
+					DiarioLog.add(Usuario.INSTANCE.getNome(), "Adicionou o funcionário " + (campoUser.getText().replaceAll("'", "")) + ".", 4);
 					
 					String tipo = "";
 					boolean flag = false;
@@ -478,7 +483,7 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 					  formatacao = "DELETE FROM funcionarios WHERE `username` = '" + (pega.replaceAll("'", "")) + "';";
 					  envia.executaUpdate(formatacao);
 					  envia.fechaConexao();
-					  DiarioLog.add(Usuario.getNome(), "Deletou o funcionário " + (pega.replaceAll("'", "")) + ".", 4);
+					  DiarioLog.add(Usuario.INSTANCE.getNome(), "Deletou o funcionário " + (pega.replaceAll("'", "")) + ".", 4);
 					      
 					  SwingUtilities.invokeLater(new Runnable() {  
 						  public void run() {  
@@ -527,7 +532,7 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 					formatacao = "UPDATE funcionarios SET "+tipo+" = '" + data + "' WHERE nome = '"+ (pega.replaceAll("'", "")) +"' " ;
 					envia.executaUpdate(formatacao);
 					envia.fechaConexao();
-					DiarioLog.add(Usuario.getNome(), "Atualizou o " + tipo + "do funcionário " + (pega.replaceAll("'", "")) + " para " + data + ".", 4);
+					DiarioLog.add(Usuario.INSTANCE.getNome(), "Atualizou o " + tipo + "do funcionário " + (pega.replaceAll("'", "")) + " para " + data + ".", 4);
 				} catch (ClassNotFoundException | SQLException e1) {
 					e1.printStackTrace();
 					new PainelErro(e1);
@@ -549,7 +554,7 @@ public class PainelFuncionarios extends JPanel implements ActionListener, TableM
 					formatacao = "UPDATE funcionarios SET level =  " + tipo + " WHERE nome = '"+ (pega.replaceAll("'", "")) +"' " ;
 					envia.executaUpdate(formatacao);
 					envia.fechaConexao();
-					DiarioLog.add(Usuario.getNome(), "Alterou o cargo de " + (pega.replaceAll("'", "")) + " para " + (tipo == 1 ? "funcionário" : "gerente") + ".", 4);
+					DiarioLog.add(Usuario.INSTANCE.getNome(), "Alterou o cargo de " + (pega.replaceAll("'", "")) + " para " + (tipo == 1 ? "funcionário" : "gerente") + ".", 4);
 				} catch (ClassNotFoundException | SQLException e1) {
 					e1.printStackTrace();
 					new PainelErro(e1);

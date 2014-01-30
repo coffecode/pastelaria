@@ -1,36 +1,37 @@
 package codecoffe.restaurantes.utilitarios;
-public class Usuario {
+public enum Usuario {
+	INSTANCE;
 	
-	private static int level;
-	private static String nome;
-	private static int olhando = -1;
+	private int level;
+	private String nome;
+	private int olhando = -1;
 	
-	public static void setNome(String texto)
+	public void setNome(String texto)
 	{
 		nome = texto;
 	}
 	
-	public static void setLevel(int lvl)
+	public void setLevel(int lvl)
 	{
 		level = lvl;
 	}
 	
-	public static void setOlhando(int mesa)
+	public void setOlhando(int mesa)
 	{
 		olhando = mesa;
 	}
 	
-	public static String getNome()
+	public String getNome()
 	{
 		return nome;
 	}
 	
-	public static int getLevel()
+	public int getLevel()
 	{
 		return level;
 	}
 	
-	public static int getOlhando()
+	public int getOlhando()
 	{
 		return olhando;
 	}	

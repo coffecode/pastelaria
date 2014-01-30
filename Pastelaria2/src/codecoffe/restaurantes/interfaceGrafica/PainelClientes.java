@@ -38,32 +38,27 @@ public class PainelClientes extends JPanel implements ActionListener
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static JPanel painelClientes,verClientes;
-	private static JLabel labelNome, labelApelido, labelTelefone, labelCPF, labelCEP, labelEndereco, labelNumero, labelBairro, labelComplemento, labelDivida, labelLoad;
-	private static JTextField campoNome, campoApelido, campoTelefone, campoCPF, campoEndereco, campoNumero, campoBairro, campoComplemento;
-	private static WebTextField campoBusca, campoCEP;
-	private static JTabbedPane divisaoPainel;
-	private static ArrayList<Integer> clientesID = new ArrayList<>();
-	private static int clienteIDSelecionado;
-	private static DefaultListModel<String> modeloLista;
-	private static WebButton bSalvarCliente, bNovoCliente, bDeletarCliente, bDivida, bVenda;
-	private static JTable tabelaUltimasVendas;
-	private static DefaultTableModel tabela;
-	private static WebList jlist;
-	private static JScrollPane scrolltabela;
-	private static boolean flag_aciona;
-	private static int callBack = 0;
+	private JPanel painelClientes,verClientes;
+	private JLabel labelNome, labelApelido, labelTelefone, labelCPF, labelCEP, labelEndereco, labelNumero, labelBairro, labelComplemento, labelDivida, labelLoad;
+	private JTextField campoNome, campoApelido, campoTelefone, campoCPF, campoEndereco, campoNumero, campoBairro, campoComplemento;
+	private WebTextField campoBusca, campoCEP;
+	private JTabbedPane divisaoPainel;
+	private ArrayList<Integer> clientesID = new ArrayList<>();
+	private int clienteIDSelecionado;
+	private DefaultListModel<String> modeloLista;
+	private WebButton bSalvarCliente, bNovoCliente, bDeletarCliente, bDivida, bVenda;
+	private JTable tabelaUltimasVendas;
+	private DefaultTableModel tabela;
+	private WebList jlist;
+	private JScrollPane scrolltabela;
+	private boolean flag_aciona;
+	private int callBack = 0;
 	
 	@SuppressWarnings("unchecked")
-	PainelClientes()
+	private PainelClientes()
 	{		
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		//setMinimumSize(new Dimension(1020, 650));
-		//setMinimumSize(new Dimension(1928, 910));
-		
-		divisaoPainel = new JTabbedPane();
-		//divisaoPainel.setMinimumSize(new Dimension(1020, 650));
-		//divisaoPainel.setMaximumSize(new Dimension(1920, 910));				
+		divisaoPainel = new JTabbedPane();			
 		
 		painelClientes = new JPanel();
 		painelClientes.setLayout(new GridBagLayout());
@@ -190,7 +185,7 @@ public class PainelClientes extends JPanel implements ActionListener
 			@Override
 		    public Component getListCellRendererComponent(@SuppressWarnings("rawtypes") JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 		        JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		        label.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/usuario.png")));
+		        label.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/Usuario.png")));
 		        
 		        if(index % 2 == 0)
 		        {
@@ -487,7 +482,15 @@ public class PainelClientes extends JPanel implements ActionListener
 		callBack = 0;
 	}
 	
-	public static void setCallBack(int menu)
+	private static class ClientesSingletonHolder { 
+		public static final PainelClientes INSTANCE = new PainelClientes();
+	}
+ 
+	public static PainelClientes getInstance() {
+		return ClientesSingletonHolder.INSTANCE;
+	}	
+	
+	public void setCallBack(int menu)
 	{
 		callBack = menu;
 	}
@@ -797,15 +800,15 @@ public class PainelClientes extends JPanel implements ActionListener
 			{
 				if(callBack > 0)	// retorna para o painel mesas;
 				{
-					PainelMesas.verMesa(callBack-1);
-					PainelVendaMesa.setFiado(modeloLista.getElementAt(jlist.getSelectedIndex()), clienteIDSelecionado);
+					PainelMesas.getInstance().verMesa(callBack-1);
+					PainelVendaMesa.getInstance().setFiado(modeloLista.getElementAt(jlist.getSelectedIndex()), clienteIDSelecionado);
 					callBack = 0;
 				}
 				else
 				{
-					PainelVendaRapida.setFiado(modeloLista.getElementAt(jlist.getSelectedIndex()), clienteIDSelecionado, campoTelefone.getText(), 
+					PainelVendaRapida.getInstance().setFiado(modeloLista.getElementAt(jlist.getSelectedIndex()), clienteIDSelecionado, campoTelefone.getText(), 
 							campoEndereco.getText(), campoNumero.getText(), campoComplemento.getText());
-					MenuPrincipal.AbrirPrincipal(0);
+					MenuPrincipal.getInstance().AbrirPrincipal(0);
 				}
 			}
 		}
@@ -820,7 +823,7 @@ public class PainelClientes extends JPanel implements ActionListener
 		    		  if(opcao == JOptionPane.YES_OPTION)
 		    		  {
 		    			   try {
-							DiarioLog.add(Usuario.getNome(), "Deletou o cliente " + campoNome.getText() + ". Telefone: " + campoTelefone.getText() + ".", 5);
+							DiarioLog.add(Usuario.INSTANCE.getNome(), "Deletou o cliente " + campoNome.getText() + ". Telefone: " + campoTelefone.getText() + ".", 5);
 							   Query envia = new Query();
 							   String formatacao = "DELETE FROM fiados WHERE `fiador_id` = " + clienteIDSelecionado + ";";  
 							   envia.executaUpdate(formatacao);
@@ -872,7 +875,7 @@ public class PainelClientes extends JPanel implements ActionListener
 						
 						NotificationManager.setLocation(2);
 						NotificationManager.showNotification(this, "Cliente Salvado!").setDisplayTime(2000);
-						DiarioLog.add(Usuario.getNome(), "Atualizou o cliente: " + campoNome.getText() + ". Telefone: " + campoTelefone.getText() + ".", 5);
+						DiarioLog.add(Usuario.INSTANCE.getNome(), "Atualizou o cliente: " + campoNome.getText() + ". Telefone: " + campoTelefone.getText() + ".", 5);
 					} catch (ClassNotFoundException | SQLException e1) {
 						e1.printStackTrace();
 						new PainelErro(e1);
@@ -900,7 +903,7 @@ public class PainelClientes extends JPanel implements ActionListener
 				
 				campoNome.requestFocus();
 				TooltipManager.showOneTimeTooltip ( bSalvarCliente, null, "Lembre-se de salvar!", TooltipWay.up );
-				DiarioLog.add(Usuario.getNome(), "Cadastrou um novo cliente.", 5);
+				DiarioLog.add(Usuario.INSTANCE.getNome(), "Cadastrou um novo cliente.", 5);
 			} catch (ClassNotFoundException | SQLException e1) {
 				e1.printStackTrace();
 				new PainelErro(e1);
@@ -927,7 +930,7 @@ public class PainelClientes extends JPanel implements ActionListener
    			  if(resposta > 0 && clienteIDSelecionado > 0)
    			  {
    				  	try {
-						DiarioLog.add(Usuario.getNome(), "Reduziu R$" + pegaResposta + " da dívida do " + campoNome.getText() + " (Telefone: " + campoTelefone.getText() + " ) de R$" + bDivida.getText() + ".", 6);
+						DiarioLog.add(Usuario.INSTANCE.getNome(), "Reduziu R$" + pegaResposta + " da dívida do " + campoNome.getText() + " (Telefone: " + campoTelefone.getText() + " ) de R$" + bDivida.getText() + ".", 6);
 						Query pega = new Query();
 						pega.executaQuery("SELECT * FROM vendas WHERE `fiado_id` = " + clienteIDSelecionado + "");
 							

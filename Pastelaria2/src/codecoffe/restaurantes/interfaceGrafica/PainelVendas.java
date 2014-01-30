@@ -28,10 +28,11 @@ public class PainelVendas extends JPanel
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static JTable tabelaFiados;
-	private static DefaultTableModel tabela;
+	private JTable tabelaFiados;
+	private DefaultTableModel tabela;
+	private UltimasVendas painelUltimas;
 	
-	public PainelVendas()
+	private PainelVendas()
 	{
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		JTabbedPane tabbedPane = new JTabbedPane();
@@ -156,8 +157,6 @@ public class PainelVendas extends JPanel
 		tabelaFiados.setPreferredScrollableViewportSize(new Dimension(800, 150));
 		
 		WebScrollPane scrolltabela = new WebScrollPane(tabelaFiados, true);
-		//scrolltabela.setMinimumSize(new Dimension(1020, 225));
-		//scrolltabela.setMaximumSize(new Dimension(1500, 225));
 		painelTabela.add(scrolltabela, BorderLayout.CENTER);
 		
 		GraficoFiados graFiados = new GraficoFiados();
@@ -167,7 +166,7 @@ public class PainelVendas extends JPanel
 		visualizarFiado.add(painelTabela);
 		visualizarFiado.add(graFiados);
 		
-		UltimasVendas painelUltimas = new UltimasVendas();
+		painelUltimas = new UltimasVendas();
 		ConsultarVendas painelConsultar = new ConsultarVendas();
 		ConsultarDiario painelConsultarDiario = new ConsultarDiario();
 		
@@ -188,7 +187,7 @@ public class PainelVendas extends JPanel
 		        JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
 		        if(sourceTabbedPane.getSelectedIndex() == 0) // Ultimas Vendas
 		        {
-		        	UltimasVendas.refresh();
+		        	painelUltimas.refresh();
 		        }
 		        else if(sourceTabbedPane.getSelectedIndex() == 2) // Fiados
 		        {
@@ -202,6 +201,14 @@ public class PainelVendas extends JPanel
 		add(tabbedPane);
 		ToolTipManager.sharedInstance().setDismissDelay(40000);
 	}
+	
+	private static class VendasSingletonHolder { 
+		public static final PainelVendas INSTANCE = new PainelVendas();
+	}
+ 
+	public static PainelVendas getInstance() {
+		return VendasSingletonHolder.INSTANCE;
+	}	
 	
 	class CustomRenderer extends DefaultTableCellRenderer 
 	{
@@ -226,9 +233,14 @@ public class PainelVendas extends JPanel
 	        	return c;
 	        }
 	    }
-	}		
+	}
 	
-	static public void refresh()
+	public void ultimasVendasRefresh()
+	{
+		painelUltimas.refresh();
+	}
+	
+	public void refresh()
 	{
 	      SwingUtilities.invokeLater(new Runnable() {  
 	    	  public void run() {  
@@ -432,7 +444,7 @@ public class PainelVendas extends JPanel
 		    			  
 		    			  if(resposta > 0)
 		    			  {
-		    				  	DiarioLog.add(Usuario.getNome(), "Reduziu R$" + pegaResposta + " da dívida do " + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 1) + " (TEL: " + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 3) + " ) de R$" + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 0) + ".", 6);
+		    				  	DiarioLog.add(Usuario.INSTANCE.getNome(), "Reduziu R$" + pegaResposta + " da dívida do " + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 1) + " (TEL: " + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 3) + " ) de R$" + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 0) + ".", 6);
 		    				  
 		    					try {
 									Query pega = new Query();
@@ -477,7 +489,7 @@ public class PainelVendas extends JPanel
 		    		  
 		    		  if(opcao == JOptionPane.YES_OPTION)
 		    		  {
-		    			DiarioLog.add(Usuario.getNome(), "Quitou a dívida de " + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 1) + " (TEL: " + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 3) + " ) de R$" + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 0) + ".", 6);  
+		    			DiarioLog.add(Usuario.INSTANCE.getNome(), "Quitou a dívida de " + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 1) + " (TEL: " + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 3) + " ) de R$" + (String) tabelaFiados.getValueAt(tabelaFiados.getSelectedRow(), 0) + ".", 6);  
 		    				  
 		    			try {
 							Query pega = new Query();

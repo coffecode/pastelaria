@@ -8,8 +8,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import javax.swing.JOptionPane;
-
 import codecoffe.restaurantes.interfaceGrafica.PainelCozinha;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
 import codecoffe.restaurantes.interfaceGrafica.PainelMesas;
@@ -23,17 +21,27 @@ import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
 public class Server implements Runnable
 {
-	private static int port;
-	private static boolean procurandoConexoes;
-	private static int uniqueId;
-	private static ArrayList<ClienteThread> listaClientes;
+	private int port;
+	private boolean procurandoConexoes;
+	private int uniqueId;
+	private ArrayList<ClienteThread> listaClientes;
 	
-	public Server(int porta)
+	private Server() {}
+	
+	private static class ServerSingletonHolder { 
+		public static final Server INSTANCE = new Server();
+	}
+ 
+	public static Server getInstance() {
+		return ServerSingletonHolder.INSTANCE;
+	}
+	
+	public void atualizaConexao(int porta)
 	{
 		port = porta;
 		procurandoConexoes = true;
 		listaClientes = new ArrayList<ClienteThread>();
-		System.out.println("Iniciando modo servidor.");
+		System.out.println("Iniciando modo servidor.");		
 	}
 	
 	synchronized void remove(int id)
@@ -51,6 +59,7 @@ public class Server implements Runnable
 	
 	public void terminate()
 	{
+		enviaTodos("BYE");
 		procurandoConexoes = false;
 	}
 
@@ -64,13 +73,11 @@ public class Server implements Runnable
 			while(procurandoConexoes)	//fica procurando conexao para aceitar.
 			{
 				Socket socket = serverSocket.accept();
-				
 				ClienteThread cliente = new ClienteThread(socket);		// Cria uma Thread para esse cliente.
 				listaClientes.add(cliente);								// Adiciona na lista de clientes.
 				cliente.start();										// Começa a conexão com esse cara.
 			}
 			
-			serverSocket.close();
 			for(int i = 0; i < listaClientes.size(); ++i)
 			{
 				ClienteThread tc = listaClientes.get(i);
@@ -78,14 +85,20 @@ public class Server implements Runnable
 					tc.sInput.close();
 					tc.sOutput.close();
 					tc.socket.close();
-				}catch(IOException e) {}
+				}catch(IOException e) {}	// erro não interessa.
 			}
+			
+			serverSocket.close();
+			
 		} catch (IOException e) {
 			e.printStackTrace();
+			terminate();
+			new PainelErro(e);
+			System.exit(0);
 		}
 	}
 	
-	public static synchronized void enviaTodos(Object ob) 
+	public synchronized void enviaTodos(Object ob) 
 	{
 		for(int i = listaClientes.size(); --i >= 0;) {
 			ClienteThread ct = listaClientes.get(i);
@@ -116,15 +129,20 @@ public class Server implements Runnable
 				
 				if(data instanceof String)
 				{
-					String pegaVersao = (String)data;
-					if(!pegaVersao.equals(UtilCoffe.VERSAO))
+					if(!data.toString().equals(UtilCoffe.VERSAO))
+					{
+						sOutput.reset();
+						sOutput.writeObject("WRONG VERSION");						
 						this.clienteConectado = false;	// kicka, versão diferente do servidor.
+					}
 				}
 				else
 					this.clienteConectado = false;	// kicka pois não informou versão.
 				
 			} catch (IOException | ClassNotFoundException e) {
 				e.printStackTrace();
+				new PainelErro(e);
+				this.clienteConectado = false;	// kicka pois não informou versão.
 			}
 		}
 		
@@ -148,17 +166,19 @@ public class Server implements Runnable
 						else if(decodifica.equals("UPDATE MESAS"))
 						{
 							sOutput.reset();
-							sOutput.writeObject(PainelMesas.getTodasMesas());
+							sOutput.writeObject(PainelMesas.getInstance().getTodasMesas());
 						}						
 						else if(decodifica.equals("UPDATE PEDIDOS"))
 						{
 							sOutput.reset();
-							sOutput.writeObject(PainelCozinha.getTodosPedidos());
+							sOutput.writeObject(PainelCozinha.getInstance().getTodosPedidos());
 						}
 						else if(decodifica.equals("UPDATE CONFIGURACAO"))
 						{
+							System.out.println("Enviando configuracao");
+							
 							sOutput.reset();
-							sOutput.writeObject(Configuracao.gerarCache());
+							sOutput.writeObject(Configuracao.INSTANCE.gerarCache());
 						}						
 						else if(decodifica.equals("ADEUS"))
 						{
@@ -183,7 +203,7 @@ public class Server implements Runnable
 					else if(dataRecebida instanceof CacheMesaHeader)	// é alguma atualização de mesa
 					{
 						CacheMesaHeader mh = (CacheMesaHeader)dataRecebida;
-						Bartender.enviarMesa(mh);
+						Bartender.INSTANCE.enviarMesa(mh);
 					}
 					else if(dataRecebida instanceof Pedido)	// é um pedido
 					{
@@ -192,7 +212,7 @@ public class Server implements Runnable
 							ped.setHora(new Date());
 						
 						ped.setUltimaEdicao(new Date());						
-						PainelCozinha.atualizaPedido(ped);	//atualizar para o proprio servidor
+						PainelCozinha.getInstance().atualizaPedido(ped);	//atualizar para o proprio servidor
 						enviaTodos(ped);					//transmitir essa informação para todos os clientes
 					}
 					else if(dataRecebida instanceof CacheVendaFeita)	// é uma venda realizada
@@ -201,11 +221,11 @@ public class Server implements Runnable
 						
 						if(vendaFeita.imprimir)
 						{
-							Bartender.criarImpressao(vendaFeita);
+							Bartender.INSTANCE.criarImpressao(vendaFeita);
 						}
 						else
 						{
-							int sucesso = Bartender.enviarVenda(vendaFeita);
+							int sucesso = Bartender.INSTANCE.enviarVenda(vendaFeita);
 							if(sucesso > 0)	// enviando resposta de sucesso
 							{
 								sOutput.reset();
@@ -228,7 +248,7 @@ public class Server implements Runnable
 							{
 								if(teste.getString("password").equals(autentica.password))
 								{
-									if(teste.getString("nome").equals(Usuario.getNome()))
+									if(teste.getString("nome").equals(Usuario.INSTANCE.getNome()))
 									{
 										autentica.header = 4;
 										sOutput.reset();
@@ -272,8 +292,18 @@ public class Server implements Runnable
 					}
 					
 				} catch (ClassNotFoundException | IOException e) {
-					e.printStackTrace();
-					this.clienteConectado = false;
+					if(e.getMessage().contains("Connection reset") || e.getMessage().toLowerCase().contains("socket closed"))
+					{
+						System.out.println("Cliente desconectado");
+						this.clienteConectado = false;
+					}
+					else
+					{
+						e.printStackTrace();
+						new PainelErro(e);
+						terminate();
+						System.exit(0);
+					}
 				}
 			}
 			
@@ -290,11 +320,13 @@ public class Server implements Runnable
 			try {
 				sOutput.reset();
 				sOutput.writeObject(ob);
+				return true;
 			}
 			catch(IOException e) {
 				e.printStackTrace();
+				close();
+				return false;
 			}
-			return true;
 		}		
 		
 		private void close()
@@ -303,21 +335,21 @@ public class Server implements Runnable
 				try {
 					sOutput.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					//e.printStackTrace();
 				}
 			
 			if(sInput != null)
 				try {
 					sInput.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					//e.printStackTrace();
 				}
 			
 			if(socket != null)
 				try {
 					socket.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					//e.printStackTrace();
 				}
 		}
 	}

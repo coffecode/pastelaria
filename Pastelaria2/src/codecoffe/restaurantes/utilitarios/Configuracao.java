@@ -8,18 +8,17 @@ import codecoffe.restaurantes.interfaceGrafica.PainelErro;
 import codecoffe.restaurantes.mysql.Query;
 import codecoffe.restaurantes.sockets.CacheConfiguracoes;
 
-public class Configuracao {
+public enum Configuracao {
+	INSTANCE;
 	
-	private static int qntdMesas, modo, backupAutoIntervalo;
-	private static double taxaEntrega;
-	private static String nomeRest, caminhoBackupAuto;
-	private static Date ultimoBackup;
-	private static boolean dezPorcento, reciboFim, backupAuto;
+	private int qntdMesas, modo, backupAutoIntervalo;
+	private double taxaEntrega;
+	private String nomeRest, caminhoBackupAuto;
+	private Date ultimoBackup;
+	private boolean dezPorcento, reciboFim, backupAuto;
 	
-	public Configuracao()
-	{
-		modo = UtilCoffe.SERVER;
-		
+	public void atualizarConfiguracao()
+	{		
 		try {
 			Query pega = new Query();
 			pega.executaQuery("SELECT * FROM opcoes");
@@ -71,115 +70,119 @@ public class Configuracao {
 			e1.printStackTrace();
 			new PainelErro(e1);
 			System.exit(0);
-		}
+		}		
 	}
 	
-	public Configuracao(CacheConfiguracoes cc)
+	public void atualizarConfiguracao(CacheConfiguracoes cc)
 	{
-		modo = UtilCoffe.CLIENT;
 		nomeRest = cc.getNome();
 		dezPorcento = cc.getDezPorcento();
 		reciboFim = cc.getReciboFim();
-		taxaEntrega = cc.getTaxa();
-	}	
+		taxaEntrega = cc.getTaxa();		
+	}
 	
-	public static CacheConfiguracoes gerarCache()
+	public CacheConfiguracoes gerarCache()
 	{
 		CacheConfiguracoes cc = new CacheConfiguracoes(nomeRest, dezPorcento, reciboFim, taxaEntrega);
 		return cc;
 	}
 	
-	public static void setBackupAutoCaminho(String caminho)
+	public void setModo(int md)
+	{
+		modo = md;
+	}
+	
+	public void setBackupAutoCaminho(String caminho)
 	{
 		caminhoBackupAuto = caminho;
 	}
 	
-	public static void setUltimoBackup(Date quando)
+	public void setUltimoBackup(Date quando)
 	{
 		ultimoBackup = quando;
 	}
 	
-	public static void setBackupAuto(boolean set)
+	public void setBackupAuto(boolean set)
 	{
 		backupAuto = set;
 	}
 	
-	public static void setBackupAutoIntervalo(int intervalo)
+	public void setBackupAutoIntervalo(int intervalo)
 	{
 		backupAutoIntervalo = intervalo;
 	}
 	
-	public static void setRestaurante(String texto)
+	public void setRestaurante(String texto)
 	{
 		nomeRest = texto;
 	}
 	
-	public static void setMesas(int qtd)
+	public void setMesas(int qtd)
 	{
 		qntdMesas = qtd;
 	}
 	
-	public static void setReciboFim(boolean set)
+	public void setReciboFim(boolean set)
 	{
 		reciboFim = set;
 	}
 	
-	public static void setDezPorcento(boolean set)
+	public void setDezPorcento(boolean set)
 	{
 		dezPorcento = set;
 	}
 	
-	public static void setTaxaEntrega(double quantia)
+	public void setTaxaEntrega(double quantia)
 	{
 		taxaEntrega = quantia;
 	}
 	
-	public static String getRestaurante()
+	public String getRestaurante()
 	{
 		return nomeRest;
 	}
 	
-	public static int getMesas()
+	public int getMesas()
 	{
 		return qntdMesas;
 	}
 	
-	public static boolean getReciboFim()
+	public boolean getReciboFim()
 	{
 		return reciboFim;
 	}
 	
-	public static boolean getDezPorcento()
+	public boolean getDezPorcento()
 	{
 		return dezPorcento;
 	}
 	
-	public static double getTaxaEntrega()
+	public double getTaxaEntrega()
 	{
 		return taxaEntrega;
 	}
 	
-	public static int getModo()
+	public int getModo()
 	{
 		return modo;
 	}
 	
-	public static String getBackupAutoCaminho()
+	public String getBackupAutoCaminho()
 	{
 		return caminhoBackupAuto;
 	}
 	
-	public static Date getUltimoBackup()
+	public Date getUltimoBackup()
 	{
 		return ultimoBackup;
 	}
 	
-	public static boolean getBackupAuto()
+	public boolean getBackupAuto()
 	{
 		return backupAuto;
 	}
 	
-	public static int getBackupAutoIntervalo()
+	public int getBackupAutoIntervalo()
 	{
 		return backupAutoIntervalo;
 	}	

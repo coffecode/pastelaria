@@ -20,6 +20,7 @@ import javax.swing.SwingConstants;
 import codecoffe.restaurantes.mysql.Query;
 import codecoffe.restaurantes.sockets.CacheAutentica;
 import codecoffe.restaurantes.sockets.Client;
+import codecoffe.restaurantes.sockets.Server;
 import codecoffe.restaurantes.utilitarios.Configuracao;
 import codecoffe.restaurantes.utilitarios.DiarioLog;
 import codecoffe.restaurantes.utilitarios.Usuario;
@@ -36,10 +37,11 @@ public class Login extends WebDialog
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	static JLabel LabelUsername, LabelPassword, Creditos, logo;
-	static JTextField CampoUsername, CampoPassword;
-	static JButton Confere;
-	public Login()
+	private JLabel LabelUsername, LabelPassword, Creditos, logo;
+	private JTextField CampoUsername, CampoPassword;
+	private JButton Confere;
+	
+	private Login()
 	{
 		setIconImage(new ImageIcon(getClass().getClassLoader().getResource("imgs/icone_programa.png")).getImage());
 		setDefaultCloseOperation(WebDialog.DO_NOTHING_ON_CLOSE);
@@ -48,10 +50,14 @@ public class Login extends WebDialog
 		{
 			public void windowClosing(WindowEvent e)
 			{	
-				if(Configuracao.getModo() > 1)
+				if(Configuracao.INSTANCE.getModo() == UtilCoffe.CLIENT)
 				{
-					Client.enviarObjeto("ADEUS");
-					Client.disconnect();						
+					Client.getInstance().enviarObjeto("ADEUS");
+					Client.getInstance().disconnect();						
+				}
+				else
+				{
+					Server.getInstance().terminate();
 				}
 				
 				System.exit(0);
@@ -113,10 +119,10 @@ public class Login extends WebDialog
 			{
 				if(e.getSource() == Confere)
 				{
-					if(Configuracao.getModo() == UtilCoffe.SERVER)
+					if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
 						autentica(CampoUsername.getText(), CampoPassword.getText());
 					else
-						Client.enviarObjeto(new CacheAutentica(CampoUsername.getText(), CampoPassword.getText()));
+						Client.getInstance().enviarObjeto(new CacheAutentica(CampoUsername.getText(), CampoPassword.getText()));
 				}
             }
 		};
@@ -124,6 +130,14 @@ public class Login extends WebDialog
 		Confere.addActionListener(listener);
 		HotkeyManager.registerHotkey (this, Confere, Hotkey.ENTER);			
 	}
+	
+	private static class LoginSingletonHolder { 
+		public static final Login INSTANCE = new Login();
+	}
+ 
+	public static Login getInstance() {
+		return LoginSingletonHolder.INSTANCE;
+	}	
 	
 	public void autentica(String username, String password)
 	{
@@ -139,13 +153,13 @@ public class Login extends WebDialog
 				{
 					CampoUsername.setText("");
 					CampoPassword.setText("");
-					Usuario.setNome(teste.getString("nome"));
-					Usuario.setLevel(teste.getInt("level"));
-					PainelStatus.setNome(Usuario.getNome());
-					MenuPrincipal.setarVisible(true);
+					Usuario.INSTANCE.setNome(teste.getString("nome"));
+					Usuario.INSTANCE.setLevel(teste.getInt("level"));
+					PainelStatus.getInstance().setNome(Usuario.INSTANCE.getNome());
+					MenuPrincipal.getInstance().setarVisible(true);
 
 					teste.fechaConexao();
-					DiarioLog.add(Usuario.getNome(), "Fez login no sistema.", 8);
+					DiarioLog.add(Usuario.INSTANCE.getNome(), "Fez login no sistema.", 8);
 				}
 				else
 				{
@@ -165,7 +179,7 @@ public class Login extends WebDialog
 		}	
 	}
 	
-	public static void autentica(CacheAutentica ca)
+	public void autentica(CacheAutentica ca)
 	{		
 		switch(ca.header)
 		{
@@ -173,10 +187,10 @@ public class Login extends WebDialog
 			{
 				CampoUsername.setText("");
 				CampoPassword.setText("");				
-				Usuario.setNome(ca.nome);
-				Usuario.setLevel(ca.level);
-				PainelStatus.setNome(Usuario.getNome());
-				MenuPrincipal.setarVisible(true);				
+				Usuario.INSTANCE.setNome(ca.nome);
+				Usuario.INSTANCE.setLevel(ca.level);
+				PainelStatus.getInstance().setNome(Usuario.INSTANCE.getNome());
+				MenuPrincipal.getInstance().setarVisible(true);				
 				break;
 			}
 			case 2:

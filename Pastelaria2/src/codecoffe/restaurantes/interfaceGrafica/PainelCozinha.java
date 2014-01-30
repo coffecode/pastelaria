@@ -29,11 +29,11 @@ public class PainelCozinha extends JPanel
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static JPanel pedidosCozinha;
-	private static ArrayList<Pedido> todosPedidos;
-	private static Timer timer, timer2;
+	private JPanel pedidosCozinha;
+	private ArrayList<Pedido> todosPedidos;
+	private Timer timer, timer2;
 	
-	PainelCozinha()
+	private PainelCozinha()
 	{
 		todosPedidos = new ArrayList<>();
 		
@@ -51,12 +51,20 @@ public class PainelCozinha extends JPanel
 		timer = new Timer();
 		timer.schedule(new RemindTask(), 0, 10*1000);	// começa imediatamente e repete a cada 10 segundos
 		
-		if(Configuracao.getModo() == UtilCoffe.SERVER)
+		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
 		{
 			timer2 = new Timer();
 			timer2.schedule(new DeleteTask(), 0, 5*1000);	
 		}
 	}
+	
+	private static class CozinhaSingletonHolder { 
+		public static final PainelCozinha INSTANCE = new PainelCozinha();
+	}
+ 
+	public static PainelCozinha getInstance() {
+		return CozinhaSingletonHolder.INSTANCE;
+	}	
 	
 	class DeleteTask extends TimerTask 
 	{
@@ -72,7 +80,7 @@ public class PainelCozinha extends JPanel
         			if(seconds > 15) // 15 segundos de cooldown para deletar
         			{
         				todosPedidos.get(i).setHeader(UtilCoffe.PEDIDO_DELETA);
-        				Bartender.enviarPedido(todosPedidos.get(i));      			
+        				Bartender.INSTANCE.enviarPedido(todosPedidos.get(i));      			
         			}
         		}
         		else
@@ -83,7 +91,7 @@ public class PainelCozinha extends JPanel
             		if(minutes > 120)	// deleta o pedido, nao importa o status
             		{
         				todosPedidos.get(i).setHeader(UtilCoffe.PEDIDO_DELETA);
-        				Bartender.enviarPedido(todosPedidos.get(i));          			
+        				Bartender.INSTANCE.enviarPedido(todosPedidos.get(i));          			
             		}        			
         		}
         	}
@@ -102,7 +110,7 @@ public class PainelCozinha extends JPanel
         }
     }
 	
-	public static void atualizaTodosPedidos(CacheTodosPedidos tp)
+	public void atualizaTodosPedidos(CacheTodosPedidos tp)
 	{
 		todosPedidos = tp.getTodosPedidos();
 		
@@ -128,18 +136,18 @@ public class PainelCozinha extends JPanel
 		pedidosCozinha.repaint();			
 	}
 	
-	public static void atualizaTodosPedidos()
+	/*public static void atualizaTodosPedidos()
 	{
 		
-	}
+	}*/
 	
-	public static CacheTodosPedidos getTodosPedidos()
+	public CacheTodosPedidos getTodosPedidos()
 	{
 		CacheTodosPedidos tp = new CacheTodosPedidos(todosPedidos);
 		return tp;
 	}
 	
-	public static boolean verificaStatusPedido(int local, int qntd, String nome, String adicionais)
+	public boolean verificaStatusPedido(int local, int qntd, String nome, String adicionais)
 	{
 		for(int i = 0; i < todosPedidos.size(); i++)
 		{
@@ -158,7 +166,7 @@ public class PainelCozinha extends JPanel
 		return true;
 	}
 		
-	public static void atualizaPedido(Pedido p)
+	public void atualizaPedido(Pedido p)
 	{
 		if(p.getHeader() == UtilCoffe.PEDIDO_ADICIONA) // adiciona
 		{

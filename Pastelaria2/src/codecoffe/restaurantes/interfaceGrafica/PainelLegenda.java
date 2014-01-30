@@ -19,16 +19,16 @@ public class PainelLegenda extends WebStatusBar
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static WebStatusLabel leg;
+	private WebStatusLabel leg;
 	protected TimerThread timerThread;
 	
-	PainelLegenda()
+	private PainelLegenda()
 	{
 		setLayout(new ToolbarLayout());
 		setMaximumSize(new Dimension(1920, 30));
 		setMinimumSize(new Dimension(800, 30));
 		
-		leg = new WebStatusLabel ( "Desenvolvido por CodeCoffe (C) - 2014" );	
+		leg = new WebStatusLabel("Desenvolvido por CodeCoffe (C) - 2014");	
 		add(leg, ToolbarLayout.START);
         
         final WebTextField dateLabel = new WebTextField();
@@ -40,6 +40,14 @@ public class PainelLegenda extends WebStatusBar
         timerThread = new TimerThread(dateLabel);
         timerThread.start();
 	}
+	
+	private static class LegendasSingletonHolder { 
+		public static final PainelLegenda INSTANCE = new PainelLegenda();
+	}
+ 
+	public static PainelLegenda getInstance() {
+		return LegendasSingletonHolder.INSTANCE;
+	}	
 	
     public class TimerThread extends Thread {
 
@@ -81,7 +89,7 @@ public class PainelLegenda extends WebStatusBar
         }
     }	
 	
-	static public void AtualizaLegenda(String texto)
+	public void AtualizaLegenda(String texto)
 	{
 		leg.setText(texto);
 	}

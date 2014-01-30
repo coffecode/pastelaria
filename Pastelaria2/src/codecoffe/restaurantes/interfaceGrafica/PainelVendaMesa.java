@@ -56,33 +56,33 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static JPanel pedidoPainel, painelProdutos, painelProdutos1, painelPagamento;
-	private static JLabel labelQuantidade, labelProduto, labelValor, labelTotal, labelRecebido, labelTroco, labelForma, labelCliente;
-	private static JTabbedPane divisaoPainel;
-	private static JButton calcular;
-	private static DefaultTableModel tabela;
-	private static JTable tabelaPedido;
-	private static JTextField campoTotal, campoRecebido, campoTroco;
-	private static JTextField campoValor = new JTextField(5);
-	private static JTextField campoQuantidade = new JTextField("1", 2);
-	private static VendaMesaProdutoCampo addProduto = new VendaMesaProdutoCampo();
-	private static ArrayList<VendaMesaAdicionaisCampo> addAdicional = new ArrayList<>();
-	private static ArrayList<JButton> addRemover = new ArrayList<>();
-	private static Venda vendaRapida = new Venda();
-	private static int fiadorIDSalvo;
-	private static WebPanel adicionaisPainel, adicionaisPainel1;
-	private static WebButton adicionarADC, adicionarProduto, finalizarVenda, imprimir, flecha1, flecha2, escolherCliente, deletarCliente;
-	private static JEditorPane campoRecibo;
-	private static WebComboBox campoForma;
-	private static DragPanel painelDropIn, painelDropOut;
-	private static int mesaID = 0;
-	private static ImageIcon iconeFinalizar;
-	private static JCheckBox adicionarDezPorcento;
-	private static double taxaOpcional;
-	private static CacheTodosProdutos todosProdutos;
+	private JPanel pedidoPainel, painelProdutos, painelProdutos1, painelPagamento;
+	private JLabel labelQuantidade, labelProduto, labelValor, labelTotal, labelRecebido, labelTroco, labelForma, labelCliente;
+	private JTabbedPane divisaoPainel;
+	private JButton calcular;
+	private DefaultTableModel tabela;
+	private JTable tabelaPedido;
+	private JTextField campoTotal, campoRecebido, campoTroco;
+	private JTextField campoValor;
+	private JTextField campoQuantidade;
+	private VendaMesaProdutoCampo addProduto;
+	private ArrayList<VendaMesaAdicionaisCampo> addAdicional;
+	private ArrayList<JButton> addRemover;
+	private Venda vendaRapida;
+	private int fiadorIDSalvo;
+	private WebPanel adicionaisPainel, adicionaisPainel1;
+	private WebButton adicionarADC, adicionarProduto, finalizarVenda, imprimir, flecha1, flecha2, escolherCliente, deletarCliente;
+	private JEditorPane campoRecibo;
+	private WebComboBox campoForma;
+	private DragPanel painelDropIn, painelDropOut;
+	private int mesaID = 0;
+	private ImageIcon iconeFinalizar;
+	private JCheckBox adicionarDezPorcento;
+	private double taxaOpcional;
+	private CacheTodosProdutos todosProdutos;
 	
 	@SuppressWarnings("rawtypes")
-	PainelVendaMesa()
+	private PainelVendaMesa()
 	{		
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		iconeFinalizar = new ImageIcon(getClass().getClassLoader().getResource("imgs/finalizar.png"));
@@ -106,6 +106,12 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		labelQuantidade = new JLabel("Qntd:");
 		labelQuantidade.setFont(new Font("Helvetica", Font.BOLD, 16));
 		
+		campoValor = new JTextField(5);
+		campoQuantidade = new JTextField("1", 2);
+		addAdicional = new ArrayList<>();
+		addRemover = new ArrayList<>();
+		vendaRapida = new Venda();		
+		
 		campoValor = new JTextField("");
 		campoValor.setEditable(false);
 		campoValor.setHorizontalAlignment(SwingConstants.CENTER);
@@ -113,7 +119,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		campoQuantidade = new JTextField("1");
 		campoQuantidade.setHorizontalAlignment(SwingConstants.CENTER);
 		campoQuantidade.setPreferredSize(new Dimension(40, 35));
-		addProduto = new VendaMesaProdutoCampo();
+		addProduto = new VendaMesaProdutoCampo(new CacheTodosProdutos());
 		
 		adicionarADC = new WebButton("Adicionais");
 		adicionarADC.setHorizontalTextPosition(AbstractButton.CENTER);
@@ -287,7 +293,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		adicionarDezPorcento.addItemListener(this);
 		adicionarDezPorcento.setSelected(false);
 		
-		if(!Configuracao.getDezPorcento())
+		if(!Configuracao.INSTANCE.getDezPorcento())
 			adicionarDezPorcento.setEnabled(false);
 
 		labelCliente = new JLabel("Cliente:");
@@ -534,9 +540,21 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		todosProdutos = new CacheTodosProdutos();
 	}
 	
-	public static void atualizaProdutos(CacheTodosProdutos tp)
+	private static class VendaMesaSingletonHolder { 
+		public static final PainelVendaMesa INSTANCE = new PainelVendaMesa();
+	}
+ 
+	public static PainelVendaMesa getInstance() {
+		return VendaMesaSingletonHolder.INSTANCE;
+	}	
+	
+	public void atualizaProdutos(CacheTodosProdutos tp)
 	{
 		todosProdutos = tp;
+		addProduto.atualizaProdutosCampo(tp);
+		
+		for(int i = 0; i < addAdicional.size(); i++)
+			addAdicional.get(i).atualizaProdutosCampo(tp);
 	}	
 	
 	class DragPanel extends JPanel {
@@ -746,9 +764,9 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 	    }
 	}
 	
-	public static void receberAviso(CacheAviso aviso)
+	public void receberAviso(CacheAviso aviso)
 	{
-		if(!Configuracao.getReciboFim())
+		if(!Configuracao.INSTANCE.getReciboFim())
 			JOptionPane.showMessageDialog(null, aviso.getMensagem(), aviso.getTitulo(), JOptionPane.INFORMATION_MESSAGE);
 		else
 		{
@@ -783,15 +801,15 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		termina(false);		
 	}
 
-	static public void updateCampo()
+	public void updateCampo()
 	{
-		if(VendaMesaProdutoCampo.getSelecionado() != null)
+		if(addProduto.getSelecionado() != null)
 		{
 			double aDouble = 0;
 			
 			for(int i = 0; i < todosProdutos.getProdutos().size(); i++)
 			{
-				if(VendaMesaProdutoCampo.getSelecionado().equals(todosProdutos.getProdutos().get(i).getNome()))
+				if(addProduto.getSelecionado().equals(todosProdutos.getProdutos().get(i).getNome()))
 				{
 					aDouble += todosProdutos.getProdutos().get(i).getPreco();
 					break;
@@ -823,7 +841,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
   	  	String pegaPreco = "";
       
       	formataRecibo += ("===========================\n");
-      	formataRecibo += (String.format("              %s              \n", Configuracao.getRestaurante()));
+      	formataRecibo += (String.format("              %s              \n", Configuracao.INSTANCE.getRestaurante()));
       	formataRecibo += ("===========================\n");
       	formataRecibo += ("********* NAO TEM VALOR FISCAL ********\n");
       	formataRecibo += ("===========================\n");		                	
@@ -894,7 +912,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		formataRecibo += ("===========================\n");
       
 		formataRecibo += (String.format("%-18.18s", "Atendido por: "));
-		formataRecibo += (Usuario.getNome() + "\n");
+		formataRecibo += (Usuario.INSTANCE.getNome() + "\n");
       
 		Locale locale = new Locale("pt","BR"); 
 		GregorianCalendar calendar = new GregorianCalendar(); 
@@ -907,7 +925,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		formataRecibo += ("                     -------------------\n");
 		formataRecibo += ("Total                            R$" + campoTotal.getText() + "\n");
 		
-        if(Configuracao.getDezPorcento())
+        if(Configuracao.INSTANCE.getDezPorcento())
         {
         	formataRecibo += ("                     ----------------------\n");
         	formataRecibo += ("10% Opcional                     R$" + UtilCoffe.doubleToPreco((UtilCoffe.precoToDouble(campoTotal.getText()) + taxaOpcional)) + "\n");            	  
@@ -920,7 +938,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		campoRecibo.setText(formataRecibo);		
 	}	
 	
-	private static boolean criarRecibo()
+	private boolean criarRecibo()
 	{
 	      try{
 	          File arquivo = new File("codecoffe/recibo.txt");
@@ -929,7 +947,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
               
               String pegaPreco = "";
               linhasTxt.println("===========================================");
-              linhasTxt.println(String.format("              %s              ", Configuracao.getRestaurante()));
+              linhasTxt.println(String.format("              %s              ", Configuracao.INSTANCE.getRestaurante()));
               linhasTxt.println("===========================================");
               linhasTxt.println("*********** NAO TEM VALOR FISCAL **********");
               linhasTxt.println("===========================================");
@@ -1002,7 +1020,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
               linhasTxt.println("===========================================");
               
               linhasTxt.print(String.format("%-18.18s", "Atendido por: "));
-              linhasTxt.println(Usuario.getNome());
+              linhasTxt.println(Usuario.INSTANCE.getNome());
               
               Locale locale = new Locale("pt","BR"); 
               GregorianCalendar calendar = new GregorianCalendar(); 
@@ -1015,7 +1033,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
               linhasTxt.println("                     ----------------------");
               linhasTxt.println("Total                            R$" + campoTotal.getText());
               
-              if(Configuracao.getDezPorcento())
+              if(Configuracao.INSTANCE.getDezPorcento())
               {
                   linhasTxt.println("                     ----------------------");
                   linhasTxt.println("10% Opcional                     R$" + UtilCoffe.doubleToPreco((UtilCoffe.precoToDouble(campoTotal.getText()) + taxaOpcional)));            	  
@@ -1136,12 +1154,12 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		painelDropIn.repaint();
 	}
 	
-	public static void termina(boolean delete)
+	public void termina(boolean delete)
 	{
 		System.out.println("termina chegou!");
 		
 		CacheMesaHeader mh = new CacheMesaHeader(mesaID , vendaRapida, UtilCoffe.MESA_LIMPAR);
-		Bartender.enviarMesa(mh);
+		Bartender.INSTANCE.enviarMesa(mh);
 	}
 
 	@Override
@@ -1160,8 +1178,8 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		}			
 		else if(e.getSource() == escolherCliente)
 		{
-			MenuPrincipal.AbrirPrincipal(5);
-			PainelClientes.setCallBack(mesaID+1);
+			MenuPrincipal.getInstance().AbrirPrincipal(5);
+			PainelClientes.getInstance().setCallBack(mesaID+1);
 		}		
 		else if(e.getSource() == flecha1)
 		{
@@ -1337,7 +1355,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 								CacheMesaHeader mesaAgora			= new CacheMesaHeader(mesaID, vendaRapida, UtilCoffe.MESA_ATUALIZAR2);
 								CacheVendaFeita vendaMesaFeita		= new CacheVendaFeita(vendaAgora, vendaRapida, mesaAgora);
 								vendaMesaFeita.total 				= campoTotal.getText();
-								vendaMesaFeita.atendente 			= Usuario.getNome();
+								vendaMesaFeita.atendente 			= Usuario.INSTANCE.getNome();
 								vendaMesaFeita.ano 					= c.get(Calendar.YEAR);
 								vendaMesaFeita.mes 					= c.get(Calendar.MONTH);
 								vendaMesaFeita.dia_mes 				= c.get(Calendar.DAY_OF_MONTH);
@@ -1352,7 +1370,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 								vendaMesaFeita.dezporcento			= UtilCoffe.doubleToPreco(taxaOpcional);
 								vendaMesaFeita.classe				= UtilCoffe.VENDA_MESA;
 								
-								Bartender.enviarVenda(vendaMesaFeita);	// agora aguarda a resposta.
+								Bartender.INSTANCE.enviarVenda(vendaMesaFeita);	// agora aguarda a resposta.
 							}							
 					}
 					else
@@ -1382,14 +1400,14 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 					campoTroco.setText(resultado);					
 				}
 				
-				MenuPrincipal.setarEnter(finalizarVenda);
+				MenuPrincipal.getInstance().setarEnter(finalizarVenda);
 			}
 			
 			finalizarVenda.requestFocus();
 		}
 		else if(e.getSource() == adicionarProduto)
 		{
-			String nomeProduto = VendaMesaProdutoCampo.getSelecionado();
+			String nomeProduto = addProduto.getSelecionado();
 			
 			if(nomeProduto == null)
 			{
@@ -1455,8 +1473,8 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 					}
 				}
 				
-				Pedido ped = new Pedido(p, Usuario.getNome(), "", (mesaID+1), (vendaRapida.getQuantidadeProdutos()-1));
-				Bartender.enviarPedido(ped);
+				Pedido ped = new Pedido(p, Usuario.INSTANCE.getNome(), "", (mesaID+1), (vendaRapida.getQuantidadeProdutos()-1));
+				Bartender.INSTANCE.enviarPedido(ped);
 				
 				for(int row = 0; row < tabela.getRowCount(); row++)
 				{
@@ -1466,7 +1484,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 					if(cmpNome.equals(p.getNome()) && cmpAdc.equals(pegaAdicionais))
 					{
 						CacheMesaHeader mh = new CacheMesaHeader(mesaID, p, vendaRapida, UtilCoffe.MESA_ATUALIZAR, qntdProduto);
-						Bartender.enviarMesa(mh);
+						Bartender.INSTANCE.enviarMesa(mh);
 						new_flag = true;
 						break;
 					}
@@ -1475,7 +1493,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				if(!new_flag)
 				{
 					CacheMesaHeader mh = new CacheMesaHeader(mesaID, p, vendaRapida, UtilCoffe.MESA_ADICIONAR, qntdProduto);
-					Bartender.enviarMesa(mh);				
+					Bartender.INSTANCE.enviarMesa(mh);				
 				}
 				/*
 				campoValor.setText("");
@@ -1501,7 +1519,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 			botao.setContentAreaFilled(false);
 			botao.addActionListener(this);
 			
-			addAdicional.add(new VendaMesaAdicionaisCampo());
+			addAdicional.add(new VendaMesaAdicionaisCampo(todosProdutos));
 			addRemover.add(botao);
 			
 			GridBagConstraints gbc = new GridBagConstraints();
@@ -1540,7 +1558,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 			
 			for(int i = 0; i < todosProdutos.getProdutos().size(); i++)
 			{
-				if(VendaMesaProdutoCampo.getSelecionado().equals(todosProdutos.getProdutos().get(i).getNome()))
+				if(addProduto.getSelecionado().equals(todosProdutos.getProdutos().get(i).getNome()))
 				{
 					aDouble += todosProdutos.getProdutos().get(i).getPreco();
 					break;
@@ -1771,7 +1789,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 			    	 vendaRapida.calculaTotal();
 			    	 
 			    	 CacheMesaHeader mh = new CacheMesaHeader(mesaID, prod, vendaRapida, UtilCoffe.MESA_DELETAR, 0);
-			    	 Bartender.enviarMesa(mh);
+			    	 Bartender.INSTANCE.enviarMesa(mh);
 			     }
 		    	  
 			      /*double total = 0.0;
@@ -1844,7 +1862,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
     		painelDropIn.revalidate();
     		painelDropIn.repaint();    		
     		campoRecibo.setText("### Nenhum produto marcado ###");
-            VendaMesaProdutoCampo.setFocus();		
+    		addProduto.setFocus();
 			
 			mesaID = mesa;
 			divisaoPainel.setTitleAt(0, "Mesa " + (mesaID+1));
@@ -1906,12 +1924,12 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 						campoTroco.setText(resultado);					
 					}
 					
-					MenuPrincipal.setarEnter(finalizarVenda);
+					MenuPrincipal.getInstance().setarEnter(finalizarVenda);
 				}			
 			}
 		}
 		
-		static public void setFiado(String fiador, int fiadoID)
+		public void setFiado(String fiador, int fiadoID)
 		{
 			if(fiadoID > 0)
 			{
@@ -1940,4 +1958,315 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				}
 			}
 		}
+		
+		class VendaMesaProdutoCampo extends JPanel implements ActionListener
+		{
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+			private JComboBox<String> combo;
+			private JTextField tf;
+		    private Vector<String> v;
+		    
+		    public VendaMesaProdutoCampo(CacheTodosProdutos produtos)
+		    {
+		        super(new BorderLayout());
+		        combo = new JComboBox<String>();
+		        tf = (JTextField) combo.getEditor().getEditorComponent();
+		        v = new Vector<String>();
+		        combo.setEditable(true);
+		        combo.addActionListener(this);
+		        tf.addKeyListener(new KeyAdapter()
+		        {
+		        	public void keyTyped(KeyEvent e)
+		        	{
+		        		EventQueue.invokeLater(new Runnable()
+		        		{
+		        			public void run()
+		        			{
+		        				String text = tf.getText();
+		                        if(text.length()==0)
+		                        {
+		                        	combo.hidePopup();
+		                        	setModel(new DefaultComboBoxModel<String>(v), "");
+		                        }
+		                        else
+		                        {
+		                        	DefaultComboBoxModel<String> m = getSuggestedModel(v, text);
+		                        	if(m.getSize()==0 || hide_flag)
+		                        	{
+		                        		combo.hidePopup();
+		                        		hide_flag = false;
+		                        	}
+		                        	else
+		                        	{
+		                        		setModel(m, text);
+		                        		combo.showPopup();
+		                        	}
+		                        }
+		                   }
+		        		});
+		        	}
+		        	
+		        	public void keyPressed(KeyEvent e)
+		        	{
+		        		String text = tf.getText();
+		        		int code = e.getKeyCode();
+		        		if(code==KeyEvent.VK_ENTER)
+		        		{
+		        			if(!v.contains(text))
+		        			{
+		        				//v.addElement(text);
+		        				//Collections.sort(v);
+		        				setModel(getSuggestedModel(v, text), text);
+		        			}
+		        			
+		        			hide_flag = true; 
+		        		}else if(code==KeyEvent.VK_ESCAPE)
+		        		{
+		        			hide_flag = true; 
+		        		}else if(code==KeyEvent.VK_RIGHT)
+		        		{
+		        			for(int i=0;i<v.size();i++)
+		        			{
+		        				String str = v.elementAt(i);
+		        				if(str.startsWith(text))
+		        				{
+		        					combo.setSelectedIndex(-1);
+		        					tf.setText(str);
+		        					return;
+		        				}
+		        			}
+		        		}
+		            }
+		        });
+		        
+				v.removeAllElements();
+				
+				for(int i = 0; i < produtos.getProdutos().size(); i++)
+				{
+					v.addElement(produtos.getProdutos().get(i).getNome());
+				}
+				
+				//setModel(new DefaultComboBoxModel<String>(v), "");
+		        JPanel p = new JPanel(new BorderLayout());
+		        p.setPreferredSize(new Dimension(300, 50));
+		        combo.setPreferredSize(new Dimension(300, 40));
+		        p.add(combo, BorderLayout.NORTH);
+		        add(p);
+		        setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+		        setPreferredSize(new Dimension(300, 50));
+		    }
+		    	
+		    private boolean hide_flag = false;
+		    private void setModel(DefaultComboBoxModel<String> mdl, String str)
+		    {
+				combo.setModel(mdl);
+				combo.setSelectedIndex(-1);
+				tf.setText(str);   	
+		    }
+		    
+		    private DefaultComboBoxModel<String> getSuggestedModel(java.util.List<String> list, String text)
+		    {
+		    	DefaultComboBoxModel<String> m = new DefaultComboBoxModel<String>();
+		    	for(String s: list)
+		    	{
+		    		if(s.toLowerCase().contains(text)) m.addElement(s);
+		    	}
+		    	
+		    	return m;
+		    }
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(e.getSource() == combo)
+				{
+					updateCampo(); 
+				}
+			}
+			
+			public void zeraString()
+			{
+				combo.setSelectedIndex(-1);
+				tf.setText("");   
+			}	
+			
+			public String getSelecionado()
+			{
+				if(combo.getSelectedIndex() == -1)
+					return null;
+				
+				return combo.getSelectedItem().toString();
+			}
+			
+			public void setFocus()
+			{
+				combo.requestFocus();
+			}
+			
+			public void atualizaProdutosCampo(CacheTodosProdutos produtos)
+			{
+				v.removeAllElements();
+				
+				for(int i = 0; i < produtos.getProdutos().size(); i++)
+				{
+					v.addElement(produtos.getProdutos().get(i).getNome());
+				}
+				
+				setModel(new DefaultComboBoxModel<String>(v), "");
+			}
+		}
+		
+		class VendaMesaAdicionaisCampo extends JPanel implements ActionListener
+		{
+		    /**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+			private JComboBox<String> combo;
+			private JTextField tf;
+		    private Vector<String> v;
+		    
+		    public VendaMesaAdicionaisCampo(CacheTodosProdutos produtos)
+		    {
+		        super(new BorderLayout());
+		        combo = new JComboBox<String>();
+		        v = new Vector<String>();
+		        combo.setEditable(true);
+		        combo.addActionListener(this);
+		        tf = (JTextField) combo.getEditor().getEditorComponent();
+		        tf.addKeyListener(new KeyAdapter()
+		        {
+		        	public void keyTyped(KeyEvent e)
+		        	{
+		        		EventQueue.invokeLater(new Runnable()
+		        		{
+		        			public void run()
+		        			{
+		        				String text = tf.getText();
+		                        if(text.length()==0)
+		                        {
+		                        	combo.hidePopup();
+		                        	setModel(new DefaultComboBoxModel<String>(v), "");
+		                        }
+		                        else
+		                        {
+		                        	DefaultComboBoxModel<String> m = getSuggestedModel(v, text);
+		                        	if(m.getSize()==0 || hide_flag)
+		                        	{
+		                        		combo.hidePopup();
+		                        		hide_flag = false;
+		                        	}
+		                        	else
+		                        	{
+		                        		setModel(m, text);
+		                        		combo.showPopup();
+		                        	}
+		                        }
+		                   }
+		        		});
+		        	}
+		        	
+		        	
+		        	public void keyPressed(KeyEvent e)
+		        	{
+		        		String text = tf.getText();
+		        		int code = e.getKeyCode();
+		        		if(code==KeyEvent.VK_ENTER)
+		        		{
+		        			if(!v.contains(text))
+		        			{
+		        				//v.addElement(text);
+		        				//Collections.sort(v);
+		        				setModel(getSuggestedModel(v, text), text);
+		        			}
+		        			
+		        			hide_flag = true; 
+		        		}else if(code==KeyEvent.VK_ESCAPE)
+		        		{
+		        			hide_flag = true; 
+		        		}else if(code==KeyEvent.VK_RIGHT)
+		        		{
+		        			for(int i=0;i<v.size();i++)
+		        			{
+		        				String str = v.elementAt(i);
+		        				if(str.startsWith(text))
+		        				{
+		        					combo.setSelectedIndex(-1);
+		        					tf.setText(str);
+		        					return;
+		        				}
+		        			}
+		        		}
+		            }
+		        });
+		        
+				v.removeAllElements();
+				
+				for(int i = 0; i < produtos.getAdicionais().size(); i++)
+				{
+					v.addElement(produtos.getAdicionais().get(i).getNome());
+				}
+		        
+		        setModel(new DefaultComboBoxModel<String>(v), "");
+		        JPanel p = new JPanel(new BorderLayout());
+		        p.setPreferredSize(new Dimension(220, 45));
+		        combo.setPreferredSize(new Dimension(220, 35));
+		        p.add(combo, BorderLayout.NORTH);
+		        add(p);
+		        setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+		        setPreferredSize(new Dimension(220, 45));
+		    }
+		    	
+		    private boolean hide_flag = false;
+		    private void setModel(DefaultComboBoxModel<String> mdl, String str)
+		    {
+				combo.setModel(mdl);
+				combo.setSelectedIndex(-1);
+				tf.setText(str);   	
+		    }
+		    
+		    private DefaultComboBoxModel<String> getSuggestedModel(java.util.List<String> list, String text)
+		    {
+		    	DefaultComboBoxModel<String> m = new DefaultComboBoxModel<String>();
+		    	for(String s: list)
+		    	{
+		    		if(s.toLowerCase().contains(text)) m.addElement(s);
+		    	}
+		    	
+		    	return m;
+		    }
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(e.getSource() == combo)
+				{
+					updateCampo();
+				}
+			}
+			
+			public String getSelecionado()
+			{
+				if(combo.getSelectedIndex() == -1)
+					return null;		
+				
+				return combo.getSelectedItem().toString();
+			}
+			
+			public void setFocus()
+			{
+				combo.requestFocus();
+			}
+			
+			public void atualizaProdutosCampo(CacheTodosProdutos produtos)
+			{
+				v.removeAllElements();
+				
+				for(int i = 0; i < produtos.getAdicionais().size(); i++)
+				{
+					v.addElement(produtos.getAdicionais().get(i).getNome());
+				}
+				
+				setModel(new DefaultComboBoxModel<String>(v), "");
+			}
+		}		
 }

@@ -58,23 +58,23 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static WebMenu menuConfiguracoes;
-	private static WebMenuItem itemUserSair, itemConfGerais, itemBackup, itemFuncionarios;
-	private static OpcoesDialog menuOpcoes;
-	private static BackupDialog menuBackup;
-	protected static JLabel labelUltimo;
+	private WebMenu menuConfiguracoes;
+	private WebMenuItem itemUserSair, itemConfGerais, itemBackup, itemFuncionarios;
+	private OpcoesDialog menuOpcoes;
+	private BackupDialog menuBackup;
+	protected JLabel labelUltimo;
 	private Timer timerBackup;
     
-    public PainelStatus()
+    private PainelStatus()
     {
 		setMaximumSize(new Dimension(1920, 30));
 		setMinimumSize(new Dimension(980, 30));
 		
-		itemUserSair = new WebMenuItem("Usuário", new ImageIcon(getClass().getClassLoader().getResource("imgs/usuario.png")));
+		itemUserSair = new WebMenuItem("Usuário", new ImageIcon(getClass().getClassLoader().getResource("imgs/Usuario.png")));
 		itemUserSair.addActionListener(this);
 		add(itemUserSair);
 		
-		if(Configuracao.getModo() == UtilCoffe.SERVER)
+		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
 		{
 			menuOpcoes = new OpcoesDialog();
 			menuBackup = new BackupDialog();
@@ -93,18 +93,26 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 		}
     }
     
+	private static class StatusSingletonHolder { 
+		public static final PainelStatus INSTANCE = new PainelStatus();
+	}
+ 
+	public static PainelStatus getInstance() {
+		return StatusSingletonHolder.INSTANCE;
+	}    
+    
 	class BackupAutomatico extends TimerTask 
 	{
         public void run() 
         {
-        	long duration = System.currentTimeMillis() - Configuracao.getUltimoBackup().getTime();
+        	long duration = System.currentTimeMillis() - Configuracao.INSTANCE.getUltimoBackup().getTime();
         	long hours = TimeUnit.MILLISECONDS.toHours(duration);
         	
-        	if(hours >= Configuracao.getBackupAutoIntervalo() && Configuracao.getBackupAutoIntervalo() >= 1)
+        	if(hours >= Configuracao.INSTANCE.getBackupAutoIntervalo() && Configuracao.INSTANCE.getBackupAutoIntervalo() >= 1)
         	{
-    			if(!UtilCoffe.vaziu(Configuracao.getBackupAutoCaminho()))
+    			if(!UtilCoffe.vaziu(Configuracao.INSTANCE.getBackupAutoCaminho()))
     			{
-    				File file = new File(Configuracao.getBackupAutoCaminho());
+    				File file = new File(Configuracao.INSTANCE.getBackupAutoCaminho());
     				if(file.exists())
     				{
 	                    SimpleDateFormat formatter = new SimpleDateFormat("dd_MM_yyyy__HH_mm");
@@ -125,10 +133,10 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 			        			envia.executaUpdate("UPDATE opcoes SET ultimobackup = '" + formatter.format(new Date()) + "'");	
 			        			envia.fechaConexao();
 			        			
-			        			Configuracao.setUltimoBackup(new Date());
+			        			Configuracao.INSTANCE.setUltimoBackup(new Date());
 			        			
 			        			SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy - HH:mm.");
-			        			labelUltimo.setText("Último backup realizado: " + formatter2.format(Configuracao.getUltimoBackup()));				        			
+			        			labelUltimo.setText("Último backup realizado: " + formatter2.format(Configuracao.INSTANCE.getUltimoBackup()));				        			
 			                    
 			                } else {
 			                	System.out.println("Erro, não foi possível criar o backup automático.");
@@ -145,7 +153,7 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
         }
     }    
     
-    static public void setNome(String nomeFuncionario)
+    public void setNome(String nomeFuncionario)
     {
     	itemUserSair.setText(nomeFuncionario);
     }
@@ -158,16 +166,16 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 			
 			if(opcao == JOptionPane.YES_OPTION)
 			{
-				if(Configuracao.getModo() == UtilCoffe.SERVER)
+				if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
 				{
-					DiarioLog.add(Usuario.getNome(), "Saiu do sistema.", 9);
+					DiarioLog.add(Usuario.INSTANCE.getNome(), "Saiu do sistema.", 9);
 				}
 				else
 				{
-					Client.enviarObjeto(Usuario.getNome() + ";QUIT");
+					Client.getInstance().enviarObjeto(Usuario.INSTANCE.getNome() + ";QUIT");
 				}
 				
-				MenuPrincipal.logout();
+				MenuPrincipal.getInstance().logout();
 			}	
 		}
 		else if(e.getSource() == itemConfGerais)
@@ -184,14 +192,14 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 		}
 		else if(e.getSource() == itemFuncionarios)
 		{
-			if(Usuario.getLevel() > 1)
-				MenuPrincipal.AbrirPrincipal(2);
+			if(Usuario.INSTANCE.getLevel() > 1)
+				MenuPrincipal.getInstance().AbrirPrincipal(2);
 			else
 				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}			
 	}
 	
-	private static class OpcoesDialog extends WebDialog
+	private class OpcoesDialog extends WebDialog
 	{
 		/**
 		 * 
@@ -236,7 +244,7 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 								new PainelErro(e1);
 							}
 							finally{
-								Configuracao.setDezPorcento(true);
+								Configuracao.INSTANCE.setDezPorcento(true);
 							}
 						}
 						else
@@ -250,7 +258,7 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 								new PainelErro(e1);
 							}
 							finally{
-								Configuracao.setDezPorcento(false);
+								Configuracao.INSTANCE.setDezPorcento(false);
 							}
 						}
 					}
@@ -268,7 +276,7 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 								new PainelErro(e1);
 							}
 							finally{
-								Configuracao.setReciboFim(true);
+								Configuracao.INSTANCE.setReciboFim(true);
 							}
 						}
 						else
@@ -282,7 +290,7 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 								new PainelErro(e1);
 							}
 							finally{
-								Configuracao.setReciboFim(false);
+								Configuracao.INSTANCE.setReciboFim(false);
 							}
 						}
 					}
@@ -357,16 +365,16 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 			
 			setPreferredSize(new Dimension(500, 400));
 			
-			campoRestaurante.setText(Configuracao.getRestaurante());
-			campoNumeroMesas.setText("" + Configuracao.getMesas());
-			campoEntrega.setText(UtilCoffe.doubleToPreco(Configuracao.getTaxaEntrega()));
+			campoRestaurante.setText(Configuracao.INSTANCE.getRestaurante());
+			campoNumeroMesas.setText("" + Configuracao.INSTANCE.getMesas());
+			campoEntrega.setText(UtilCoffe.doubleToPreco(Configuracao.INSTANCE.getTaxaEntrega()));
 			
-			if(Configuracao.getDezPorcento())
+			if(Configuracao.INSTANCE.getDezPorcento())
 				checkDez.setSelected(true);
 			else
 				checkDez.setSelected(false);
 			
-			if(Configuracao.getReciboFim())
+			if(Configuracao.INSTANCE.getReciboFim())
 				checkRecibo.setSelected(true);
 			else
 				checkRecibo.setSelected(false);			
@@ -383,7 +391,7 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 				if(!"".equals(campoRestaurante.getText().trim()))
 				{
 					envia.executaUpdate("UPDATE opcoes SET restaurante = '" + campoRestaurante.getText() + "'");
-					Configuracao.setRestaurante(campoRestaurante.getText());
+					Configuracao.INSTANCE.setRestaurante(campoRestaurante.getText());
 				}
 				
 				String limpeza = campoNumeroMesas.getText().replaceAll("[^0-9]+","");
@@ -391,7 +399,7 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 				if(!"".equals(limpeza.trim()))
 				{
 					envia.executaUpdate("UPDATE opcoes SET mesas = " + limpeza);
-					Configuracao.setMesas(Integer.parseInt(limpeza));
+					Configuracao.INSTANCE.setMesas(Integer.parseInt(limpeza));
 				}
 				
 				limpeza = campoEntrega.getText().replaceAll("[^0-9.,]+","");
@@ -399,7 +407,7 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 				if(!"".equals(limpeza.trim()))
 				{
 					envia.executaUpdate("UPDATE opcoes SET taxaentrega = '" + (limpeza.replaceAll(",", ".")) + "'");
-					Configuracao.setTaxaEntrega(UtilCoffe.precoToDouble((limpeza.replaceAll(",", "."))));
+					Configuracao.INSTANCE.setTaxaEntrega(UtilCoffe.precoToDouble((limpeza.replaceAll(",", "."))));
 				}
 				
 				envia.fechaConexao();
@@ -486,7 +494,7 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 							}
 		        			finally
 		        			{
-		        				Configuracao.setBackupAutoCaminho(file.getPath());
+		        				Configuracao.INSTANCE.setBackupAutoCaminho(file.getPath());
 		        			}
 		                }						
 					}
@@ -539,10 +547,10 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 				        			envia.executaUpdate("UPDATE opcoes SET ultimobackup = '" + formatter.format(new Date()) + "'");	
 				        			envia.fechaConexao();
 				        			
-				        			Configuracao.setUltimoBackup(new Date());
+				        			Configuracao.INSTANCE.setUltimoBackup(new Date());
 				        			
 				        			SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy - HH:mm.");
-				        			labelUltimo.setText("Último backup realizado: " + formatter2.format(Configuracao.getUltimoBackup()));				        			
+				        			labelUltimo.setText("Último backup realizado: " + formatter2.format(Configuracao.INSTANCE.getUltimoBackup()));				        			
 				                    
 				                } else {
 				                	TooltipManager.showOneTimeTooltip (labelCria, null, "Erro, não foi possível criar o backup.", TooltipWay.up );
@@ -684,15 +692,15 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 			setResizable(false);
 			
 			SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy - HH:mm.");
-			labelUltimo.setText("Último backup realizado: " + formatter.format(Configuracao.getUltimoBackup()));
+			labelUltimo.setText("Último backup realizado: " + formatter.format(Configuracao.INSTANCE.getUltimoBackup()));
 			
-			if(Configuracao.getBackupAuto())
+			if(Configuracao.INSTANCE.getBackupAuto())
 				backupAuto.setSelected(true);	// ja inicia o timer aqui.
 			
-			backupHoras.setValue(Configuracao.getBackupAutoIntervalo());
-			if(!UtilCoffe.vaziu(Configuracao.getBackupAutoCaminho()))
+			backupHoras.setValue(Configuracao.INSTANCE.getBackupAutoIntervalo());
+			if(!UtilCoffe.vaziu(Configuracao.INSTANCE.getBackupAutoCaminho()))
 			{
-				File file = new File(Configuracao.getBackupAutoCaminho());
+				File file = new File(Configuracao.INSTANCE.getBackupAutoCaminho());
 				if(file.exists())
 				{
 	                backupLocalButton.setIcon(FileUtils.getFileIcon(file));
@@ -700,7 +708,7 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 				}
 				else
 				{
-					Configuracao.setBackupAutoCaminho("");
+					Configuracao.INSTANCE.setBackupAutoCaminho("");
 					backupLocalButton.setText("Escolha uma pasta");	
 				}				
 			}

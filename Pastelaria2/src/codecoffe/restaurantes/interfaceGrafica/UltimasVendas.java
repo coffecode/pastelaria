@@ -24,8 +24,8 @@ public class UltimasVendas extends JPanel
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static JTable tabelaUltimasVendas;
-	private static DefaultTableModel tabela;
+	private JTable tabelaUltimasVendas;
+	private DefaultTableModel tabela;
 	
 	public UltimasVendas()
 	{
@@ -198,7 +198,7 @@ public class UltimasVendas extends JPanel
 	    }
 	}	
 	
-	static public void refresh()
+	public void refresh()
 	{
 		tabela.setNumRows(0);
 		
@@ -452,7 +452,7 @@ public class UltimasVendas extends JPanel
 							Query pega = new Query();
 							pega.executaUpdate("DELETE FROM vendas WHERE `vendas_id` = " + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0));
 							pega.executaUpdate("DELETE FROM vendas_produtos WHERE `id_link` = " + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0));
-							DiarioLog.add(Usuario.getNome(), "Deletou a venda #" + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0) + " de valor R$" + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 5) + ".", 7);
+							DiarioLog.add(Usuario.INSTANCE.getNome(), "Deletou a venda #" + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0) + " de valor R$" + tabelaUltimasVendas.getValueAt(tabelaUltimasVendas.getSelectedRow(), 5) + ".", 7);
 							pega.fechaConexao();
 							
 							SwingUtilities.invokeLater(new Runnable() {  

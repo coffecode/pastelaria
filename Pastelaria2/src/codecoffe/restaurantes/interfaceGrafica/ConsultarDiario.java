@@ -38,16 +38,16 @@ public class ConsultarDiario extends JPanel implements ActionListener
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static JLabel labelDataInicio, labelDataFim, labelProgresso;
-	private static JTable tabelaUltimasVendas;
-	private static DefaultTableModel tabela;
-	private static WebDateField campoInicio, campoFim;
-	private static Date dataInicio, dataFim;
-	private static WebButton botaoPesquisar, botaoExportar;
-	private static JPanel painelBotoes, painelImportar;
-	private static com.itextpdf.text.Font catFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 18, com.itextpdf.text.Font.BOLD);
-	private static com.itextpdf.text.Font paFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 16, com.itextpdf.text.Font.BOLD);
-	private static com.itextpdf.text.Font subFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 10, com.itextpdf.text.Font.NORMAL);
+	private JLabel labelDataInicio, labelDataFim, labelProgresso;
+	private JTable tabelaUltimasVendas;
+	private DefaultTableModel tabela;
+	private WebDateField campoInicio, campoFim;
+	private Date dataInicio, dataFim;
+	private WebButton botaoPesquisar, botaoExportar;
+	private JPanel painelBotoes, painelImportar;
+	private com.itextpdf.text.Font catFont;
+	private com.itextpdf.text.Font paFont;
+	private com.itextpdf.text.Font subFont;
 	private Document document;
 	private Paragraph escrever;
 	private Timer t;
@@ -59,6 +59,10 @@ public class ConsultarDiario extends JPanel implements ActionListener
 	
 	public ConsultarDiario()
 	{
+		catFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 18, com.itextpdf.text.Font.BOLD);
+		paFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.TIMES_ROMAN, 16, com.itextpdf.text.Font.BOLD);
+		subFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 10, com.itextpdf.text.Font.NORMAL);		
+		
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));	
 		
 		painelBotoes = new JPanel(new GridBagLayout());
@@ -302,7 +306,7 @@ public class ConsultarDiario extends JPanel implements ActionListener
 	    }
 	}		
 	
-	static public void refresh()
+	public void refresh()
 	{	
 		try {
 			campoInicio.setText("");
@@ -415,7 +419,7 @@ public class ConsultarDiario extends JPanel implements ActionListener
 					    addEmptyLine(preface, 1);
 					    preface.add(new Paragraph("Diário do Sistema " + campoInicio.getText() + " - " + campoFim.getText(), catFont));
 					    addEmptyLine(preface, 1);
-					    preface.add(new Paragraph("Relatório gerado por: " + Usuario.getNome() + ", " + new Date(), paFont));
+					    preface.add(new Paragraph("Relatório gerado por: " + Usuario.INSTANCE.getNome() + ", " + new Date(), paFont));
 					    try {
 							document.add(preface);
 						} catch (DocumentException e1) {

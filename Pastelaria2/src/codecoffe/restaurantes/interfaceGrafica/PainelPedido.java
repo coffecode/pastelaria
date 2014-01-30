@@ -93,19 +93,19 @@ public class PainelPedido extends WebPanel
 				{
 					pedidoAtt.setStatus(UtilCoffe.PEDIDO_NORMAL);
 					pedidoAtt.setHeader(UtilCoffe.PEDIDO_STATUS);
-					Bartender.enviarPedido(pedidoAtt);
+					Bartender.INSTANCE.enviarPedido(pedidoAtt);
 				}
 				else if(event.getActionCommand().equals("Status: Fazendo"))
 				{
 					pedidoAtt.setStatus(UtilCoffe.PEDIDO_FAZENDO);
 					pedidoAtt.setHeader(UtilCoffe.PEDIDO_STATUS);
-					Bartender.enviarPedido(pedidoAtt);					
+					Bartender.INSTANCE.enviarPedido(pedidoAtt);					
 				}
 				else
 				{
 					pedidoAtt.setStatus(UtilCoffe.PEDIDO_REMOVER);
 					pedidoAtt.setHeader(UtilCoffe.PEDIDO_STATUS);
-					Bartender.enviarPedido(pedidoAtt);					
+					Bartender.INSTANCE.enviarPedido(pedidoAtt);					
 				}
 			}
 		 };
@@ -128,6 +128,8 @@ public class PainelPedido extends WebPanel
 		 popup.setLabel("Menu Pedido");
 		 popup.setBorder(new BevelBorder(BevelBorder.RAISED));
 		 addMouseListener(new MousePopupListener());
+		 
+		 atualizaTempo();
 	}
 	
 	class MousePopupListener extends MouseAdapter {

@@ -26,11 +26,11 @@ public class PainelMesas extends JPanel
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static JPanel mesasPainel;
-	private static ArrayList<Venda> vendaMesas;
-	private static TheListener pegaMouse;
+	private JPanel mesasPainel;
+	private ArrayList<Venda> vendaMesas;
+	private TheListener pegaMouse;
 	
-	PainelMesas()
+	private PainelMesas()
 	{
 		pegaMouse = new TheListener();
 		vendaMesas = new ArrayList<>();
@@ -46,9 +46,17 @@ public class PainelMesas extends JPanel
 		scroll.getVerticalScrollBar().setUnitIncrement(20);
 		add(scroll);
 		
-		if(Configuracao.getModo() == UtilCoffe.SERVER)
+		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
 			gerarMesas();
 	}
+	
+	private static class MesasSingletonHolder { 
+		public static final PainelMesas INSTANCE = new PainelMesas();
+	}
+ 
+	public static PainelMesas getInstance() {
+		return MesasSingletonHolder.INSTANCE;
+	}	
 	
 	public void gerarMesas()
 	{
@@ -64,7 +72,7 @@ public class PainelMesas extends JPanel
 		gbc.weighty 		= 1.0;
 		gbc.insets 			= new Insets(7,7,7,7);  //top padding
 		
-		for(int i = 0; i < Configuracao.getMesas(); i++)
+		for(int i = 0; i < Configuracao.INSTANCE.getMesas(); i++)
 		{
 			String nomeMesa = "Mesa ";
 			BotaoMesa mesa = new BotaoMesa(nomeMesa + (i+1));
@@ -158,7 +166,7 @@ public class PainelMesas extends JPanel
 		mesasPainel.repaint();
 	}
 	
-	public static CacheTodasMesas getTodasMesas()
+	public CacheTodasMesas getTodasMesas()
 	{
 		CacheTodasMesas tm = new CacheTodasMesas(vendaMesas);
 		return tm;
@@ -235,7 +243,7 @@ public class PainelMesas extends JPanel
 		@Override
 		public void mousePressed(MouseEvent e) {
 			BotaoMesa x = (BotaoMesa)e.getSource();
-			MenuPrincipal.AbrirMesa(x.idMesa, vendaMesas.get(x.idMesa), true);
+			MenuPrincipal.getInstance().AbrirMesa(x.idMesa, vendaMesas.get(x.idMesa), true);
 		}
 
 		@Override
@@ -245,12 +253,12 @@ public class PainelMesas extends JPanel
 		@Override
 		public void mouseEntered(MouseEvent e) {
 			BotaoMesa x = (BotaoMesa)e.getSource();
-			PainelLegenda.AtualizaLegenda(x.legendaBotao);
+			PainelLegenda.getInstance().AtualizaLegenda(x.legendaBotao);
 		}
 
 		@Override
 		public void mouseExited(MouseEvent e) {
-			PainelLegenda.AtualizaLegenda("Desenvolvido por CodeCoffe (C) - 2014");
+			PainelLegenda.getInstance().AtualizaLegenda("Desenvolvido por CodeCoffe (C) - 2014");
 		}
 	}
 	
@@ -268,7 +276,7 @@ public class PainelMesas extends JPanel
 	    }
 	}
 	
-	public static void atualizaMesa(int mesa, Venda v)
+	public void atualizaMesa(int mesa, Venda v)
 	{
 		vendaMesas.set(mesa, v);
 		if(vendaMesas.get(mesa).getQuantidadeProdutos() > 0)
@@ -288,7 +296,7 @@ public class PainelMesas extends JPanel
 		}
 	}	
 	
-	public static void atualizaMesaCache(int mesa, Venda v)
+	public void atualizaMesaCache(int mesa, Venda v)
 	{
 		vendaMesas.set(mesa, v);
 		if(vendaMesas.get(mesa).getQuantidadeProdutos() > 0)
@@ -307,12 +315,12 @@ public class PainelMesas extends JPanel
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setToolTipText(null);
 		}
 		
-		if(Usuario.getOlhando() == mesa)
-			MenuPrincipal.AbrirMesa(mesa, vendaMesas.get(mesa), true);
+		if(Usuario.INSTANCE.getOlhando() == mesa)
+			MenuPrincipal.getInstance().AbrirMesa(mesa, vendaMesas.get(mesa), true);
 	}
 	
-	public static void verMesa(int mesaid)
+	public void verMesa(int mesaid)
 	{
-		MenuPrincipal.AbrirMesa(mesaid, vendaMesas.get(mesaid), false);
+		MenuPrincipal.getInstance().AbrirMesa(mesaid, vendaMesas.get(mesaid), false);
 	}
 }

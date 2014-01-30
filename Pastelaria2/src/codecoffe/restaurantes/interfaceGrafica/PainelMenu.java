@@ -17,9 +17,9 @@ public class PainelMenu extends JPanel implements MouseListener
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static WebButton vendaRapida, consulta, inicio, produtos, cozinha, clientes;
+	private WebButton vendaRapida, consulta, inicio, produtos, cozinha, clientes;
 	
-	public PainelMenu()
+	private PainelMenu()
 	{
 		setLayout(new FlowLayout(FlowLayout.CENTER, 6, 20));
 		setMaximumSize(new Dimension(1920, 80));
@@ -41,7 +41,7 @@ public class PainelMenu extends JPanel implements MouseListener
 		vendaRapida.addMouseListener(this);
 		add(vendaRapida);
 		
-		if(Configuracao.getModo() == UtilCoffe.SERVER)
+		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
 		{
 			produtos = new WebButton("Produtos");
 			produtos.setRolloverShine(true);
@@ -67,7 +67,7 @@ public class PainelMenu extends JPanel implements MouseListener
 		cozinha.addMouseListener(this);
 		add(cozinha);			
 		
-		if(Configuracao.getModo() == UtilCoffe.SERVER)
+		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
 		{			
 			consulta = new WebButton("Vendas");
 			consulta.setRolloverShine(true);
@@ -96,6 +96,14 @@ public class PainelMenu extends JPanel implements MouseListener
 		imap.put(KeyStroke.getKeyStroke("ESCAPE"), "botao6");
 	}
 	
+	private static class MenuSingletonHolder { 
+		public static final PainelMenu INSTANCE = new PainelMenu();
+	}
+ 
+	public static PainelMenu getInstance() {
+		return MenuSingletonHolder.INSTANCE;
+	}	
+	
 	private class SpaceAction extends AbstractAction {
 		
 		/**
@@ -120,10 +128,10 @@ public class PainelMenu extends JPanel implements MouseListener
     			int opcao = JOptionPane.showConfirmDialog(null, "Você tem certeza que deseja sair?", "Logout", JOptionPane.YES_NO_OPTION);
     			
     			if(opcao == JOptionPane.YES_OPTION)
-    				MenuPrincipal.logout();
+    				MenuPrincipal.getInstance().logout();
         	}
         	else
-        		MenuPrincipal.AbrirPrincipal(this.tipo);
+        		MenuPrincipal.getInstance().AbrirPrincipal(this.tipo);
         }
     }
 	
@@ -137,34 +145,34 @@ public class PainelMenu extends JPanel implements MouseListener
 	public void mousePressed(MouseEvent e) {
 		if(e.getSource() == vendaRapida) // apenas teste
 		{
-			MenuPrincipal.AbrirPrincipal(0);
+			MenuPrincipal.getInstance().AbrirPrincipal(0);
 		}
 		else if(e.getSource() == produtos)
 		{
-			if(Usuario.getLevel() > 1)
-				MenuPrincipal.AbrirPrincipal(1);
+			if(Usuario.INSTANCE.getLevel() > 1)
+				MenuPrincipal.getInstance().AbrirPrincipal(1);
 			else
 				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}
 		else if(e.getSource() == consulta)
 		{
-			if(Usuario.getLevel() > 1)
-				MenuPrincipal.AbrirPrincipal(3);
+			if(Usuario.INSTANCE.getLevel() > 1)
+				MenuPrincipal.getInstance().AbrirPrincipal(3);
 			else
 				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}
 		else if(e.getSource() == inicio)
 		{			
-			MenuPrincipal.AbrirPrincipal(4);
+			MenuPrincipal.getInstance().AbrirPrincipal(4);
 		}
 		else if(e.getSource() == clientes)
 		{
-			MenuPrincipal.AbrirPrincipal(5);
-			PainelClientes.setCallBack(0);
+			MenuPrincipal.getInstance().AbrirPrincipal(5);
+			PainelClientes.getInstance().setCallBack(0);
 		}
 		else if(e.getSource() == cozinha)
 		{
-			MenuPrincipal.AbrirPrincipal(6);
+			MenuPrincipal.getInstance().AbrirPrincipal(6);
 		}		
 	}
 
@@ -178,28 +186,28 @@ public class PainelMenu extends JPanel implements MouseListener
 	{
 		if(e.getSource() == vendaRapida)
 		{
-			PainelLegenda.AtualizaLegenda("Venda Rápida, direto no balcão.");
+			PainelLegenda.getInstance().AtualizaLegenda("Venda Rápida, direto no balcão.");
 		}
 		else if(e.getSource() == produtos)
 		{
-			PainelLegenda.AtualizaLegenda("Gerenciamento de produtos/adicionais.");
+			PainelLegenda.getInstance().AtualizaLegenda("Gerenciamento de produtos/adicionais.");
 		}
 		else if(e.getSource() == cozinha)
 		{
-			PainelLegenda.AtualizaLegenda("Gerenciamento de pedidos.");
+			PainelLegenda.getInstance().AtualizaLegenda("Gerenciamento de pedidos.");
 		}
 		else if(e.getSource() == consulta)
 		{
-			PainelLegenda.AtualizaLegenda("Consulte as vendas de determinada data.");
+			PainelLegenda.getInstance().AtualizaLegenda("Consulte as vendas de determinada data.");
 		}
 		else if(e.getSource() == inicio)
 		{
-			PainelLegenda.AtualizaLegenda("Início do programa (mesas).");
+			PainelLegenda.getInstance().AtualizaLegenda("Início do programa (mesas).");
 		}
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
-		PainelLegenda.AtualizaLegenda("Desenvolvido por CodeCoffe (C) - 2014");
+		PainelLegenda.getInstance().AtualizaLegenda("Desenvolvido por CodeCoffe (C) - 2014");
 	}
 }
