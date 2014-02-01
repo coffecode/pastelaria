@@ -11,14 +11,17 @@ import java.util.Locale;
 
 import javax.swing.JOptionPane;
 
+import codecoffe.restaurantes.interfaceGrafica.PainelClientes;
 import codecoffe.restaurantes.interfaceGrafica.PainelCozinha;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
 import codecoffe.restaurantes.interfaceGrafica.PainelMesas;
 import codecoffe.restaurantes.interfaceGrafica.PainelVendaMesa;
 import codecoffe.restaurantes.interfaceGrafica.PainelVendaRapida;
 import codecoffe.restaurantes.mysql.Query;
+import codecoffe.restaurantes.primitivas.Clientes;
 import codecoffe.restaurantes.primitivas.Pedido;
 import codecoffe.restaurantes.sockets.CacheAviso;
+import codecoffe.restaurantes.sockets.CacheClientes;
 import codecoffe.restaurantes.sockets.CacheMesaHeader;
 import codecoffe.restaurantes.sockets.CacheVendaFeita;
 import codecoffe.restaurantes.sockets.Client;
@@ -36,6 +39,91 @@ import codecoffe.restaurantes.sockets.Server;
 public enum Bartender
 {
 	INSTANCE;
+	
+	public boolean enviarCliente(CacheClientes cc)
+	{
+		if(Configuracao.INSTANCE.getModo() > UtilCoffe.SERVER)
+		{
+			System.out.println("Enviando cliente para o Servidor.");
+			Client.getInstance().enviarObjeto(cc);			
+		}
+		else
+		{
+			if(cc.getHeader() == UtilCoffe.CLIENTE_ADICIONAR)
+			{
+				try {
+					Query envia = new Query();
+					envia.executaUpdate("INSERT INTO fiados(nome) VALUES('Novo Cliente');");
+					envia.executaQuery("SELECT fiador_id FROM fiados ORDER BY fiador_id DESC limit 0, 1");
+					
+					if(envia.next())
+						cc.getListaClientes().get(0).setIdUnico(envia.getInt("fiador_id"));
+					
+					envia.fechaConexao();
+					DiarioLog.add(cc.getAtendente(), "Cadastrou um novo cliente.", 5);	
+					
+					PainelClientes.getInstance().adicionarCliente(cc);
+					Server.getInstance().enviaTodos(new CacheClientes(cc.getListaClientes().get(0), UtilCoffe.CLIENTE_ADICIONAR, cc.getAtendente()));
+					return true;
+				} catch (ClassNotFoundException | SQLException e) {
+					e.printStackTrace();
+					new PainelErro(e);
+					return false;
+				}
+			}
+			else if(cc.getHeader() == UtilCoffe.CLIENTE_REMOVER)
+			{
+				try {
+					Query envia = new Query();
+					String formatacao = "DELETE FROM fiados WHERE `fiador_id` = " + cc.getListaClientes().get(0).getIdUnico() + ";";  
+					envia.executaUpdate(formatacao);
+					envia.fechaConexao();
+					
+					DiarioLog.add(cc.getAtendente(), "Deletou o cliente " + cc.getListaClientes().get(0).getNome() 
+							+ ". Telefone: " + cc.getListaClientes().get(0).getTelefone() + ".", 5);
+					
+					PainelClientes.getInstance().removerClientes(cc);
+					Server.getInstance().enviaTodos(new CacheClientes(cc.getListaClientes().get(0), UtilCoffe.CLIENTE_REMOVER, cc.getAtendente()));
+					return true;
+				} catch (ClassNotFoundException | SQLException e1) {
+					e1.printStackTrace();
+					new PainelErro(e1);
+					return false;
+				}	
+			}
+			else if(cc.getHeader() == UtilCoffe.CLIENTE_EDITAR)
+			{				
+				Query manda = new Query();
+				String formata = "UPDATE fiados SET ";
+
+				formata += "`nome` = '" + cc.getListaClientes().get(0).getNome() + "', ";
+				formata += "`apelido` = '" + cc.getListaClientes().get(0).getApelido() + "', ";
+				formata += "`telefone` = '" + cc.getListaClientes().get(0).getTelefone() + "', ";
+				formata += "`cpf` = '" + cc.getListaClientes().get(0).getCpf() + "', ";
+				formata += "`cep` = '" + cc.getListaClientes().get(0).getCep() + "', ";
+				formata += "`endereco` = '" + cc.getListaClientes().get(0).getEndereco() + "', ";
+				formata += "`numero` = '" + cc.getListaClientes().get(0).getNumero() + "', ";
+				formata += "`bairro` = '" + cc.getListaClientes().get(0).getBairro() + "', ";
+				formata += "`complemento` = '" + cc.getListaClientes().get(0).getComplemento() 
+						+ "' WHERE `fiador_id` = " + cc.getListaClientes().get(0).getIdUnico();
+				try {
+					manda.executaUpdate(formata);				
+					manda.fechaConexao();
+					DiarioLog.add(cc.getAtendente(), "Atualizou o cliente: " + cc.getListaClientes().get(0).getNome() 
+							+ ". Telefone: " + cc.getListaClientes().get(0).getTelefone() + ".", 5);
+					
+					PainelClientes.getInstance().editarClientes(cc);
+					Server.getInstance().enviaTodos(new CacheClientes(cc.getListaClientes().get(0), UtilCoffe.CLIENTE_EDITAR, cc.getAtendente()));
+					return true;
+				} catch (ClassNotFoundException | SQLException e1) {
+					e1.printStackTrace();
+					new PainelErro(e1);
+					return false;
+				}
+			}
+		}
+		return false;
+	}
 	
 	public void enviarMesa(CacheMesaHeader m)
 	{

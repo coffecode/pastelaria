@@ -74,11 +74,13 @@ public class MenuPrincipal
 			componentesCentrais.add(PainelClientes.getInstance(), "Menu Clientes");
 			componentesCentrais.add(PainelCozinha.getInstance(), "Menu Cozinha");
 			
+			PainelClientes.getInstance().atualizarClientes();
+			
         	CacheTodosProdutos todosP = new CacheTodosProdutos();
         	todosP.atualizarProdutos();
         	
         	PainelVendaMesa.getInstance().atualizaProdutos(todosP);
-			PainelVendaRapida.getInstance().atualizaProdutos(todosP);			
+			PainelVendaRapida.getInstance().atualizaProdutos(todosP);	
 		}
 		else
 		{
@@ -89,7 +91,6 @@ public class MenuPrincipal
 			PainelMesas.getInstance();
 			PainelLegenda.getInstance();
 			PainelStatus.getInstance();
-			PainelProdutos.getInstance();
 			PainelVendaMesa.getInstance();
 			PainelClientes.getInstance();
 			PainelCozinha.getInstance();			
@@ -107,7 +108,10 @@ public class MenuPrincipal
 	    	Client.getInstance().enviarObjeto("UPDATE MESAS");        	
 	    	
 	    	System.out.println("Enviando pedido da lista de pedidos atualizada.");
-	    	Client.getInstance().enviarObjeto("UPDATE PEDIDOS");  			
+	    	Client.getInstance().enviarObjeto("UPDATE PEDIDOS");
+	    	
+	    	System.out.println("Enviando pedido da lista de clientes atualizada.");
+	    	Client.getInstance().enviarObjeto("UPDATE CLIENTES");    	
 		}
 		
 		janela.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -296,13 +300,10 @@ public class MenuPrincipal
 	
 	public void setarVisible(boolean set)
 	{
-		janela.setVisible(set);
+		janela.setVisible(true);
 		
 		if(set)
-		{
 			Login.getInstance().setVisible(false);
-			Login.getInstance().dispose();			
-		}
 	}
 	
 	public void setEnabled(boolean set)
@@ -313,11 +314,6 @@ public class MenuPrincipal
 	public void setarEnter(JButton j)
 	{
 		janela.getRootPane().setDefaultButton(j);
-	}
-	
-	public void DeletarPrincipal()
-	{
-		janela.dispose();
 	}
 	
 	public void Ativar(boolean set)
@@ -386,6 +382,15 @@ public class MenuPrincipal
 	
 	public void logout()
 	{
+		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
+		{
+			DiarioLog.add(Usuario.INSTANCE.getNome(), "Saiu do sistema.", 9);
+		}
+		else
+		{
+			Client.getInstance().enviarObjeto(Usuario.INSTANCE.getNome() + ";QUIT");
+		}		
+		
         Login.getInstance().pack();
         Login.getInstance().setVisible(true);
         janela.setVisible(false);

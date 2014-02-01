@@ -23,6 +23,13 @@ public abstract class UtilCoffe
 	public static final int MESA_DELETAR = 4;
 	public static final int MESA_LIMPAR = 5;
 	
+	public static final int CLIENTE_ADICIONAR = 1;
+	public static final int CLIENTE_EDITAR = 2;
+	public static final int CLIENTE_REMOVER = 3;
+	public static final int CLIENTE_ATUALIZAR = 4;
+	
+	public static final int CLASSE_CLIENTES = 3;
+	
 	public static String limpaNumero(String campo)
 	{
 		String limpeza = campo.replaceAll("[^0-9]+","");

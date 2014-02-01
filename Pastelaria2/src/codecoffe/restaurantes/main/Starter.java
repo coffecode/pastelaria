@@ -27,6 +27,7 @@ import javax.swing.JProgressBar;
 import javax.swing.border.EtchedBorder;
 
 import codecoffe.restaurantes.interfaceGrafica.MenuPrincipal;
+import codecoffe.restaurantes.interfaceGrafica.PainelDisconnect;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
 import codecoffe.restaurantes.sockets.BroadcastServer;
 import codecoffe.restaurantes.sockets.Client;
@@ -38,6 +39,7 @@ import com.alee.laf.WebLookAndFeel;
 import com.alee.laf.button.WebButton;
 import com.alee.laf.progressbar.WebProgressBar;
 import com.alee.managers.language.LanguageManager;
+import com.alee.utils.ThreadUtils;
 
 public class Starter implements ActionListener
 {
@@ -246,8 +248,8 @@ public class Starter implements ActionListener
 	public void comecarLoading(int modo, InetAddress host, int porta)
 	{
 		seleciona.dispose();
-		//try
-		//{
+		try
+		{
 			if(modo == UtilCoffe.CLIENT)
 			{
 				Configuracao.INSTANCE.setModo(UtilCoffe.CLIENT);
@@ -256,21 +258,22 @@ public class Starter implements ActionListener
 	        	new Thread(Client.getInstance()).start();				
 			}
 			else
-			{
-				Configuracao.INSTANCE.setModo(UtilCoffe.SERVER);
-				MenuPrincipal.getInstance(); 				
+			{				
+				Configuracao.INSTANCE.setModo(UtilCoffe.SERVER);		
 				
 				Server.getInstance().atualizaConexao(porta);
 	        	new Thread(Server.getInstance()).start();
 	        	
 	        	BroadcastServer serverUDP = new BroadcastServer(porta);
 	        	new Thread(serverUDP).start();
+	        	
+	        	MenuPrincipal.getInstance();
 			}
-		/*}
+		}
 		catch(Exception ex)
 		{
 			new PainelErro(ex);
-		}*/
+		}
 	}
 	
 	public void setarProgresso(String texto, int valor)
@@ -316,10 +319,10 @@ public class Starter implements ActionListener
 					DatagramPacket packet = new DatagramPacket(buf, buf.length);
 					this.socket.receive(packet);
 					
-					if(packet.getData()[0] == 240)
+					/*if(packet.getData()[0] == -16)
 						JOptionPane.showMessageDialog(null, "pacote autentico! " + packet.getAddress());
 					else
-						JOptionPane.showMessageDialog(null, "pacote recebido! " + packet.getAddress());
+						JOptionPane.showMessageDialog(null, "pacote recebido! " + packet.getAddress());*/
 					
 					this.host = packet.getAddress();
 					flag_procura = true;
@@ -389,7 +392,9 @@ public class Starter implements ActionListener
 				    		catch (UnknownHostException e)
 				    		{
 				    			descricaoOperacao.setText("Erro: ao obter localhost!");
-								//e.printStackTrace();
+								e.printStackTrace();
+								new PainelErro(e);
+								System.exit(0);
 							}
 						else
 				    		descricaoOperacao.setText("Erro: nenhum principal conectado!");

@@ -13,6 +13,7 @@ import javax.swing.JOptionPane;
 
 import codecoffe.restaurantes.interfaceGrafica.Login;
 import codecoffe.restaurantes.interfaceGrafica.MenuPrincipal;
+import codecoffe.restaurantes.interfaceGrafica.PainelClientes;
 import codecoffe.restaurantes.interfaceGrafica.PainelCozinha;
 import codecoffe.restaurantes.interfaceGrafica.PainelDisconnect;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
@@ -280,36 +281,40 @@ public class Client implements Runnable
 							}
 							else if(dataRecebida instanceof CacheTodasMesas)
 							{
-								System.out.println("Atualizacao de todas as mesas recebida.");
+								System.out.println("Recebendo atualização de todas as mesas do servidor.");
 								CacheTodasMesas tm = (CacheTodasMesas)dataRecebida;
 								MenuPrincipal.getInstance().atualizarTodasMesas(tm);
 							}
 							else if(dataRecebida instanceof CacheMesaHeader)
 							{
-								NotificationManager.setLocation(2);
-								NotificationManager.showNotification(MenuPrincipal.getInstance().getJanela(), "Atualizacao de mesa recebida.").setDisplayTime(2000);
+								//NotificationManager.setLocation(2);
+								//NotificationManager.showNotification(MenuPrincipal.getInstance().getJanela(), "Atualizacao de mesa recebida.").setDisplayTime(2000);
 								
-								System.out.println("Atualizacao de mesa recebida.");
+								System.out.println("Recebendo atualização de mesa do servidor.");
 								CacheMesaHeader mh = (CacheMesaHeader)dataRecebida;
 								PainelMesas.getInstance().atualizaMesaCache(mh.getMesaId(), mh.getMesaVenda());
 							}
 							else if(dataRecebida instanceof CacheTodosPedidos)
 							{
-								System.out.println("Todos pedidos do servidor recebido.");
+								System.out.println("Recebendo todos os pedidos do servidor.");
 								CacheTodosPedidos tp = (CacheTodosPedidos)dataRecebida;
 								PainelCozinha.getInstance().atualizaTodosPedidos(tp);
 							}						
 							else if(dataRecebida instanceof Pedido)
 							{
-								System.out.println("Pedido do servidor recebido.");
+								System.out.println("Recebendo pedido do servidor.");
 								Pedido ped = (Pedido)dataRecebida;
 								PainelCozinha.getInstance().atualizaPedido(ped);
 							}
 							else if(dataRecebida instanceof CacheAviso)
 							{
-								System.out.println("Aviso do servidor recebido.");
+								System.out.println("Recebendo aviso do servidor.");
 								CacheAviso aviso = (CacheAviso)dataRecebida;
-								if(aviso.getClasse() == UtilCoffe.VENDA_RAPIDA)	// Painel Venda Rapida
+								if(aviso.getClasse() == UtilCoffe.CLASSE_CLIENTES)
+								{
+									PainelClientes.getInstance().receberAviso(aviso);
+								}
+								else if(aviso.getClasse() == UtilCoffe.VENDA_RAPIDA)	// Painel Venda Rapida
 								{
 									if(aviso.getTipo() == 1) // Venda Realizada com Sucesso
 									{
@@ -324,6 +329,28 @@ public class Client implements Runnable
 									}								
 								}
 							}
+							else if(dataRecebida instanceof CacheClientes)
+							{
+								System.out.println("Recebendo clientes atualizado.");
+								CacheClientes clientesAtualizado = (CacheClientes)dataRecebida;
+								
+								if(clientesAtualizado.getHeader() == UtilCoffe.CLIENTE_ADICIONAR)
+								{
+									PainelClientes.getInstance().adicionarCliente(clientesAtualizado);
+								}
+								else if(clientesAtualizado.getHeader() == UtilCoffe.CLIENTE_EDITAR)
+								{
+									PainelClientes.getInstance().editarClientes(clientesAtualizado);
+								}
+								else if(clientesAtualizado.getHeader() == UtilCoffe.CLIENTE_REMOVER)
+								{
+									PainelClientes.getInstance().removerClientes(clientesAtualizado);
+								}
+								else
+								{
+									PainelClientes.getInstance().atualizarClientes(clientesAtualizado);
+								}
+							}							
 							else if(dataRecebida instanceof CacheAutentica)
 							{
 								CacheAutentica cc = (CacheAutentica)dataRecebida;
@@ -347,6 +374,9 @@ public class Client implements Runnable
 							    	
 							    	System.out.println("Enviando pedido da lista de pedidos atualizada.");
 							    	enviarObjeto("UPDATE PEDIDOS");
+							    	
+							    	System.out.println("Enviando pedido da lista de clientes atualizada.");
+							    	enviarObjeto("UPDATE CLIENTES");
 							    	
 							    	MenuPrincipal.getInstance().setEnabled(true);
 							    	reLoad = false;

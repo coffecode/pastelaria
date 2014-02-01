@@ -7,6 +7,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import codecoffe.restaurantes.mysql.Query;
+import codecoffe.restaurantes.primitivas.Clientes;
+import codecoffe.restaurantes.sockets.CacheAviso;
+import codecoffe.restaurantes.sockets.CacheClientes;
+import codecoffe.restaurantes.utilitarios.Bartender;
+import codecoffe.restaurantes.utilitarios.Configuracao;
 import codecoffe.restaurantes.utilitarios.DiarioLog;
 import codecoffe.restaurantes.utilitarios.Usuario;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
@@ -26,7 +31,6 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.swing.event.ListSelectionEvent;
@@ -43,9 +47,7 @@ public class PainelClientes extends JPanel implements ActionListener
 	private JTextField campoNome, campoApelido, campoTelefone, campoCPF, campoEndereco, campoNumero, campoBairro, campoComplemento;
 	private WebTextField campoBusca, campoCEP;
 	private JTabbedPane divisaoPainel;
-	private ArrayList<Integer> clientesID = new ArrayList<>();
-	private int clienteIDSelecionado;
-	private DefaultListModel<String> modeloLista;
+	private DefaultListModel<ClienteModel> modeloLista;
 	private WebButton bSalvarCliente, bNovoCliente, bDeletarCliente, bDivida, bVenda;
 	private JTable tabelaUltimasVendas;
 	private DefaultTableModel tabela;
@@ -53,8 +55,10 @@ public class PainelClientes extends JPanel implements ActionListener
 	private JScrollPane scrolltabela;
 	private boolean flag_aciona;
 	private int callBack = 0;
+	private CacheClientes todosClientes;
+	private Clientes clienteSelecionado;
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private PainelClientes()
 	{		
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -62,6 +66,10 @@ public class PainelClientes extends JPanel implements ActionListener
 		
 		painelClientes = new JPanel();
 		painelClientes.setLayout(new GridBagLayout());
+		
+		todosClientes = new CacheClientes();
+		
+		clienteSelecionado = null;
 		
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.anchor = GridBagConstraints.WEST;
@@ -155,24 +163,7 @@ public class PainelClientes extends JPanel implements ActionListener
 		verClientes.setMinimumSize(new Dimension(320, 360));
 		verClientes.setMaximumSize(new Dimension(320, 360));
 		
-		modeloLista = new DefaultListModel();
-		try {
-			Query pega = new Query();
-			pega.executaQuery("SELECT fiador_id, nome from fiados ORDER BY nome");
-
-			while(pega.next())
-			{
-				clientesID.add(pega.getInt("fiador_id"));
-				modeloLista.addElement(pega.getString("nome"));
-			}
-			
-			pega.fechaConexao();
-		} catch (ClassNotFoundException | SQLException e1) {
-			e1.printStackTrace();
-			new PainelErro(e1);
-			System.exit(0);
-		}
-		
+		modeloLista = new DefaultListModel<ClienteModel>();		
 		jlist = new WebList(modeloLista);
 		jlist.setBackground(new Color(205, 205, 205));
 		
@@ -183,9 +174,12 @@ public class PainelClientes extends JPanel implements ActionListener
 			private static final long serialVersionUID = 1L;
 
 			@Override
-		    public Component getListCellRendererComponent(@SuppressWarnings("rawtypes") JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 		        JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		        label.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/Usuario.png")));
+		        label.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/usuario.png")));
+		        
+		        ClienteModel cm = (ClienteModel) value;
+		        label.setText(cm.nome);
 		        
 		        if(index % 2 == 0)
 		        {
@@ -225,15 +219,14 @@ public class PainelClientes extends JPanel implements ActionListener
 		        {
 		        	if(flag_aciona)
 		        	{
-		        		receberCliente(clientesID.get(idx));
+		        		ClienteModel cLista = modeloLista.getElementAt(idx);
+		        		receberCliente(todosClientes.getClienteID(cLista.idUnico));
 		        		flag_aciona = false;
 		        	}
 		        	else
 		        	{
 		        		flag_aciona = true;
 		        	}
-		        	/*if(jlist.getValueIsAdjusting())
-		        		receberCliente(clientesID.get(idx));*/
 		        }
 		    }
 		});
@@ -245,11 +238,10 @@ public class PainelClientes extends JPanel implements ActionListener
 		scrollClientes.setPreferredSize(new Dimension(310,320));
 		WebPanel verClientes1 = new WebPanel();	
 		
-        DashedBorderPainter bp4 = new DashedBorderPainter ( new float[]{ 3f, 3f } );
-        bp4.setWidth ( 2 );
-        bp4.setColor ( new Color ( 205, 205, 205 ) );
-        verClientes1.setPainter (bp4);
-		
+        DashedBorderPainter bp4 = new DashedBorderPainter(new float[]{3f, 3f});
+        bp4.setWidth(2);
+        bp4.setColor(new Color(205, 205, 205));
+        verClientes1.setPainter(bp4);
 		verClientes1.add(scrollClientes);	
 		
 		gbc.insets = new Insets(3,3,3,50);
@@ -268,48 +260,53 @@ public class PainelClientes extends JPanel implements ActionListener
 		gbc.insets = new Insets(3,3,3,3);
 		gbc.gridheight = 1;
 		gbc.gridwidth = 1;
+		
 		gbc.gridx = 4;	// colunas
-		gbc.gridy = 1;	// linhas		
+		gbc.gridy = 1;	// linhas
+		
+		if(Configuracao.INSTANCE.getModo() == UtilCoffe.CLIENT)
+			gbc.gridy++;
+		
 		painelClientes.add(labelNome, gbc);
 		
 		gbc.gridwidth = 3;
 		gbc.gridx = 5;	// colunas
-		gbc.gridy = 1;	// linhas		
+		//gbc.gridy = 1;	// linhas		
 		painelClientes.add(campoNome, gbc);
 		
 		gbc.gridwidth = 1;
 		gbc.gridx = 8;	// colunas
-		gbc.gridy = 1;	// linhas		
+		//gbc.gridy = 1;	// linhas		
 		painelClientes.add(labelApelido, gbc);
 		
 		gbc.gridx = 9;	// colunas
-		gbc.gridy = 1;	// linhas		
+		//gbc.gridy = 1;	// linhas		
 		painelClientes.add(campoApelido, gbc);
 		
 		gbc.gridx = 4;	// colunas
-		gbc.gridy = 2;	// linhas		
+		gbc.gridy++;	// linhas		
 		painelClientes.add(labelCPF, gbc);
 		
 		gbc.gridwidth = 2;
 		gbc.gridx = 5;	// colunas
-		gbc.gridy = 2;	// linhas		
+		//gbc.gridy = 2;	// linhas		
 		painelClientes.add(campoCPF, gbc);
 		
 		gbc.gridwidth = 1;
 		gbc.gridx = 8;	// colunas
-		gbc.gridy = 2;	// linhas		
+		//gbc.gridy = 2;	// linhas		
 		painelClientes.add(labelTelefone, gbc);
 		
 		gbc.gridx = 9;	// colunas
-		gbc.gridy = 2;	// linhas		
+		//gbc.gridy = 2;	// linhas		
 		painelClientes.add(campoTelefone, gbc);
 		
 		gbc.gridx = 4;	// colunas
-		gbc.gridy = 3;	// linhas		
+		gbc.gridy++;	// linhas		
 		painelClientes.add(labelCEP, gbc);
 		
 		gbc.gridx = 5;	// colunas
-		gbc.gridy = 3;	// linhas		
+		//gbc.gridy = 3;	// linhas		
 		painelClientes.add(campoCEP, gbc);
 		
 		labelLoad = new JLabel();
@@ -317,106 +314,114 @@ public class PainelClientes extends JPanel implements ActionListener
 		labelLoad.setVisible(false);
 		
 		gbc.gridx = 6;	// colunas
-		gbc.gridy = 3;	// linhas		
+		//gbc.gridy = 3;	// linhas		
 		painelClientes.add(labelLoad, gbc);		
 		
 		gbc.gridx = 4;	// colunas
-		gbc.gridy = 4;	// linhas		
+		gbc.gridy++;	// linhas		
 		painelClientes.add(labelEndereco, gbc);
 		
 		gbc.gridwidth = 5;
 		gbc.gridx = 5;	// colunas
-		gbc.gridy = 4;	// linhas		
+		//gbc.gridy = 4;	// linhas		
 		painelClientes.add(campoEndereco, gbc);			
 		
 		gbc.gridwidth = 1;
 		gbc.gridx = 4;	// colunas
-		gbc.gridy = 5;	// linhas		
+		gbc.gridy++;	// linhas		
 		painelClientes.add(labelNumero, gbc);
 		
 		gbc.gridx = 5;	// colunas
-		gbc.gridy = 5;	// linhas		
+		//gbc.gridy = 5;	// linhas		
 		painelClientes.add(campoNumero, gbc);
 		
 		gbc.gridx = 8;	// colunas
-		gbc.gridy = 5;	// linhas		
+		//gbc.gridy = 5;	// linhas		
 		painelClientes.add(labelBairro, gbc);
 		
 		gbc.gridx = 9;	// colunas
-		gbc.gridy = 5;	// linhas		
+		//gbc.gridy = 5;	// linhas		
 		painelClientes.add(campoBairro, gbc);		
 		
 		gbc.gridx = 4;	// colunas
-		gbc.gridy = 6;	// linhas		
+		gbc.gridy++;	// linhas		
 		painelClientes.add(labelComplemento, gbc);
 		
 		gbc.gridwidth = 5;
 		gbc.gridx = 5;	// colunas
-		gbc.gridy = 6;	// linhas		
-		painelClientes.add(campoComplemento, gbc);	
+		//gbc.gridy = 6;	// linhas		
+		painelClientes.add(campoComplemento, gbc);
 		
-		tabela = new DefaultTableModel() {
+		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
+		{
+			tabela = new DefaultTableModel() {
 
-		    /**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
+			    /**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
 
-			@Override
-		    public boolean isCellEditable(int row, int column) {
-		       if(column == 4)
-		    	   return true;
-		       
-		       return false;
-		    }
-		};
-		
-		tabela.addColumn("ID");
-		tabela.addColumn("Data");
-		tabela.addColumn("Total");
-		tabela.addColumn("Status");
-		
-		tabelaUltimasVendas = new JTable() {
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
-			Color alternate = new Color(206, 220, 249);
-		    
-		    @Override
-		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-		        Component stamp = super.prepareRenderer(renderer, row, column);
-		        if (row % 2 == 0 && column != 6)
-		            stamp.setBackground(alternate);
-		        else
-		            stamp.setBackground(this.getBackground());
-		        return stamp;
-		    }    
-		};
-		
-		tabelaUltimasVendas.setModel(tabela);
-		tabelaUltimasVendas.getColumnModel().getColumn(0).setMinWidth(0);
-		tabelaUltimasVendas.getColumnModel().getColumn(0).setMaxWidth(0);
-		tabelaUltimasVendas.getColumnModel().getColumn(1).setMinWidth(100);
-		tabelaUltimasVendas.getColumnModel().getColumn(1).setMaxWidth(200);
-		tabelaUltimasVendas.getColumnModel().getColumn(2).setMinWidth(100);
-		tabelaUltimasVendas.getColumnModel().getColumn(2).setMaxWidth(200);		
-		tabelaUltimasVendas.getColumnModel().getColumn(3).setMinWidth(100);
-		tabelaUltimasVendas.getColumnModel().getColumn(3).setMaxWidth(200);		
-		tabelaUltimasVendas.setRowHeight(25);
-		tabelaUltimasVendas.getTableHeader().setReorderingAllowed(false);
-		tabelaUltimasVendas.getColumn("Total").setCellRenderer(new JLabelRenderer());
-		tabelaUltimasVendas.getColumn("Data").setCellRenderer(new CustomRenderer());
-		tabelaUltimasVendas.getColumn("Status").setCellRenderer(new CustomRenderer());
-		tabelaUltimasVendas.setPreferredScrollableViewportSize(new Dimension(350, 100));
-		
-		scrolltabela = new JScrollPane(tabelaUltimasVendas, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		
-		gbc.gridwidth = 6;
-		gbc.gridheight = 1;
-		gbc.gridx = 4;	// colunas
-		gbc.gridy = 8;	// linhas		
-		painelClientes.add(scrolltabela, gbc);
+				@Override
+			    public boolean isCellEditable(int row, int column) {
+			       if(column == 4)
+			    	   return true;
+			       
+			       return false;
+			    }
+			};
+			
+			tabela.addColumn("ID");
+			tabela.addColumn("Data");
+			tabela.addColumn("Total");
+			tabela.addColumn("Status");
+			
+			tabelaUltimasVendas = new JTable() {
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+				Color alternate = new Color(206, 220, 249);
+			    
+			    @Override
+			    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+			        Component stamp = super.prepareRenderer(renderer, row, column);
+			        if (row % 2 == 0 && column != 6)
+			            stamp.setBackground(alternate);
+			        else
+			            stamp.setBackground(this.getBackground());
+			        return stamp;
+			    }    
+			};
+			
+			tabelaUltimasVendas.setModel(tabela);
+			tabelaUltimasVendas.getColumnModel().getColumn(0).setMinWidth(0);
+			tabelaUltimasVendas.getColumnModel().getColumn(0).setMaxWidth(0);
+			tabelaUltimasVendas.getColumnModel().getColumn(1).setMinWidth(100);
+			tabelaUltimasVendas.getColumnModel().getColumn(1).setMaxWidth(200);
+			tabelaUltimasVendas.getColumnModel().getColumn(2).setMinWidth(100);
+			tabelaUltimasVendas.getColumnModel().getColumn(2).setMaxWidth(200);		
+			tabelaUltimasVendas.getColumnModel().getColumn(3).setMinWidth(100);
+			tabelaUltimasVendas.getColumnModel().getColumn(3).setMaxWidth(200);		
+			tabelaUltimasVendas.setRowHeight(25);
+			tabelaUltimasVendas.getTableHeader().setReorderingAllowed(false);
+			tabelaUltimasVendas.getColumn("Total").setCellRenderer(new JLabelRenderer());
+			tabelaUltimasVendas.getColumn("Data").setCellRenderer(new CustomRenderer());
+			tabelaUltimasVendas.getColumn("Status").setCellRenderer(new CustomRenderer());
+			tabelaUltimasVendas.setPreferredScrollableViewportSize(new Dimension(350, 100));
+			
+			scrolltabela = new JScrollPane(tabelaUltimasVendas, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			
+			gbc.gridwidth = 6;
+			gbc.gridheight = 1;
+			gbc.gridx = 4;	// colunas
+			gbc.gridy = 8;	// linhas		
+			painelClientes.add(scrolltabela, gbc);			
+		}
+		else
+		{
+			tabela = new DefaultTableModel();
+			scrolltabela = new JScrollPane();			
+		}
 		
 		bVenda = new WebButton("Venda");
 		bVenda.setRolloverShine(true);
@@ -424,24 +429,33 @@ public class PainelClientes extends JPanel implements ActionListener
 		bVenda.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/plus2.png")));
 		bVenda.addActionListener(this);
 		
+		gbc.gridheight = 1;
 		gbc.gridwidth = 1;
 		gbc.gridx = 4;	// colunas
-		gbc.gridy = 10;	// linhas		
-		painelClientes.add(bVenda, gbc);		
+		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
+			gbc.gridy = 10;	// linhas
+		else
+			gbc.gridy = 8;	// linhas
 		
-		gbc.gridx = 8;	// colunas
-		gbc.gridy = 10;	// linhas		
-		painelClientes.add(labelDivida, gbc);
+		painelClientes.add(bVenda, gbc);
 		
 		bDivida = new WebButton("0,00");
-		bDivida.setRolloverShine(true);
-		bDivida.setPreferredSize(new Dimension(70, 30));
-		bDivida.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/fiados1.png")));
-		bDivida.addActionListener(this);
 		
-		gbc.gridx = 9;	// colunas
-		gbc.gridy = 10;	// linhas		
-		painelClientes.add(bDivida, gbc);		
+		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
+		{
+			gbc.gridx = 8;	// colunas
+			gbc.gridy = 10;	// linhas		
+			painelClientes.add(labelDivida, gbc);
+			
+			bDivida.setRolloverShine(true);
+			bDivida.setPreferredSize(new Dimension(70, 30));
+			bDivida.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/fiados1.png")));
+			bDivida.addActionListener(this);
+			
+			gbc.gridx = 9;	// colunas
+			gbc.gridy = 10;	// linhas		
+			painelClientes.add(bDivida, gbc);				
+		}	
 		
 		JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
 		
@@ -479,7 +493,7 @@ public class PainelClientes extends JPanel implements ActionListener
 		divisaoPainel.addTab("Clientes", new ImageIcon(getClass().getClassLoader().getResource("imgs/report_user_mini.png")), painelClientes, "Gerenciar Clientes.");			
 		add(divisaoPainel);
 		setarAtivado(false);
-		callBack = 0;
+		callBack = 0;		
 	}
 	
 	private static class ClientesSingletonHolder { 
@@ -488,11 +502,69 @@ public class PainelClientes extends JPanel implements ActionListener
  
 	public static PainelClientes getInstance() {
 		return ClientesSingletonHolder.INSTANCE;
-	}	
+	}
+	
+	public void atualizarClientes()
+	{		
+		try {
+			modeloLista.clear();
+			todosClientes.getListaClientes().clear();
+
+			Query pega = new Query();
+			pega.executaQuery("SELECT * FROM fiados ORDER BY nome");
+
+			while(pega.next())
+			{
+				Clientes cliente = new Clientes(pega.getInt("fiador_id"), pega.getString("nome"), 
+				pega.getString("apelido"), pega.getString("telefone"), pega.getString("endereco"), 
+				pega.getString("bairro"), pega.getString("complemento"), pega.getString("cpf"), 
+				pega.getString("cep"), pega.getString("numero"));
+				
+				todosClientes.getListaClientes().add(cliente);
+				modeloLista.addElement(new ClienteModel(pega.getString("nome"), pega.getInt("fiador_id")));
+			}
+			
+			pega.fechaConexao();
+			clienteSelecionado = null;
+		} catch (ClassNotFoundException | SQLException e1) {
+			e1.printStackTrace();
+			new PainelErro(e1);
+			System.exit(0);
+		}		
+	}
+	
+	public void atualizarClientes(CacheClientes cc)
+	{
+		todosClientes = cc;
+		modeloLista.clear();
+		for(int i = 0; i < todosClientes.getListaClientes().size(); i++)
+		{
+			modeloLista.addElement(new ClienteModel(todosClientes.getListaClientes().get(i).getNome(),
+					todosClientes.getListaClientes().get(i).getIdUnico()));
+		}
+		
+		clienteSelecionado = null;
+	}
+	
+	public CacheClientes getTodosClientes()
+	{
+		return todosClientes;
+	}
 	
 	public void setCallBack(int menu)
 	{
 		callBack = menu;
+	}
+	
+	class ClienteModel
+	{
+		protected String nome;
+		protected int idUnico;
+		
+		public ClienteModel(String nome, int idUnico) {
+			this.nome = nome;
+			this.idUnico = idUnico;
+		}
 	}
 	
 	class buscarCEP implements Runnable {
@@ -516,20 +588,7 @@ public class PainelClientes extends JPanel implements ActionListener
 					labelLoad.setVisible(false);
 				}
 		  }
-	}	
-	
-	/*private class Teste extends JPanel
-	{
-		Teste()
-		{
-			setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Teste"));
-			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-			setPreferredSize(new Dimension(400, 400));
-			
-			JLabel lol = new JLabel("finalmente");
-			add(lol);
-		}
-	}*/
+	}
 	
 	private void setarAtivado(boolean set)
 	{		
@@ -559,8 +618,7 @@ public class PainelClientes extends JPanel implements ActionListener
 		
 		if(!set)
 		{
-			clienteIDSelecionado = 0;
-			
+			clienteSelecionado = null;
 			campoNome.setText("");
 			campoApelido.setText("");
 			campoTelefone.setText("");
@@ -578,90 +636,64 @@ public class PainelClientes extends JPanel implements ActionListener
 	private void buscarCliente(String arg)
 	{
 		setarAtivado(false);
-		clientesID.clear();
 		modeloLista.removeAllElements();
 		
-		try {
-			if(arg.equals("allclients"))
+		if(arg.equals("allclients"))
+		{
+			for(int i = 0; i < todosClientes.getListaClientes().size(); i++)
 			{
-				Query pega = new Query();
-				pega.executaQuery("SELECT fiador_id, nome from fiados ORDER BY nome");
-
-				while(pega.next())
-				{
-					clientesID.add(pega.getInt("fiador_id"));
-					modeloLista.addElement(pega.getString("nome"));
-				}
-				
-				pega.fechaConexao();			
-			}
-			else
+				modeloLista.addElement(
+					new ClienteModel(todosClientes.getListaClientes().get(i).getNome(), 
+							todosClientes.getListaClientes().get(i).getIdUnico()));
+			}			
+		}
+		else
+		{
+			int numAchados = 0;
+			for(int i = 0; i < todosClientes.getListaClientes().size(); i++)
 			{
-				Query pega = new Query();
-				String formatador = "SELECT fiador_id, nome from fiados WHERE ";
-				
-				formatador += "nome LIKE '%" + arg + "%' OR ";
-				formatador += "apelido LIKE '%" + arg + "%' OR ";
-				formatador += "telefone LIKE '%" + arg + "%' OR ";
-				formatador += "cpf LIKE '%" + arg + "%' OR ";
-				formatador += "cep LIKE '%" + arg + "%' OR ";
-				formatador += "endereco LIKE '%" + arg + "%' OR ";
-				formatador += "numero LIKE '%" + arg + "%' OR ";
-				formatador += "bairro LIKE '%" + arg + "%' OR ";
-				formatador += "complemento LIKE '%" + arg + "%' ORDER BY nome;";
-				
-				pega.executaQuery(formatador);
-				int numAchados = 0;
-
-				while(pega.next())
+				if(todosClientes.getListaClientes().get(i).containCliente(arg))
 				{
-					clientesID.add(pega.getInt("fiador_id"));
-					modeloLista.addElement(pega.getString("nome"));
 					numAchados++;
+					modeloLista.addElement(
+							new ClienteModel(todosClientes.getListaClientes().get(i).getNome(), 
+									todosClientes.getListaClientes().get(i).getIdUnico()));						
 				}
-				
-				pega.fechaConexao();
 				
 				if(numAchados == 1)
 				{
 					jlist.setSelectedIndex(0);
-					receberCliente(clientesID.get(0));
-				}
+	        		ClienteModel cLista = modeloLista.getElementAt(0);
+	        		receberCliente(todosClientes.getClienteID(cLista.idUnico));
+				}					
 			}
-		} catch (ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
-			new PainelErro(e);
 		}
 	}
 	
-	private void receberCliente(int id)
+	private void receberCliente(Clientes cliente)
 	{
-		if(id > 0)
+		if(cliente != null)
 		{
-			clienteIDSelecionado = id;
+			clienteSelecionado = cliente;
+			setarAtivado(true);
 			
-			try {
-				Query pega = new Query();
-				pega.executaQuery("SELECT * from fiados WHERE fiador_id = " + id);
-
-				while(pega.next())
-				{
-					setarAtivado(true);
-					
-					campoNome.setText(pega.getString("nome"));
-					campoApelido.setText(pega.getString("apelido"));
-					campoCPF.setText(pega.getString("cpf"));
-					campoTelefone.setText(pega.getString("telefone"));
-					campoCEP.setText(pega.getString("cep"));
-					campoEndereco.setText(pega.getString("endereco"));
-					campoNumero.setText(pega.getString("numero"));
-					campoBairro.setText(pega.getString("bairro"));
-					campoComplemento.setText(pega.getString("complemento"));
-					
+			campoNome.setText(cliente.getNome());
+			campoApelido.setText(cliente.getApelido());
+			campoCPF.setText(cliente.getCpf());
+			campoTelefone.setText(cliente.getTelefone());
+			campoCEP.setText(cliente.getCep());
+			campoEndereco.setText(cliente.getEndereco());
+			campoNumero.setText(cliente.getNumero());
+			campoBairro.setText(cliente.getBairro());
+			campoComplemento.setText(cliente.getComplemento());
+			
+			if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
+			{
+				try {
 					tabela.setNumRows(0);
 					double totalDivida = 0.0;
 					Query pega2 = new Query();
-					pega2.executaQuery("SELECT * FROM vendas WHERE fiado_id = " + clienteIDSelecionado + " ORDER BY vendas_id DESC limit 0, 10");
+					pega2.executaQuery("SELECT * FROM vendas WHERE fiado_id = " + cliente.getIdUnico() + " ORDER BY vendas_id DESC limit 0, 10");
 					
 					while(pega2.next())
 					{
@@ -691,100 +723,99 @@ public class PainelClientes extends JPanel implements ActionListener
 						tabela.addRow(linha);
 					}
 					
-					bDivida.setText(UtilCoffe.doubleToPreco(totalDivida));					
-				}
-				
-				pega.fechaConexao();
-			} catch (NumberFormatException | ClassNotFoundException | SQLException e) {
-				e.printStackTrace();
-				new PainelErro(e);
-			}			
+					pega2.fechaConexao();
+					bDivida.setText(UtilCoffe.doubleToPreco(totalDivida));
+				} catch (NumberFormatException | ClassNotFoundException | SQLException e) {
+					e.printStackTrace();
+					new PainelErro(e);
+				}			
+			}
 		}
 	}
 	
 	class JLabelRenderer implements TableCellRenderer {
-		
-		private JLabel label;
-		
-		  public JLabelRenderer() {
-			  label = new JLabel();
-			  label.setForeground(Color.BLACK);
-			  label.setOpaque(true);
-		  }  
 
-		  @SuppressWarnings("finally")
+		private JLabel label;
+
+		public JLabelRenderer() {
+			label = new JLabel();
+			label.setForeground(Color.BLACK);
+			label.setOpaque(true);
+		}  
+
+		@SuppressWarnings("finally")
 		public Component getTableCellRendererComponent(JTable table, Object value,
-		      boolean isSelected, boolean hasFocus, int row, int column) {	  
-			  
-			  label.setHorizontalTextPosition(AbstractButton.LEFT);
-			  label.setHorizontalAlignment( JLabel.CENTER );
-			  label.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/documento.png")));
-			  label.setForeground(Color.BLACK);
-			  
-			  	String formataTip = "<html>";
-			  	try {
-					formataTip += "<b>Venda #" + table.getValueAt(row,0) + "</b>  (<i>" + table.getValueAt(row,1) +")</i><br>";
-					Query pega = new Query();
-					pega.executaQuery("SELECT * FROM vendas_produtos WHERE `id_link` = " + table.getValueAt(row,0) + "");
-					
-					while(pega.next())
+				boolean isSelected, boolean hasFocus, int row, int column) {	  
+
+			label.setHorizontalTextPosition(AbstractButton.LEFT);
+			label.setHorizontalAlignment( JLabel.CENTER );
+			label.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/documento.png")));
+			label.setForeground(Color.BLACK);
+
+			String formataTip = "<html>";
+			try {
+				formataTip += "<b>Venda #" + table.getValueAt(row,0) + "</b>  (<i>" + table.getValueAt(row,1) +")</i><br>";
+				Query pega = new Query();
+				pega.executaQuery("SELECT * FROM vendas_produtos WHERE `id_link` = " + table.getValueAt(row,0) + "");
+
+				while(pega.next())
+				{
+					formataTip += pega.getInt("quantidade_produto") + "x .......... <b>" + pega.getString("nome_produto") + "</b>";
+
+					if(!"".equals(pega.getString("adicionais_produto").trim()))
 					{
-						formataTip += pega.getInt("quantidade_produto") + "x .......... <b>" + pega.getString("nome_produto") + "</b>";
-						
-						if(!"".equals(pega.getString("adicionais_produto").trim()))
-						{
-							formataTip += " com " + pega.getString("adicionais_produto");
-						}
-						
-						formataTip += " - R$" +  pega.getString("preco_produto") + "<br>";
+						formataTip += " com " + pega.getString("adicionais_produto");
 					}
 
-					pega.fechaConexao();
-					formataTip += "</html>";
-				} catch (ClassNotFoundException | SQLException e) {
-					e.printStackTrace();
-					new PainelErro(e);
-					formataTip = "Erro ao receber banco de dados.";
-				} finally {
-					label.setToolTipText(formataTip);
-					  
-				    if (isSelected) {
-				    	label.setForeground(new Color(72, 61, 139));
-				    	label.setBackground(table.getSelectionBackground());
-				    } else {
-				    	label.setForeground(Color.BLACK);
-				    	label.setBackground(table.getSelectionBackground());
-				    }
-				    
-				    label.setText((value == null) ? "" : value.toString());
-				    return label;					
+					formataTip += " - R$" +  pega.getString("preco_produto") + "<br>";
 				}
-		  }
+
+				pega.fechaConexao();
+				formataTip += "</html>";
+			} catch (ClassNotFoundException | SQLException e) {
+				e.printStackTrace();
+				new PainelErro(e);
+				formataTip = "Erro ao receber banco de dados.";
+			} finally {
+				label.setToolTipText(formataTip);
+
+				if (isSelected) {
+					label.setForeground(new Color(72, 61, 139));
+					label.setBackground(table.getSelectionBackground());
+				} else {
+					label.setForeground(Color.BLACK);
+					label.setBackground(table.getSelectionBackground());
+				}
+
+				label.setText((value == null) ? "" : value.toString());
+				return label;					
+			}
+		}
 	}	
-	
+
 	class CustomRenderer extends DefaultTableCellRenderer 
 	{
-	    /**
+		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
 
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
-	    {
-	        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-	        if(isSelected)
-	        {
-	        	setHorizontalAlignment( JLabel.CENTER );
-	        	c.setForeground(new Color(72, 61, 139));
-	        	return c;
-	        }
-	        else
-	        {
-	        	setHorizontalAlignment( JLabel.CENTER );
-	        	c.setForeground(Color.BLACK);
-	        	return c;
-	        }
-	    }
+		{
+			Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			if(isSelected)
+			{
+				setHorizontalAlignment( JLabel.CENTER );
+				c.setForeground(new Color(72, 61, 139));
+				return c;
+			}
+			else
+			{
+				setHorizontalAlignment( JLabel.CENTER );
+				c.setForeground(Color.BLACK);
+				return c;
+			}
+		}
 	}
 
 	@Override
@@ -792,7 +823,7 @@ public class PainelClientes extends JPanel implements ActionListener
 		
 		if(e.getSource() == bVenda)
 		{
-			if(clienteIDSelecionado == 0)
+			if(clienteSelecionado != null)
 			{
 				JOptionPane.showMessageDialog(null, "Escolha um cliente antes!");
 			}
@@ -801,52 +832,50 @@ public class PainelClientes extends JPanel implements ActionListener
 				if(callBack > 0)	// retorna para o painel mesas;
 				{
 					PainelMesas.getInstance().verMesa(callBack-1);
-					PainelVendaMesa.getInstance().setFiado(modeloLista.getElementAt(jlist.getSelectedIndex()), clienteIDSelecionado);
+					PainelVendaMesa.getInstance().setFiado(clienteSelecionado.getNome(), clienteSelecionado.getIdUnico());
 					callBack = 0;
 				}
 				else
 				{
-					PainelVendaRapida.getInstance().setFiado(modeloLista.getElementAt(jlist.getSelectedIndex()), clienteIDSelecionado, campoTelefone.getText(), 
-							campoEndereco.getText(), campoNumero.getText(), campoComplemento.getText());
+					PainelVendaRapida.getInstance().setFiado(clienteSelecionado.getNome(), clienteSelecionado.getIdUnico(),
+					campoTelefone.getText(), campoEndereco.getText(), campoNumero.getText(), campoComplemento.getText());
 					MenuPrincipal.getInstance().AbrirPrincipal(0);
 				}
 			}
 		}
 		else if(e.getSource() == bDeletarCliente)
 		{
-			if(clienteIDSelecionado > 0)
+			if(clienteSelecionado != null)
 			{
-				if(UtilCoffe.precoToDouble(bDivida.getText()) <= 0)
+				if(Configuracao.INSTANCE.getModo() == UtilCoffe.CLIENT)
 				{
-		    		  int opcao = JOptionPane.showConfirmDialog(null, "Deletar o cliente: " + campoNome.getText() + ".\n\nVocê tem certeza?\n\n", "Deletar Cliente", JOptionPane.YES_NO_OPTION);
-		    		  
-		    		  if(opcao == JOptionPane.YES_OPTION)
-		    		  {
-		    			   try {
-							DiarioLog.add(Usuario.INSTANCE.getNome(), "Deletou o cliente " + campoNome.getText() + ". Telefone: " + campoTelefone.getText() + ".", 5);
-							   Query envia = new Query();
-							   String formatacao = "DELETE FROM fiados WHERE `fiador_id` = " + clienteIDSelecionado + ";";  
-							   envia.executaUpdate(formatacao);
-							   envia.fechaConexao();
-							   buscarCliente("allclients");
-							   NotificationManager.setLocation(2);
-							   NotificationManager.showNotification(this, "Cliente Deletado!").setDisplayTime(2000);
-							   campoBusca.requestFocus();
-						} catch (ClassNotFoundException | SQLException e1) {
-							e1.printStackTrace();
-							new PainelErro(e1);
-						}		
-		    		  }					
+					JOptionPane.showMessageDialog(null, "Terminais não podem deletar clientes pois os mesmos podem ter dívidas com o restaurante!");
 				}
 				else
 				{
-					JOptionPane.showMessageDialog(null, "Não pode deletar cliente com dívida aberta!");
+					if(UtilCoffe.precoToDouble(bDivida.getText()) <= 0)
+					{
+						int opcao = JOptionPane.showConfirmDialog(null, "Deletar o cliente: " + campoNome.getText() + ".\n\nVocê tem certeza?\n\n", "Deletar Cliente", JOptionPane.YES_NO_OPTION);
+
+						if(opcao == JOptionPane.YES_OPTION)
+						{
+							Clientes clienteDeletar = new Clientes();
+							clienteDeletar.setIdUnico(clienteSelecionado.getIdUnico());
+							clienteDeletar.setNome(clienteSelecionado.getNome());
+							clienteDeletar.setTelefone(clienteSelecionado.getTelefone());
+							Bartender.INSTANCE.enviarCliente(new CacheClientes(clienteDeletar, UtilCoffe.CLIENTE_REMOVER, Usuario.INSTANCE.getNome()));
+						}
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "Não pode deletar cliente com dívida aberta!");
+					}	
 				}
 			}
 		}
 		else if(e.getSource() == bSalvarCliente)
 		{
-			if(clienteIDSelecionado > 0)
+			if(clienteSelecionado != null)
 			{
 				if(UtilCoffe.vaziu(campoNome.getText()))
 				{
@@ -854,59 +883,54 @@ public class PainelClientes extends JPanel implements ActionListener
 				}
 				else
 				{
-					Query manda = new Query();
-					String formata = "UPDATE fiados SET ";
+					Clientes clienteUpdate = new Clientes();
+					clienteUpdate.setIdUnico(clienteSelecionado.getIdUnico());
+					clienteUpdate.setNome(campoNome.getText());
+					clienteUpdate.setApelido(campoApelido.getText());
+					clienteUpdate.setTelefone(campoTelefone.getText());
+					clienteUpdate.setCpf(campoCPF.getText());
+					clienteUpdate.setCep(campoCEP.getText());
+					clienteUpdate.setEndereco(campoEndereco.getText());
+					clienteUpdate.setNumero(campoNumero.getText());
+					clienteUpdate.setBairro(campoBairro.getText());
+					clienteUpdate.setComplemento(campoComplemento.getText());
 					
-					formata += "`nome` = '" + campoNome.getText() + "', ";
-					formata += "`apelido` = '" + campoApelido.getText() + "', ";
-					formata += "`telefone` = '" + campoTelefone.getText() + "', ";
-					formata += "`cpf` = '" + campoCPF.getText() + "', ";
-					formata += "`cep` = '" + campoCEP.getText() + "', ";
-					formata += "`endereco` = '" + campoEndereco.getText() + "', ";
-					formata += "`numero` = '" + campoNumero.getText() + "', ";
-					formata += "`bairro` = '" + campoBairro.getText() + "', ";
-					formata += "`complemento` = '" + campoComplemento.getText() + "' WHERE `fiador_id` = " + clienteIDSelecionado;
-					
-					try {
-						manda.executaUpdate(formata);				
-						manda.fechaConexao();
-
-						modeloLista.set(jlist.getSelectedIndex(), campoNome.getText());
-						
-						NotificationManager.setLocation(2);
-						NotificationManager.showNotification(this, "Cliente Salvado!").setDisplayTime(2000);
-						DiarioLog.add(Usuario.INSTANCE.getNome(), "Atualizou o cliente: " + campoNome.getText() + ". Telefone: " + campoTelefone.getText() + ".", 5);
-					} catch (ClassNotFoundException | SQLException e1) {
-						e1.printStackTrace();
-						new PainelErro(e1);
+					if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
+					{
+						if(Bartender.INSTANCE.enviarCliente(new CacheClientes(clienteUpdate, UtilCoffe.CLIENTE_EDITAR, Usuario.INSTANCE.getNome())))
+						{
+							NotificationManager.setLocation(2);
+							NotificationManager.showNotification(this, "Cliente Salvado!").setDisplayTime(2000);							
+						}
+					}
+					else
+					{
+						Bartender.INSTANCE.enviarCliente(new CacheClientes(clienteUpdate, UtilCoffe.CLIENTE_EDITAR, Usuario.INSTANCE.getNome()));
 					}
 				}
 			}
 		}		
 		else if(e.getSource() == bNovoCliente)
 		{
-			try {
-				int novoID = 0;
-				Query envia = new Query();
-				envia.executaUpdate("INSERT INTO fiados(nome) VALUES('Novo Cliente');");
-				envia.executaQuery("SELECT fiador_id FROM fiados ORDER BY fiador_id DESC limit 0, 1");
-				
-				if(envia.next())
-					novoID = envia.getInt("fiador_id");
-				
-				envia.fechaConexao();
-				
-				clientesID.add(0, novoID);
-				modeloLista.add(0, "Novo Cliente");
-				jlist.setSelectedIndex(0);
-				receberCliente(novoID);
-				
-				campoNome.requestFocus();
-				TooltipManager.showOneTimeTooltip ( bSalvarCliente, null, "Lembre-se de salvar!", TooltipWay.up );
-				DiarioLog.add(Usuario.INSTANCE.getNome(), "Cadastrou um novo cliente.", 5);
-			} catch (ClassNotFoundException | SQLException e1) {
-				e1.printStackTrace();
-				new PainelErro(e1);
+			Clientes novoCliente = new Clientes();
+			novoCliente.setNome("Novo Cliente");			
+			
+			if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
+			{
+				if(Bartender.INSTANCE.enviarCliente(new CacheClientes(novoCliente, UtilCoffe.CLIENTE_ADICIONAR, Usuario.INSTANCE.getNome())))
+				{
+					jlist.setSelectedIndex(0);
+	        		ClienteModel cLista = modeloLista.getElementAt(0);
+	        		receberCliente(todosClientes.getClienteID(cLista.idUnico));
+					
+					campoNome.requestFocus();
+					TooltipManager.showOneTimeTooltip(bSalvarCliente, null, "Lembre-se de salvar depois!", TooltipWay.up);
+					DiarioLog.add(Usuario.INSTANCE.getNome(), "Cadastrou um novo cliente.", 5);							
+				}
+			}
+			else
+			{
+				Bartender.INSTANCE.enviarCliente(new CacheClientes(novoCliente, UtilCoffe.CLIENTE_ADICIONAR, Usuario.INSTANCE.getNome()));
 			}
 		}
 		else if(e.getSource() == bDivida)
@@ -927,12 +951,12 @@ public class PainelClientes extends JPanel implements ActionListener
    			  double resposta = Double.parseDouble(pegaResposta);
    			  double deduzindo = resposta;
    			  
-   			  if(resposta > 0 && clienteIDSelecionado > 0)
+   			  if(resposta > 0 && clienteSelecionado != null)
    			  {
    				  	try {
 						DiarioLog.add(Usuario.INSTANCE.getNome(), "Reduziu R$" + pegaResposta + " da dívida do " + campoNome.getText() + " (Telefone: " + campoTelefone.getText() + " ) de R$" + bDivida.getText() + ".", 6);
 						Query pega = new Query();
-						pega.executaQuery("SELECT * FROM vendas WHERE `fiado_id` = " + clienteIDSelecionado + "");
+						pega.executaQuery("SELECT * FROM vendas WHERE `fiado_id` = " + clienteSelecionado.getIdUnico() + "");
 							
 							while(pega.next())
 							{
@@ -958,13 +982,99 @@ public class PainelClientes extends JPanel implements ActionListener
 							}
 						
 						pega.fechaConexao();
-						receberCliente(clienteIDSelecionado);
+						receberCliente(clienteSelecionado);
 					} catch (NumberFormatException | ClassNotFoundException | SQLException e1) {
 						e1.printStackTrace();
 						new PainelErro(e1);
 					}
    			  }
    		  }
+		}
+	}
+
+	public void adicionarCliente(CacheClientes clientesAtualizado) 
+	{
+		todosClientes.getListaClientes().add(clientesAtualizado.getListaClientes().get(0));
+		modeloLista.add(0, new ClienteModel(clientesAtualizado.getListaClientes().get(0).getNome()
+				, clientesAtualizado.getListaClientes().get(0).getIdUnico()));
+	}
+
+	public void editarClientes(CacheClientes clientesAtualizado) 
+	{
+		for(int i = 0; i < todosClientes.getListaClientes().size(); i++)
+		{
+			if(todosClientes.getListaClientes().get(i).getIdUnico() == clientesAtualizado.getListaClientes().get(0).getIdUnico())
+			{
+				todosClientes.getListaClientes().set(i, clientesAtualizado.getListaClientes().get(0));
+				break;
+			}
+		}
+		
+		for(int i = 0; i < modeloLista.size(); i++)
+		{
+			if(modeloLista.getElementAt(i).idUnico == clientesAtualizado.getListaClientes().get(0).getIdUnico())
+			{
+				modeloLista.set(i, 
+						new ClienteModel(clientesAtualizado.getListaClientes().get(0).getNome(), 
+						clientesAtualizado.getListaClientes().get(0).getIdUnico()));
+				break;
+			}
+		}
+		if(clienteSelecionado != null)
+		{
+			if(clientesAtualizado.getListaClientes().get(0).getIdUnico() == clienteSelecionado.getIdUnico())
+			{
+				receberCliente(clientesAtualizado.getListaClientes().get(0));		
+			}	
+		}
+	}
+
+	public void removerClientes(CacheClientes clientesAtualizado) 
+	{
+		for(int i = 0; i < todosClientes.getListaClientes().size(); i++)
+		{
+			if(todosClientes.getListaClientes().get(i).getIdUnico() == clientesAtualizado.getListaClientes().get(0).getIdUnico())
+			{
+				todosClientes.getListaClientes().remove(i);
+				break;
+			}
+		}
+		
+		for(int i = 0; i < modeloLista.size(); i++)
+		{
+			if(modeloLista.getElementAt(i).idUnico == clientesAtualizado.getListaClientes().get(0).getIdUnico())
+			{
+				modeloLista.remove(i);
+				break;
+			}
+		}
+		if(clienteSelecionado != null)
+		{
+			if(clientesAtualizado.getListaClientes().get(0).getIdUnico() == clienteSelecionado.getIdUnico())
+			{
+				buscarCliente("allclients");
+				campoBusca.requestFocus();
+				NotificationManager.setLocation(2);
+				NotificationManager.showNotification(this, "Cliente Deletado!").setDisplayTime(2000);
+			}	
+		}
+	}
+	
+	public void receberAviso(CacheAviso aviso)
+	{
+		if(aviso.getTipo() == UtilCoffe.CLIENTE_ADICIONAR)
+		{
+			jlist.setSelectedIndex(0);
+    		ClienteModel cLista = modeloLista.getElementAt(0);
+    		receberCliente(todosClientes.getClienteID(cLista.idUnico));
+			
+			campoNome.requestFocus();
+			TooltipManager.showOneTimeTooltip(bSalvarCliente, null, "Lembre-se de salvar depois!", TooltipWay.up);			
+		}
+		else if(aviso.getTipo() == UtilCoffe.CLIENTE_EDITAR)
+		{
+			NotificationManager.setLocation(2);
+			NotificationManager.showNotification(this, "Cliente Salvado!").setDisplayTime(2000);			
 		}
 	}
 }

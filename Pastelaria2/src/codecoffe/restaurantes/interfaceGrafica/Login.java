@@ -153,13 +153,15 @@ public class Login extends WebDialog
 				{
 					CampoUsername.setText("");
 					CampoPassword.setText("");
+					
 					Usuario.INSTANCE.setNome(teste.getString("nome"));
 					Usuario.INSTANCE.setLevel(teste.getInt("level"));
+					
+					teste.fechaConexao();
+					DiarioLog.add(Usuario.INSTANCE.getNome(), "Fez login no sistema.", 8);					
+
 					PainelStatus.getInstance().setNome(Usuario.INSTANCE.getNome());
 					MenuPrincipal.getInstance().setarVisible(true);
-
-					teste.fechaConexao();
-					DiarioLog.add(Usuario.INSTANCE.getNome(), "Fez login no sistema.", 8);
 				}
 				else
 				{

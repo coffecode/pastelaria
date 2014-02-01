@@ -5,8 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import javax.swing.JOptionPane;
-
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
 
 public class Query
@@ -16,7 +14,7 @@ public class Query
     private ResultSet resultado = null;
 	
 	public void executaQuery(String query) throws ClassNotFoundException, SQLException
-	{		
+	{
 		Class.forName("com.mysql.jdbc.Driver");
 		this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/pastelaria", "root", "puc4321");	// URL, user, senha
 		this.st = this.con.prepareStatement(query);

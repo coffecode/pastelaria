@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import codecoffe.restaurantes.interfaceGrafica.PainelClientes;
 import codecoffe.restaurantes.interfaceGrafica.PainelCozinha;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
 import codecoffe.restaurantes.interfaceGrafica.PainelMesas;
@@ -173,6 +174,14 @@ public class Server implements Runnable
 							sOutput.reset();
 							sOutput.writeObject(PainelCozinha.getInstance().getTodosPedidos());
 						}
+						else if(decodifica.equals("UPDATE CLIENTES"))
+						{
+							CacheClientes cc = PainelClientes.getInstance().getTodosClientes();
+							cc.setHeader(UtilCoffe.CLIENTE_ATUALIZAR);
+							
+							sOutput.reset();
+							sOutput.writeObject(cc);
+						}
 						else if(decodifica.equals("UPDATE CONFIGURACAO"))
 						{
 							System.out.println("Enviando configuracao");
@@ -204,6 +213,15 @@ public class Server implements Runnable
 					{
 						CacheMesaHeader mh = (CacheMesaHeader)dataRecebida;
 						Bartender.INSTANCE.enviarMesa(mh);
+					}
+					else if(dataRecebida instanceof CacheClientes)	// é alguma atualização de clientes
+					{
+						CacheClientes cc = (CacheClientes)dataRecebida;
+						if(Bartender.INSTANCE.enviarCliente(cc))
+						{
+							sOutput.reset();
+							sOutput.writeObject(new CacheAviso(cc.getHeader(), UtilCoffe.CLASSE_CLIENTES));							
+						}
 					}
 					else if(dataRecebida instanceof Pedido)	// é um pedido
 					{

@@ -51,7 +51,11 @@ public class BroadcastServer extends Thread
 			hostsPossiveis.add("192.168.1.255");*/
 			
 			ArrayList<String> listaBroadcasts = pegaBroadcasts();
-				
+			
+			listaBroadcasts.add("192.168.1.255");
+			listaBroadcasts.add("192.168.0.255");
+			listaBroadcasts.add("255.255.255.255");
+			
 			this.socket = new DatagramSocket(this.porta);
 			System.out.println("Server UDP iniciado na porta: " + this.porta);
 			
@@ -100,7 +104,7 @@ public class BroadcastServer extends Thread
                         InetAddress broadcast = address.getBroadcast();
                         if(broadcast != null) 
                         {
-                            //System.out.println("Found broadcast: " + broadcast.getHostAddress());
+                            System.out.println("Broadcast encontrado: " + broadcast.getHostAddress());
                             listOfBroadcasts.add(broadcast.getHostAddress());
                         }
                     }

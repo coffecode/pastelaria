@@ -70,13 +70,13 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 		setMaximumSize(new Dimension(1920, 30));
 		setMinimumSize(new Dimension(980, 30));
 		
-		itemUserSair = new WebMenuItem("Usuário", new ImageIcon(getClass().getClassLoader().getResource("imgs/Usuario.png")));
+		itemUserSair = new WebMenuItem("Usuário", new ImageIcon(getClass().getClassLoader().getResource("imgs/usuario.png")));
 		itemUserSair.addActionListener(this);
 		add(itemUserSair);
 		
 		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
-		{
-			menuOpcoes = new OpcoesDialog();
+		{			
+			menuOpcoes = new OpcoesDialog();	
 			menuBackup = new BackupDialog();
 			
 			menuConfiguracoes = new WebMenu("Configurações", new ImageIcon(getClass().getClassLoader().getResource("imgs/opcoes.png")));
@@ -166,15 +166,6 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 			
 			if(opcao == JOptionPane.YES_OPTION)
 			{
-				if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
-				{
-					DiarioLog.add(Usuario.INSTANCE.getNome(), "Saiu do sistema.", 9);
-				}
-				else
-				{
-					Client.getInstance().enviarObjeto(Usuario.INSTANCE.getNome() + ";QUIT");
-				}
-				
 				MenuPrincipal.getInstance().logout();
 			}	
 		}

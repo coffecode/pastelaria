@@ -14,6 +14,12 @@ public class CacheAviso implements Serializable
 		this.titulo = title;
 	}
 	
+	public CacheAviso(int tipo, int classe) 
+	{
+		this.tipo = tipo;
+		this.classe = classe;
+	}
+
 	public int getTipo()
 	{
 		return this.tipo;
