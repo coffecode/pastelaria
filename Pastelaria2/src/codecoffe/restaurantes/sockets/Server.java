@@ -24,7 +24,7 @@ public class Server implements Runnable
 {
 	private int port;
 	private boolean procurandoConexoes;
-	private int uniqueId;
+	private int uniqueId = 1;
 	private ArrayList<ClienteThread> listaClientes;
 	
 	private Server() {}
@@ -107,7 +107,34 @@ public class Server implements Runnable
 				listaClientes.remove(i);
 			}
 		}
-	}	
+	}
+	
+	public synchronized void enviaTodos(Object ob, int ex) 
+	{
+		for(int i = listaClientes.size(); --i >= 0;) {
+			ClienteThread ct = listaClientes.get(i);
+			if(ct.id != ex)
+			{
+				if(!ct.enviarObjeto(ob)) {
+					listaClientes.remove(i);
+				}	
+			}
+		}
+	}
+	
+	public void enviaObjeto(Object ob, int cliente)
+	{
+		for(int i = listaClientes.size(); --i >= 0;) {
+			ClienteThread ct = listaClientes.get(i);
+			if(ct.id == cliente)
+			{
+				if(!ct.enviarObjeto(ob)) {
+					listaClientes.remove(i);
+				}
+				break;
+			}
+		}		
+	}
 	
 	class ClienteThread extends Thread
 	{
@@ -212,7 +239,7 @@ public class Server implements Runnable
 					else if(dataRecebida instanceof CacheMesaHeader)	// é alguma atualização de mesa
 					{
 						CacheMesaHeader mh = (CacheMesaHeader)dataRecebida;
-						Bartender.INSTANCE.enviarMesa(mh);
+						Bartender.INSTANCE.enviarMesa(mh, this.id);
 					}
 					else if(dataRecebida instanceof CacheClientes)	// é alguma atualização de clientes
 					{
@@ -243,12 +270,17 @@ public class Server implements Runnable
 						}
 						else
 						{
-							int sucesso = Bartender.INSTANCE.enviarVenda(vendaFeita);
-							if(sucesso > 0)	// enviando resposta de sucesso
+							int sucesso = Bartender.INSTANCE.enviarVenda(vendaFeita, this.id);
+							if(sucesso > 0)
 							{
 								sOutput.reset();
 								sOutput.writeObject(new CacheAviso(1, vendaFeita.classe, "A venda foi concluída com sucesso!", "Venda #" + sucesso));
-							}							
+							}
+							else
+							{
+								sOutput.reset();
+								sOutput.writeObject(new CacheAviso(2, vendaFeita.classe, "Não foi possível concluir a venda", "Erro"));
+							}
 						}
 					}
 					else if(dataRecebida instanceof CacheAutentica)

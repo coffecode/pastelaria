@@ -276,6 +276,11 @@ public class PainelMesas extends JPanel
 	    }
 	}
 	
+	public Venda getVendaMesa(int mesa)
+	{
+		return vendaMesas.get(mesa);
+	}
+	
 	public void atualizaMesa(int mesa, Venda v)
 	{
 		vendaMesas.set(mesa, v);

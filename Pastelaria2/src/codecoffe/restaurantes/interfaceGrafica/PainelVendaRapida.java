@@ -5,6 +5,7 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 import codecoffe.restaurantes.primitivas.Adicionais;
@@ -185,13 +186,14 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 
 			@Override
 		    public boolean isCellEditable(int row, int column) {
-		       if(column == 4)
+		       if(column == 0 || column == 5)
 		    	   return true;
 		       
 		       return false;
 		    }
 		};
 		
+		tabela.addColumn("+/-");
 		tabela.addColumn("Nome");
 		tabela.addColumn("Qntd");
 		tabela.addColumn("Preço");
@@ -208,7 +210,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		    @Override
 		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
 		        Component stamp = super.prepareRenderer(renderer, row, column);
-		        if (row % 2 == 0 && column != 4)
+		        if (row % 2 == 0 && column != 5)
 		        	stamp.setBackground(alternate);
 		        else
 		        	stamp.setBackground(this.getBackground());     	
@@ -217,19 +219,23 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		};
 		
 		tabelaPedido.setModel(tabela);
-		tabelaPedido.getColumnModel().getColumn(0).setMinWidth(205);
-		tabelaPedido.getColumnModel().getColumn(0).setMaxWidth(500);
-		tabelaPedido.getColumnModel().getColumn(1).setMinWidth(45);
-		tabelaPedido.getColumnModel().getColumn(1).setMaxWidth(100);
-		tabelaPedido.getColumnModel().getColumn(2).setMinWidth(80);
-		tabelaPedido.getColumnModel().getColumn(2).setMaxWidth(200);				
-		tabelaPedido.getColumnModel().getColumn(3).setMinWidth(380);
-		tabelaPedido.getColumnModel().getColumn(3).setMaxWidth(1400);
-		tabelaPedido.getColumnModel().getColumn(4).setMinWidth(60);
-		tabelaPedido.getColumnModel().getColumn(4).setMaxWidth(65);
+		tabelaPedido.getColumnModel().getColumn(0).setMinWidth(70);
+		tabelaPedido.getColumnModel().getColumn(0).setMaxWidth(70);
+		tabelaPedido.getColumnModel().getColumn(1).setMinWidth(205);
+		tabelaPedido.getColumnModel().getColumn(1).setMaxWidth(500);
+		tabelaPedido.getColumnModel().getColumn(2).setMinWidth(45);
+		tabelaPedido.getColumnModel().getColumn(2).setMaxWidth(100);
+		tabelaPedido.getColumnModel().getColumn(3).setMinWidth(80);
+		tabelaPedido.getColumnModel().getColumn(3).setMaxWidth(200);				
+		tabelaPedido.getColumnModel().getColumn(4).setMinWidth(380);
+		tabelaPedido.getColumnModel().getColumn(4).setMaxWidth(1400);
+		tabelaPedido.getColumnModel().getColumn(5).setMinWidth(60);
+		tabelaPedido.getColumnModel().getColumn(5).setMaxWidth(65);
 		tabelaPedido.setRowHeight(30);
 		tabelaPedido.getTableHeader().setReorderingAllowed(false);
 		
+		tabelaPedido.getColumn("+/-").setCellRenderer(new OpcoesCell());
+		tabelaPedido.getColumn("+/-").setCellEditor(new OpcoesCell());
 		tabelaPedido.getColumn("Preço").setCellRenderer(new CustomRenderer());
 		tabelaPedido.getColumn("Qntd").setCellRenderer(new CustomRenderer());
 		tabelaPedido.getColumn("Nome").setCellRenderer(new CustomRenderer());
@@ -450,6 +456,127 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			addAdicional.get(i).AtualizaProdutosCampo(tp);
 	}
 	
+	class OpcoesCellComponent extends JPanel
+	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		private WebButton maisProduto, menosProduto;
+		private int linha;
+		
+		public OpcoesCellComponent()
+		{
+			setLayout(new FlowLayout(FlowLayout.CENTER, 5, 2));
+			
+			ActionListener al = new ActionListener()
+			{
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if(e.getSource() == maisProduto)
+					{
+						vendaRapida.getProduto(linha).setQuantidade(1, 1);
+						double total = vendaRapida.getProduto(linha).getTotalProduto()*vendaRapida.getProduto(linha).getQuantidade();
+						tabela.setValueAt(UtilCoffe.doubleToPreco(total), linha, 3);
+						tabela.setValueAt(vendaRapida.getProduto(linha).getQuantidade(), linha, 2);
+						vendaRapida.calculaTotal();
+						campoTotal.setText(UtilCoffe.doubleToPreco((vendaRapida.getTotal() + taxaEntrega)));						
+						atualizarCampoRecibo();
+					}
+					else
+					{
+						if(vendaRapida.getProduto(linha).getQuantidade() > 1)
+						{
+							vendaRapida.getProduto(linha).setQuantidade(1, 2);
+							double total = vendaRapida.getProduto(linha).getTotalProduto()*vendaRapida.getProduto(linha).getQuantidade();
+							tabela.setValueAt(UtilCoffe.doubleToPreco(total), linha, 3);
+							tabela.setValueAt(vendaRapida.getProduto(linha).getQuantidade(), linha, 2);
+							vendaRapida.calculaTotal();
+							campoTotal.setText(UtilCoffe.doubleToPreco((vendaRapida.getTotal() + taxaEntrega)));						
+							atualizarCampoRecibo();							
+						}
+						else
+						{
+							SwingUtilities.invokeLater(new Runnable() {  
+								public void run() {
+									if(tabela.getRowCount() > linha)
+									{
+										vendaRapida.removerProdutoIndex(linha);
+										vendaRapida.calculaTotal();
+										atualizarCampoRecibo();
+										campoTotal.setText(UtilCoffe.doubleToPreco((vendaRapida.getTotal() + taxaEntrega)));									
+										tabela.removeRow(linha);	
+									}
+								}  
+							});
+						}
+					}
+				}
+			};
+			
+			maisProduto = new WebButton(new ImageIcon(getClass().getClassLoader().getResource("imgs/plus2.png")));
+			maisProduto.setUndecorated(true);
+			maisProduto.setPreferredSize(new Dimension(28, 24));
+			maisProduto.addActionListener(al);
+			
+			menosProduto = new WebButton(new ImageIcon(getClass().getClassLoader().getResource("imgs/remove.png")));
+			menosProduto.setUndecorated(true);
+			menosProduto.setPreferredSize(new Dimension(28, 24));
+			menosProduto.addActionListener(al);
+			
+			add(maisProduto);
+			add(menosProduto);
+		}
+		
+		public void setLinha(int li)
+		{
+			linha = li;
+		}
+	}
+	
+	class OpcoesCell extends AbstractCellEditor implements TableCellEditor, TableCellRenderer
+	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		
+		OpcoesCellComponent cellOpcoes;
+		Color alternate = new Color(206, 220, 249);
+		
+		public OpcoesCell()
+		{
+			cellOpcoes = new OpcoesCellComponent();
+		}	
+
+		@Override
+		public Object getCellEditorValue() {
+			return null;
+		}
+
+		@Override
+		public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+			atualizaPainel(row);
+			return cellOpcoes;
+		}
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table,Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+			atualizaPainel(row);
+			return cellOpcoes;
+		}
+		
+		public void atualizaPainel(int row)
+		{
+			if(row % 2 == 0)
+				cellOpcoes.setBackground(alternate);
+			else
+				cellOpcoes.setBackground(Color.WHITE);
+			
+			cellOpcoes.setLinha(row);
+		}
+	}
+	
 	class CustomRenderer extends DefaultTableCellRenderer 
 	{
 	    /**
@@ -462,7 +589,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 	        if(isSelected)
 	        {
-	        	if(column != 3 && column != 0)
+	        	if(column != 4 /*&& column != 1*/)
 	        	{
 	        		setHorizontalAlignment( JLabel.CENTER );
 	        	}
@@ -472,7 +599,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	        }
 	        else
 	        {
-	        	if(column != 3 && column != 0)
+	        	if(column != 4 /*&& column != 1*/)
 	        	{
 	        		setHorizontalAlignment( JLabel.CENTER );
 	        	}
@@ -618,42 +745,49 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	
 	public void receberAviso(CacheAviso aviso)
 	{
-		if(!Configuracao.INSTANCE.getReciboFim())
-			JOptionPane.showMessageDialog(null, aviso.getMensagem(), aviso.getTitulo(), JOptionPane.INFORMATION_MESSAGE);
+		if(aviso.getTipo() == 1)
+		{
+			if(!Configuracao.INSTANCE.getReciboFim())
+				JOptionPane.showMessageDialog(null, aviso.getMensagem(), aviso.getTitulo(), JOptionPane.INFORMATION_MESSAGE);
+			else
+			{
+				int opcao = JOptionPane.showConfirmDialog(null, aviso.getMensagem() + "\n\nDeseja imprimir o recibo?", "Venda #" + aviso.getTitulo(), JOptionPane.YES_NO_OPTION);
+				if(opcao == JOptionPane.YES_OPTION)
+				{
+					criarRecibo();
+					VisualizarRecibo.imprimirRecibo();
+				}			
+			}
+			
+			for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
+			{
+				Pedido ped = new Pedido(vendaRapida.getProduto(i), Usuario.INSTANCE.getNome(), "", 0, i);
+				Bartender.INSTANCE.enviarPedido(ped);
+			}			
+			
+			vendaRapida.clear();
+			campoEntrega.setSelected(false);
+			campoValor.setText("");
+			campoQuantidade.setText("1");
+			campoTotal.setText("0,00");
+			campoRecebido.setText("");
+			campoTroco.setText("0,00");
+			campoForma.setSelectedIndex(0);
+			addProduto.zeraString();
+			addAdicional.clear();
+			addRemover.clear();			
+			adicionaisPainel.removeAll();
+			adicionaisPainel.revalidate();
+			adicionaisPainel.repaint();
+			tabela.setNumRows(0);
+			fiadorIDSalvo = 0;
+			escolherCliente.setText("Escolher");
+			campoRecibo.setText("### Nenhum produto marcado ###");			
+		}
 		else
 		{
-			int opcao = JOptionPane.showConfirmDialog(null, aviso.getMensagem() + "\n\nDeseja imprimir o recibo?", "Venda #" + aviso.getTitulo(), JOptionPane.YES_NO_OPTION);
-			if(opcao == JOptionPane.YES_OPTION)
-			{
-				criarRecibo();
-				VisualizarRecibo.imprimirRecibo();
-			}			
+			JOptionPane.showMessageDialog(null, aviso.getMensagem(), aviso.getTitulo(), JOptionPane.ERROR_MESSAGE);
 		}
-		
-		for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
-		{
-			Pedido ped = new Pedido(vendaRapida.getProduto(i), Usuario.INSTANCE.getNome(), "", 0, i);
-			Bartender.INSTANCE.enviarPedido(ped);
-		}			
-		
-		vendaRapida.clear();
-		campoEntrega.setSelected(false);
-		campoValor.setText("");
-		campoQuantidade.setText("1");
-		campoTotal.setText("0,00");
-		campoRecebido.setText("");
-		campoTroco.setText("0,00");
-		campoForma.setSelectedIndex(0);
-		addProduto.zeraString();
-		addAdicional.clear();
-		addRemover.clear();			
-		adicionaisPainel.removeAll();
-		adicionaisPainel.revalidate();
-		adicionaisPainel.repaint();
-		tabela.setNumRows(0);
-		fiadorIDSalvo = 0;
-		escolherCliente.setText("Escolher");
-		campoRecibo.setText("### Nenhum produto marcado ###");		
 	}
 
 	@Override
@@ -744,9 +878,9 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 							vendaRapidaFeita.caixa 				= 0;
 							vendaRapidaFeita.delivery 			= UtilCoffe.doubleToPreco(taxaEntrega);
 							vendaRapidaFeita.dezporcento		= "0,00";
-							vendaRapidaFeita.classe				= UtilCoffe.VENDA_RAPIDA;
+							vendaRapidaFeita.classe				= UtilCoffe.CLASSE_VENDA_RAPIDA;
 							
-							Bartender.INSTANCE.enviarVenda(vendaRapidaFeita);	// agora aguarda a resposta.
+							Bartender.INSTANCE.enviarVenda(vendaRapidaFeita, 0);	// agora aguarda a resposta.
 						}
 					}
 					else
@@ -849,18 +983,18 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 				
 				for(int row = 0; row < tabela.getRowCount(); row++)
 				{
-					String cmpNome = tabela.getValueAt(row, 0).toString();
-					String cmpAdc = tabela.getValueAt(row, 3).toString();
+					String cmpNome = tabela.getValueAt(row, 1).toString();	//f
+					String cmpAdc = tabela.getValueAt(row, 4).toString();	//f
 					
 					if(cmpNome.equals(p.getNome()) && cmpAdc.equals(pegaAdicionais))
 					{
-						String pegaQntd = tabela.getValueAt(row, 1).toString();
-						tabela.setValueAt("" + (Integer.parseInt(pegaQntd) + qntdProduto), row, 1);
+						String pegaQntd = tabela.getValueAt(row, 2).toString();	//f
+						tabela.setValueAt("" + (Integer.parseInt(pegaQntd) + qntdProduto), row, 2);	//f
 						
 						pegaPreco = String.format("%.2f", (p.getTotalProduto() * (qntdProduto + Integer.parseInt(pegaQntd))));
 						pegaPreco.replaceAll(",", ".");								
 						
-						tabela.setValueAt(pegaPreco, row, 2);
+						tabela.setValueAt(pegaPreco, row, 3);	//f
 						new_flag = true;
 						break;
 					}
@@ -870,6 +1004,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 				{
 					Vector<Serializable> linha = new Vector<Serializable>();
 					
+					linha.add("");
 					linha.add(p.getNome());
 					linha.add(p.getQuantidade());
 					
@@ -951,10 +1086,13 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			
 			for(int i = 0; i < todosProdutos.getProdutos().size(); i++)
 			{
-				if(addProduto.getSelecionado().equals(todosProdutos.getProdutos().get(i).getNome()))
+				if(addProduto != null && addProduto.getSelecionado() != null)
 				{
-					aDouble += todosProdutos.getProdutos().get(i).getPreco();
-					break;
+					if(addProduto.getSelecionado().equals(todosProdutos.getProdutos().get(i).getNome()))
+					{
+						aDouble += todosProdutos.getProdutos().get(i).getPreco();
+						break;
+					}	
 				}
 			}
 			

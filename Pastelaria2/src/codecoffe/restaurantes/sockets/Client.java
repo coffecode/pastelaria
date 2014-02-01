@@ -286,13 +286,17 @@ public class Client implements Runnable
 								MenuPrincipal.getInstance().atualizarTodasMesas(tm);
 							}
 							else if(dataRecebida instanceof CacheMesaHeader)
-							{
-								//NotificationManager.setLocation(2);
-								//NotificationManager.showNotification(MenuPrincipal.getInstance().getJanela(), "Atualizacao de mesa recebida.").setDisplayTime(2000);
-								
+							{								
 								System.out.println("Recebendo atualização de mesa do servidor.");
 								CacheMesaHeader mh = (CacheMesaHeader)dataRecebida;
 								PainelMesas.getInstance().atualizaMesaCache(mh.getMesaId(), mh.getMesaVenda());
+								
+								if(mh.getHeader() == UtilCoffe.MESA_ERROR)
+								{
+									NotificationManager.setLocation(2);
+									NotificationManager.showNotification(MenuPrincipal.getInstance().getJanela(), 
+									"Houve um erro e não foi possível atualizar a mesa.").setDisplayTime(2000);							
+								}
 							}
 							else if(dataRecebida instanceof CacheTodosPedidos)
 							{
@@ -311,23 +315,11 @@ public class Client implements Runnable
 								System.out.println("Recebendo aviso do servidor.");
 								CacheAviso aviso = (CacheAviso)dataRecebida;
 								if(aviso.getClasse() == UtilCoffe.CLASSE_CLIENTES)
-								{
 									PainelClientes.getInstance().receberAviso(aviso);
-								}
-								else if(aviso.getClasse() == UtilCoffe.VENDA_RAPIDA)	// Painel Venda Rapida
-								{
-									if(aviso.getTipo() == 1) // Venda Realizada com Sucesso
-									{
-										PainelVendaRapida.getInstance().receberAviso(aviso);
-									}
-								}
+								else if(aviso.getClasse() == UtilCoffe.CLASSE_VENDA_RAPIDA)
+									PainelVendaRapida.getInstance().receberAviso(aviso);
 								else
-								{
-									if(aviso.getTipo() == 1) // Venda Realizada com Sucesso
-									{
-										PainelVendaMesa.getInstance().receberAviso(aviso);
-									}								
-								}
+									PainelVendaMesa.getInstance().receberAviso(aviso);
 							}
 							else if(dataRecebida instanceof CacheClientes)
 							{

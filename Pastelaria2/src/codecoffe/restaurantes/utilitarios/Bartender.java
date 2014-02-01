@@ -18,7 +18,6 @@ import codecoffe.restaurantes.interfaceGrafica.PainelMesas;
 import codecoffe.restaurantes.interfaceGrafica.PainelVendaMesa;
 import codecoffe.restaurantes.interfaceGrafica.PainelVendaRapida;
 import codecoffe.restaurantes.mysql.Query;
-import codecoffe.restaurantes.primitivas.Clientes;
 import codecoffe.restaurantes.primitivas.Pedido;
 import codecoffe.restaurantes.sockets.CacheAviso;
 import codecoffe.restaurantes.sockets.CacheClientes;
@@ -125,7 +124,7 @@ public enum Bartender
 		return false;
 	}
 	
-	public void enviarMesa(CacheMesaHeader m)
+	public void enviarMesa(CacheMesaHeader m, int usuario)
 	{
 		if(Configuracao.INSTANCE.getModo() > UtilCoffe.SERVER)
 		{
@@ -134,9 +133,9 @@ public enum Bartender
 		}
 		else
 		{
-			System.out.println("Atualizando mesa no banco de dados e clientes.");
 			if(m.getHeader() == UtilCoffe.MESA_ADICIONAR)
 			{
+				System.out.println("Atualizando mesa no banco de dados e clientes. (1)");
 				try {
 					String formatacao;
 					Query envia = new Query();
@@ -144,17 +143,23 @@ public enum Bartender
 					+ m.getMesaId() + ", '" + m.getProdutoMesa().getNome() + "', " + m.getHeaderExtra() + ", 0, '" + m.getProdutoMesa().getAllAdicionais() + "');";
 					envia.executaUpdate(formatacao);
 					envia.fechaConexao();
-					PainelMesas.getInstance().atualizaMesaCache(m.getMesaId(), m.getMesaVenda());
-					Server.getInstance().enviaTodos(m);
+					
+					if(usuario != 0)
+						PainelMesas.getInstance().atualizaMesaCache(m.getMesaId(), m.getMesaVenda());
+					
+					Server.getInstance().enviaTodos(m, usuario);
 				} catch (ClassNotFoundException | SQLException e) {
 					e.printStackTrace();
-					new PainelErro(e);
-				} finally {
 					
+					Server.getInstance().enviaObjeto(new CacheMesaHeader(m.getMesaId(), 
+							PainelMesas.getInstance().getVendaMesa(m.getMesaId()), UtilCoffe.MESA_ERROR), usuario);
+					
+					new PainelErro(e);
 				}
 			}
 			else if(m.getHeader() == UtilCoffe.MESA_ATUALIZAR)
 			{
+				System.out.println("Atualizando mesa no banco de dados e clientes. (2)");
 				try {
 					String formatacao;
 					Query envia = new Query();
@@ -162,24 +167,32 @@ public enum Bartender
 					+ " AND `produto` = '" + m.getProdutoMesa().getNome() + "' AND `adicionais` = '" + m.getProdutoMesa().getAllAdicionais() + "';";						
 					envia.executaUpdate(formatacao);
 					envia.fechaConexao();
-					PainelMesas.getInstance().atualizaMesaCache(m.getMesaId(), m.getMesaVenda());
-					Server.getInstance().enviaTodos(m);
+					
+					if(usuario != 0)
+						PainelMesas.getInstance().atualizaMesaCache(m.getMesaId(), m.getMesaVenda());
+					
+					Server.getInstance().enviaTodos(m, usuario);
 				} catch (ClassNotFoundException | SQLException e) {
 					e.printStackTrace();
-					new PainelErro(e);
-				} finally {
 					
+					Server.getInstance().enviaObjeto(new CacheMesaHeader(m.getMesaId(), 
+							PainelMesas.getInstance().getVendaMesa(m.getMesaId()), UtilCoffe.MESA_ERROR), usuario);
+					
+					new PainelErro(e);
 				}
 			}
 			else if(m.getHeader() == UtilCoffe.MESA_ATUALIZAR2)
 			{
-				PainelMesas.getInstance().atualizaMesaCache(m.getMesaId(), m.getMesaVenda());
-				Server.getInstance().enviaTodos(m);
+				System.out.println("Atualizando mesa no banco de dados e clientes. (3)");
+				if(usuario != 0)
+					PainelMesas.getInstance().atualizaMesaCache(m.getMesaId(), m.getMesaVenda());
+				
+				Server.getInstance().enviaTodos(m, usuario);
 			}
 			else if(m.getHeader() == UtilCoffe.MESA_LIMPAR || m.getHeader() == UtilCoffe.MESA_DELETAR)
 			{
-				//boolean flag_ok = false;
-				
+				System.out.println("Atualizando mesa no banco de dados e clientes. (4)");
+				boolean termina = false;
 				try {
 					Query pega = new Query();
 					if(m.getHeader() == UtilCoffe.MESA_DELETAR)
@@ -188,22 +201,46 @@ public enum Bartender
 					    		  + m.getProdutoMesa().getAllAdicionais() 
 					    		  + "' AND `mesas_id` = " + m.getMesaId() + ";");
 					
-					//flag_ok = false;
 					pega.executaQuery("SELECT * FROM mesas WHERE `quantidade` != `pago` AND `mesas_id` = "+ m.getMesaId() +";");
 					if(!pega.next())
 					{
 						pega.executaUpdate("DELETE FROM mesas WHERE `mesas_id` = "+ m.getMesaId() +";");
 						m.getMesaVenda().clear();
-						//flag_ok = true;
+						termina = true;
 					}
 					
 					pega.fechaConexao();
 				} catch (ClassNotFoundException | SQLException e) {
 					e.printStackTrace();
+					
+					Server.getInstance().enviaObjeto(new CacheMesaHeader(m.getMesaId(), 
+							PainelMesas.getInstance().getVendaMesa(m.getMesaId()), UtilCoffe.MESA_ERROR), usuario);
+					
 					new PainelErro(e);
 				} finally {
-					PainelMesas.getInstance().atualizaMesaCache(m.getMesaId(), m.getMesaVenda());
-					Server.getInstance().enviaTodos(m);				
+					if(m.getHeader() == UtilCoffe.MESA_LIMPAR)
+					{
+						if(termina)
+						{
+							PainelMesas.getInstance().atualizaMesaCache(m.getMesaId(), m.getMesaVenda());
+							Server.getInstance().enviaTodos(m);	
+						}					
+					}
+					else if(m.getHeader() == UtilCoffe.MESA_DELETAR)
+					{
+						if(!termina)
+						{
+							if(usuario != 0)
+								PainelMesas.getInstance().atualizaMesaCache(m.getMesaId(), m.getMesaVenda());
+							
+							Server.getInstance().enviaTodos(m, usuario);	
+						}
+						else
+						{
+							PainelMesas.getInstance().atualizaMesaCache(m.getMesaId(), m.getMesaVenda());
+							Server.getInstance().enviaTodos(m);
+						}	
+					}
 				}
 			}
 		}
@@ -352,7 +389,7 @@ public enum Bartender
 		}
 	}
 	
-	public int enviarVenda(CacheVendaFeita v)
+	public int enviarVenda(CacheVendaFeita v, int usuario)
 	{
 		if(Configuracao.INSTANCE.getModo() > 1)
 		{
@@ -362,7 +399,7 @@ public enum Bartender
 		}
 		else
 		{
-			if(v.classe == UtilCoffe.VENDA_RAPIDA)
+			if(v.classe == UtilCoffe.CLASSE_VENDA_RAPIDA)
 			{
 				System.out.println("Enviando venda rápida para o Banco de Dados.");
 				int venda_id = 0;
@@ -410,10 +447,7 @@ public enum Bartender
 						if(v.atendente.equals(Usuario.INSTANCE.getNome()))
 						{
 							CacheAviso aviso = new CacheAviso(1, v.classe, "A venda foi concluída com sucesso!", "Venda #" + venda_id);
-							if(aviso.getTipo() == 1) // Venda Realizada com Sucesso
-							{
-								PainelVendaRapida.getInstance().receberAviso(aviso);
-							}				
+							PainelVendaRapida.getInstance().receberAviso(aviso);			
 						}
 						
 						DiarioLog.add(v.atendente, "Adicionou a Venda #" + venda_id + " de R$" + v.total + " (fiado).", 1);
@@ -480,18 +514,19 @@ public enum Bartender
 						if(v.atendente.equals(Usuario.INSTANCE.getNome()))
 						{
 							CacheAviso aviso = new CacheAviso(1, v.classe, "A venda foi concluída com sucesso!", "Venda #" + venda_id);
-							if(aviso.getTipo() == 1) // Venda Realizada com Sucesso
-							{
-								PainelVendaMesa.getInstance().receberAviso(aviso);
-							}				
+							PainelVendaMesa.getInstance().receberAviso(aviso);			
 						}
-					
-						enviarMesa(v.vendaMesa);
+						
 						DiarioLog.add(v.atendente, "Adicionou a Venda #" + venda_id + " de R$" + v.total + " (fiado).", 1);
+						enviarMesa(v.vendaMesa, usuario);
 						return venda_id;
 					}
 				} catch (ClassNotFoundException | SQLException e) {
 					e.printStackTrace();
+					
+					Server.getInstance().enviaObjeto(new CacheMesaHeader(v.vendaMesa.getMesaId(), 
+							PainelMesas.getInstance().getVendaMesa(v.vendaMesa.getMesaId()), UtilCoffe.MESA_ERROR), usuario);
+					
 					new PainelErro(e);
 					return 0;
 				}				
