@@ -7,18 +7,19 @@ public class Pedido implements Serializable
 	private Produto p;
 	private Date horario, ultimaEdicao;
 	private String nomeAtendido, observacao;
-	private int local, id_local, header, status;
+	private int local, header, status;
 	
-	public Pedido(Produto prod, String atendimento, String obs, int local, int idlocal)
+	public Pedido(Produto prod, String atendimento, String obs, int local)
 	{
 		this.p = prod;
 		this.nomeAtendido = atendimento;
 		this.observacao = obs;
 		this.local = local;
-		this.id_local = idlocal;
 		this.header = 1;
 		this.status = 1;
 	}
+	
+	public Pedido() {}
 	
 	public Produto getProduto()
 	{
@@ -45,11 +46,6 @@ public class Pedido implements Serializable
 		return this.local;
 	}
 	
-	public int getIdLocal()
-	{
-		return this.id_local;
-	}
-	
 	public int getHeader()
 	{
 		return this.header;
@@ -74,7 +70,7 @@ public class Pedido implements Serializable
 	{
 		this.header = hd;
 	}
-	
+
 	public void setStatus(int ss)
 	{
 		this.status = ss;
@@ -83,5 +79,10 @@ public class Pedido implements Serializable
 	public void setUltimaEdicao(Date tempo)
 	{
 		this.ultimaEdicao = tempo;
+	}
+	
+	public void setProduto(Produto pp)
+	{
+		this.p = pp;
 	}
 }

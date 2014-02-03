@@ -9,6 +9,7 @@ public class CacheMesaHeader implements Serializable
 	private Venda vendaMesa;
 	private Produto produtoMesa;
 	private int mesa_id, header, header_extra;
+	private String atendente;
 	
 	public CacheMesaHeader(int id, Venda v, int hd)
 	{
@@ -33,6 +34,24 @@ public class CacheMesaHeader implements Serializable
 		this.header_extra = hd_extra;
 	}
 	
+	public CacheMesaHeader(int id, Produto p, Venda v, int hd, int hd_extra, String atd)
+	{
+		this.vendaMesa = v;
+		this.produtoMesa = p;
+		this.mesa_id = id;
+		this.header = hd;
+		this.header_extra = hd_extra;
+		this.atendente = atd;
+	}
+	
+	public String getAtendente() {
+		return atendente;
+	}
+
+	public void setAtendente(String atendente) {
+		this.atendente = atendente;
+	}
+
 	public int getHeaderExtra()
 	{
 		return this.header_extra;

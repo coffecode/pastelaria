@@ -256,9 +256,9 @@ public class Server implements Runnable
 						if(ped.getHeader() == UtilCoffe.PEDIDO_ADICIONA)
 							ped.setHora(new Date());
 						
-						ped.setUltimaEdicao(new Date());						
-						PainelCozinha.getInstance().atualizaPedido(ped);	//atualizar para o proprio servidor
+						ped.setUltimaEdicao(new Date());
 						enviaTodos(ped);					//transmitir essa informação para todos os clientes
+						PainelCozinha.getInstance().atualizaPedido(ped);	//atualizar para o proprio servidor
 					}
 					else if(dataRecebida instanceof CacheVendaFeita)	// é uma venda realizada
 					{

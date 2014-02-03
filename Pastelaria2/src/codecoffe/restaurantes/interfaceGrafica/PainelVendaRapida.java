@@ -761,7 +761,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			
 			for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
 			{
-				Pedido ped = new Pedido(vendaRapida.getProduto(i), Usuario.INSTANCE.getNome(), "", 0, i);
+				Pedido ped = new Pedido(vendaRapida.getProduto(i), Usuario.INSTANCE.getNome(), "", 0);
 				Bartender.INSTANCE.enviarPedido(ped);
 			}			
 			

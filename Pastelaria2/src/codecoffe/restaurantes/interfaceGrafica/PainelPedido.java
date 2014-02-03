@@ -44,7 +44,11 @@ public class PainelPedido extends WebPanel
 		HotkeyPainter pintura = new HotkeyPainter();
 		setPainter(pintura);
 		statusBar = new JStatusBar();
-		refreshStatus();
+		
+		if(pedidoAtt.getHeader() == UtilCoffe.PEDIDO_NOVO2)
+			statusBar.setBackground(new Color(218, 238, 220));
+		else
+			refreshStatus();
 		
 		if(p.getLocal() > 0)
 		{

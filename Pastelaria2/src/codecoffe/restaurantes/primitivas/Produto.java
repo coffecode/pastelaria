@@ -18,6 +18,16 @@ public class Produto implements Serializable
 		this.quantidade = 1;
 	}
 	
+	public void setAdicionaisList(ArrayList<Adicionais> adc)
+	{
+		this.adicionais = adc;
+	}
+	
+	public ArrayList<Adicionais> getAdicionaisList()
+	{
+		return this.adicionais;
+	}
+	
 	public Adicionais getAdicional(int index)
 	{
 		return this.adicionais.get(index);

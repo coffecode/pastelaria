@@ -85,12 +85,8 @@ public class PainelClientes extends JPanel implements ActionListener
 		campoBusca = new WebTextField("");
 		campoBusca.setToolTipText("Digite qualquer informação do cliente.");
 		campoBusca.setInputPrompt("Buscar clientes...");
-		//campoBusca.setMinimumSize(new Dimension(150, 30));
-		//campoBusca.setMaximumSize(new Dimension(250, 45));
-		//campoBusca.setPreferredSize(new Dimension(150, 30));
-		//campoBusca.setPreferredHeight(30);
+		campoBusca.setMargin(5, 5, 5, 5);
 		campoBusca.setTrailingComponent(new WebImage(new ImageIcon(getClass().getClassLoader().getResource("imgs/buscar.png"))));
-		
 		campoBusca.addKeyListener(new KeyAdapter()
         {
         	public void keyPressed(KeyEvent e)
@@ -107,19 +103,20 @@ public class PainelClientes extends JPanel implements ActionListener
         });		
 		
 		campoNome = new JTextField("");
-		//campoNome.setPreferredSize(new Dimension(210, 30));
+		campoNome.setBorder(BorderFactory.createCompoundBorder(campoNome.getBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 		
 		campoApelido = new JTextField("");
-		//campoApelido.setPreferredSize(new Dimension(130, 30));
+		campoApelido.setBorder(BorderFactory.createCompoundBorder(campoApelido.getBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 		
 		campoTelefone = new JTextField("");
-		//campoTelefone.setPreferredSize(new Dimension(130, 30));
+		campoTelefone.setBorder(BorderFactory.createCompoundBorder(campoTelefone.getBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 	
 		campoCPF = new JTextField("");
-		//campoCPF.setPreferredSize(new Dimension(140, 30));		
+		campoCPF.setBorder(BorderFactory.createCompoundBorder(campoCPF.getBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));	
 		
 		campoCEP = new WebTextField("");
-		//campoCEP.setPreferredSize(new Dimension(100, 30));
+		campoCEP.setMargin(5, 5, 5, 5);
+		campoCEP.setBorder(BorderFactory.createCompoundBorder(campoCEP.getBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 		campoCEP.setTrailingComponent(new WebImage(new ImageIcon(getClass().getClassLoader().getResource("imgs/buscar.png"))));
 		campoCEP.addKeyListener(new KeyAdapter()
         {
@@ -145,21 +142,19 @@ public class PainelClientes extends JPanel implements ActionListener
         });				
 		
 		campoEndereco = new JTextField("");
-		//campoEndereco.setPreferredSize(new Dimension(300, 30));
+		campoEndereco.setBorder(BorderFactory.createCompoundBorder(campoEndereco.getBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 		
 		campoNumero = new JTextField("");
-		//campoNumero.setPreferredSize(new Dimension(70, 30));
+		campoNumero.setBorder(BorderFactory.createCompoundBorder(campoNumero.getBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 		
 		campoBairro = new JTextField("");
-		//campoBairro.setPreferredSize(new Dimension(120, 30));		
+		campoBairro.setBorder(BorderFactory.createCompoundBorder(campoBairro.getBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 		
 		campoComplemento = new JTextField("");
-		//campoComplemento.setPreferredSize(new Dimension(300, 30));
+		campoComplemento.setBorder(BorderFactory.createCompoundBorder(campoComplemento.getBorder(), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 		
 		verClientes = new JPanel();
 		verClientes.setLayout(new BoxLayout(verClientes, BoxLayout.Y_AXIS));
-		//verClientes.setMinimumSize(new Dimension(320, 360));
-		//verClientes.setMaximumSize(new Dimension(320, 360));
 		
 		modeloLista = new DefaultListModel<ClienteModel>();		
 		jlist = new WebList(modeloLista);
@@ -343,7 +338,7 @@ public class PainelClientes extends JPanel implements ActionListener
 			    }    
 			};
 			
-			tabelaUltimasVendas.setModel(tabela);//
+			tabelaUltimasVendas.setModel(tabela);
 			tabelaUltimasVendas.getColumnModel().getColumn(0).setMinWidth(0);
 			tabelaUltimasVendas.getColumnModel().getColumn(0).setMaxWidth(0);
 			tabelaUltimasVendas.getColumnModel().getColumn(1).setMinWidth(150);

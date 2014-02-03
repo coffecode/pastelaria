@@ -148,6 +148,10 @@ public enum Bartender
 						PainelMesas.getInstance().atualizaMesaCache(m.getMesaId(), m.getMesaVenda());
 					
 					Server.getInstance().enviaTodos(m, usuario);
+					/* adicionar pedido */
+					m.getProdutoMesa().setQuantidade(m.getHeaderExtra(), 0);
+					Pedido ped = new Pedido(m.getProdutoMesa(), m.getAtendente(), "", (m.getMesaId()+1));
+					enviarPedido(ped);
 				} catch (ClassNotFoundException | SQLException e) {
 					e.printStackTrace();
 					
@@ -172,6 +176,14 @@ public enum Bartender
 						PainelMesas.getInstance().atualizaMesaCache(m.getMesaId(), m.getMesaVenda());
 					
 					Server.getInstance().enviaTodos(m, usuario);
+					
+					/* adicionar pedido */
+					if(m.getHeaderExtra() > 0) // se for menor que zero ele ta deletando um pedido..
+					{
+						m.getProdutoMesa().setQuantidade(m.getHeaderExtra(), 0);
+						Pedido ped = new Pedido(m.getProdutoMesa(), m.getAtendente(), "", (m.getMesaId()+1));
+						enviarPedido(ped);		
+					}				
 				} catch (ClassNotFoundException | SQLException e) {
 					e.printStackTrace();
 					
@@ -255,14 +267,12 @@ public enum Bartender
 		}
 		else
 		{
-			System.out.println("Pedido enviado para Cozinha.");
-			
 			if(p.getHeader() == UtilCoffe.PEDIDO_ADICIONA)
 				p.setHora(new Date());
 			
 			p.setUltimaEdicao(new Date());
-			PainelCozinha.getInstance().atualizaPedido(p);
 			Server.getInstance().enviaTodos(p);
+			PainelCozinha.getInstance().atualizaPedido(p);
 		}
 	}
 	
