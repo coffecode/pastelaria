@@ -343,7 +343,7 @@ public class PainelClientes extends JPanel implements ActionListener
 			    }    
 			};
 			
-			tabelaUltimasVendas.setModel(tabela);
+			tabelaUltimasVendas.setModel(tabela);//
 			tabelaUltimasVendas.getColumnModel().getColumn(0).setMinWidth(0);
 			tabelaUltimasVendas.getColumnModel().getColumn(0).setMaxWidth(0);
 			tabelaUltimasVendas.getColumnModel().getColumn(1).setMinWidth(150);
