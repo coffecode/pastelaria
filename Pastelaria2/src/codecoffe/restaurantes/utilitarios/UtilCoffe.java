@@ -42,7 +42,10 @@ public abstract class UtilCoffe
 	
 	public static boolean vaziu(String texto)
 	{
-		if("".equals(texto.trim()) || texto == null)
+		if(texto == null)
+			return true;
+		
+		if("".equals(texto.trim()))
 			return true;
 		
 		return false;

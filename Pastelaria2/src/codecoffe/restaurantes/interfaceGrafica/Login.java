@@ -1,6 +1,8 @@
 package codecoffe.restaurantes.interfaceGrafica;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,13 +12,14 @@ import java.sql.SQLException;
 
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import net.miginfocom.swing.MigLayout;
 import codecoffe.restaurantes.mysql.Query;
 import codecoffe.restaurantes.sockets.CacheAutentica;
 import codecoffe.restaurantes.sockets.Client;
@@ -26,6 +29,8 @@ import codecoffe.restaurantes.utilitarios.DiarioLog;
 import codecoffe.restaurantes.utilitarios.Usuario;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
+import com.alee.extended.painter.DashedBorderPainter;
+import com.alee.laf.button.WebButton;
 import com.alee.laf.panel.WebPanel;
 import com.alee.laf.rootpane.WebDialog;
 import com.alee.managers.hotkey.Hotkey;
@@ -37,10 +42,11 @@ public class Login extends WebDialog
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private JLabel LabelUsername, LabelPassword, Creditos, logo;
-	private JTextField CampoUsername, CampoPassword;
-	private JButton Confere;
+	private JLabel labelUsername, labelPassword;
+	private JTextField campoUsername, campoPassword;
+	private WebButton bEntrar;
 	
+	@SuppressWarnings("rawtypes")
 	private Login()
 	{
 		setIconImage(new ImageIcon(getClass().getClassLoader().getResource("imgs/icone_programa.png")).getImage());
@@ -66,69 +72,69 @@ public class Login extends WebDialog
 		
 		setResizable(false);
 		setTitle("Login");
-		setPreferredSize(new Dimension(470, 230));
-
-		WebPanel login = new WebPanel();
-		login.setLayout(null);
-		login.setMargin(15, 30, 15, 30);
+		setPreferredSize(new Dimension(280, 220));
+		
+		JPanel loginPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+		
+		WebPanel login = new WebPanel(new MigLayout());
+		login.setMargin(15, 15, 15, 15);
 		login.setOpaque(false);
+		DashedBorderPainter bp4 = new DashedBorderPainter(new float[]{3f, 3f});
+		bp4.setRound(12);
+		bp4.setWidth(2);
+		bp4.setColor(new Color(187, 161, 124));
+		login.setPainter(bp4);
 		
-		LabelUsername = new JLabel("Usuário:");
-		LabelUsername.setFont(new Font("Verdana", Font.BOLD, 12));
-		LabelUsername.setBounds(250,40,70,30); // Coluna, Linha, Largura, Altura!
-		login.add(LabelUsername);
+		labelUsername = new JLabel("Usuário:");
+		labelUsername.setFont(new Font("Verdana", Font.BOLD, 12));
+		login.add(labelUsername);
 		
-		CampoUsername = new JTextField();
-		CampoUsername.setHorizontalAlignment(SwingConstants.CENTER);
-		CampoUsername.setBounds(330,40,120,30);
-		login.add(CampoUsername);
+		campoUsername = new JTextField();
+		campoUsername.setHorizontalAlignment(SwingConstants.CENTER);
+		campoUsername.setPreferredSize(new Dimension(120, 30));
+		login.add(campoUsername, "gapleft 20, wrap");
 		
-		LabelPassword = new JLabel("Senha:");
-		LabelPassword.setFont(new Font("Verdana", Font.BOLD, 12));
-		LabelPassword.setBounds(250,80,70,30); // Coluna, Linha, Largura, Altura
-		login.add(LabelPassword);
+		labelPassword = new JLabel("Senha:");
+		labelPassword.setFont(new Font("Verdana", Font.BOLD, 12));
+		login.add(labelPassword);
 		
-		CampoPassword = new JPasswordField();
-		CampoPassword.setHorizontalAlignment(SwingConstants.CENTER);
-		CampoPassword.setBounds(330,80,120,30);
-		login.add(CampoPassword);
+		campoPassword = new JPasswordField();
+		campoPassword.setHorizontalAlignment(SwingConstants.CENTER);
+		campoPassword.setPreferredSize(new Dimension(120, 30));
+		login.add(campoPassword, "gapleft 20, wrap");
 		
-		Confere = new JButton("Entrar ");
+		login.add(new JLabel(""), "gaptop 5");
 		
-		Confere.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/login.png")));
-		Confere.setFont(new Font("Helvetica", Font.BOLD, 16));
-		Confere.setHorizontalTextPosition(AbstractButton.LEFT);			
-		Confere.setBounds(330,130,120,40);
-		login.add(Confere);
+		bEntrar = new WebButton("Entrar ");
+		bEntrar.setRolloverShine(true);
+		bEntrar.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/login.png")));
+		bEntrar.setFont(new Font("Helvetica", Font.BOLD, 12));
+		bEntrar.setPreferredSize(new Dimension(100, 35));
+		bEntrar.setHorizontalTextPosition(AbstractButton.LEFT);			
+		login.add(bEntrar, "gaptop 5, align right, wrap");
 		
-		Creditos = new JLabel(UtilCoffe.VERSAO);
-		Creditos.setFont(new Font("Verdana", Font.PLAIN, 10));
-		Creditos.setBounds(430, 180, 200, 15);
-		login.add(Creditos);
+		login.add(new JLabel("<html><font size='2'>www.codecoffe.com.br</font></html>"), "align right, gaptop 10, span");
 		
-		logo = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("imgs/logo_login.png")));
-		logo.setBounds(5,5,224,189);
-		login.add(logo);			
-		
-		add(login);		
+		loginPanel.add(login);
+		add(loginPanel);		
 
 		ActionListener listener = new ActionListener ()
 		{
 			@Override
 			public void actionPerformed ( ActionEvent e )
 			{
-				if(e.getSource() == Confere)
+				if(e.getSource() == bEntrar)
 				{
 					if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
-						autentica(CampoUsername.getText(), CampoPassword.getText());
+						autentica(campoUsername.getText(), campoPassword.getText());
 					else
-						Client.getInstance().enviarObjeto(new CacheAutentica(CampoUsername.getText(), CampoPassword.getText()));
+						Client.getInstance().enviarObjeto(new CacheAutentica(campoUsername.getText(), campoPassword.getText()));
 				}
             }
 		};
 		
-		Confere.addActionListener(listener);
-		HotkeyManager.registerHotkey (this, Confere, Hotkey.ENTER);			
+		bEntrar.addActionListener(listener);
+		HotkeyManager.registerHotkey(this, bEntrar, Hotkey.ENTER);			
 	}
 	
 	private static class LoginSingletonHolder { 
@@ -151,8 +157,8 @@ public class Login extends WebDialog
 			{
 				if(teste.getString("password").equals(password))
 				{
-					CampoUsername.setText("");
-					CampoPassword.setText("");
+					campoUsername.setText("");
+					campoPassword.setText("");
 					
 					Usuario.INSTANCE.setNome(teste.getString("nome"));
 					Usuario.INSTANCE.setLevel(teste.getInt("level"));
@@ -187,8 +193,8 @@ public class Login extends WebDialog
 		{
 			case 1:
 			{
-				CampoUsername.setText("");
-				CampoPassword.setText("");				
+				campoUsername.setText("");
+				campoPassword.setText("");				
 				Usuario.INSTANCE.setNome(ca.nome);
 				Usuario.INSTANCE.setLevel(ca.level);
 				PainelStatus.getInstance().setNome(Usuario.INSTANCE.getNome());

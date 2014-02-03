@@ -36,6 +36,8 @@ import java.util.Vector;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import net.miginfocom.swing.MigLayout;
+
 public class PainelClientes extends JPanel implements ActionListener
 {
 	/**
@@ -63,19 +65,12 @@ public class PainelClientes extends JPanel implements ActionListener
 	{		
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		divisaoPainel = new JTabbedPane();			
-		
 		painelClientes = new JPanel();
-		painelClientes.setLayout(new GridBagLayout());
-		
+		painelClientes.setLayout(new MigLayout("fill", "[]20[]10[]10[]20[]"));
 		todosClientes = new CacheClientes();
-		
 		clienteSelecionado = null;
 		
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.fill = GridBagConstraints.HORIZONTAL;	
 		flag_aciona = true;
-		
 		labelNome = new JLabel("Nome:");
 		labelApelido = new JLabel("Apelido:");
 		labelTelefone = new JLabel("Tel:");
@@ -90,7 +85,10 @@ public class PainelClientes extends JPanel implements ActionListener
 		campoBusca = new WebTextField("");
 		campoBusca.setToolTipText("Digite qualquer informação do cliente.");
 		campoBusca.setInputPrompt("Buscar clientes...");
-		campoBusca.setPreferredSize(new Dimension(150, 30));
+		//campoBusca.setMinimumSize(new Dimension(150, 30));
+		//campoBusca.setMaximumSize(new Dimension(250, 45));
+		//campoBusca.setPreferredSize(new Dimension(150, 30));
+		//campoBusca.setPreferredHeight(30);
 		campoBusca.setTrailingComponent(new WebImage(new ImageIcon(getClass().getClassLoader().getResource("imgs/buscar.png"))));
 		
 		campoBusca.addKeyListener(new KeyAdapter()
@@ -109,19 +107,19 @@ public class PainelClientes extends JPanel implements ActionListener
         });		
 		
 		campoNome = new JTextField("");
-		campoNome.setPreferredSize(new Dimension(210, 30));
+		//campoNome.setPreferredSize(new Dimension(210, 30));
 		
 		campoApelido = new JTextField("");
-		campoApelido.setPreferredSize(new Dimension(130, 30));
+		//campoApelido.setPreferredSize(new Dimension(130, 30));
 		
 		campoTelefone = new JTextField("");
-		campoTelefone.setPreferredSize(new Dimension(130, 30));
+		//campoTelefone.setPreferredSize(new Dimension(130, 30));
 	
 		campoCPF = new JTextField("");
-		campoCPF.setPreferredSize(new Dimension(140, 30));		
+		//campoCPF.setPreferredSize(new Dimension(140, 30));		
 		
 		campoCEP = new WebTextField("");
-		campoCEP.setPreferredSize(new Dimension(100, 30));
+		//campoCEP.setPreferredSize(new Dimension(100, 30));
 		campoCEP.setTrailingComponent(new WebImage(new ImageIcon(getClass().getClassLoader().getResource("imgs/buscar.png"))));
 		campoCEP.addKeyListener(new KeyAdapter()
         {
@@ -147,21 +145,21 @@ public class PainelClientes extends JPanel implements ActionListener
         });				
 		
 		campoEndereco = new JTextField("");
-		campoEndereco.setPreferredSize(new Dimension(300, 30));
+		//campoEndereco.setPreferredSize(new Dimension(300, 30));
 		
 		campoNumero = new JTextField("");
-		campoNumero.setPreferredSize(new Dimension(70, 30));
+		//campoNumero.setPreferredSize(new Dimension(70, 30));
 		
 		campoBairro = new JTextField("");
-		campoBairro.setPreferredSize(new Dimension(120, 30));		
+		//campoBairro.setPreferredSize(new Dimension(120, 30));		
 		
 		campoComplemento = new JTextField("");
-		campoComplemento.setPreferredSize(new Dimension(300, 30));
+		//campoComplemento.setPreferredSize(new Dimension(300, 30));
 		
 		verClientes = new JPanel();
 		verClientes.setLayout(new BoxLayout(verClientes, BoxLayout.Y_AXIS));
-		verClientes.setMinimumSize(new Dimension(320, 360));
-		verClientes.setMaximumSize(new Dimension(320, 360));
+		//verClientes.setMinimumSize(new Dimension(320, 360));
+		//verClientes.setMaximumSize(new Dimension(320, 360));
 		
 		modeloLista = new DefaultListModel<ClienteModel>();		
 		jlist = new WebList(modeloLista);
@@ -197,13 +195,17 @@ public class PainelClientes extends JPanel implements ActionListener
 		        {
 		        	label.setForeground(Color.BLACK);
 		        	label.setFont(new Font("Verdana", Font.BOLD, 11));
-		        	label.setPreferredSize(new Dimension(300, 30));
+		        	//label.setMinimumSize(list.getMinimumSize());
+		        	//label.setMaximumSize(list.getMaximumSize());
+		        	label.setPreferredSize(new Dimension(1900, 30));
 		        }
 		        else
 		        {
 		        	label.setForeground(Color.BLACK);
 		        	label.setFont(new Font("Verdana", Font.PLAIN, 11));
-		        	label.setPreferredSize(new Dimension(300, 30));
+		        	//label.setMinimumSize(list.getMinimumSize());
+		        	//label.setMaximumSize(list.getMaximumSize());
+		        	label.setPreferredSize(new Dimension(1900, 30));
 		        }
 		        
 		        return label;
@@ -233,130 +235,81 @@ public class PainelClientes extends JPanel implements ActionListener
 		
 		verClientes.add(jlist);
 		JScrollPane scrollClientes = new JScrollPane(verClientes, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		scrollClientes.setMinimumSize(new Dimension(310,320));
-		scrollClientes.setMaximumSize(new Dimension(310,320));
-		scrollClientes.setPreferredSize(new Dimension(310,320));
+		//scrollClientes.setMinimumSize(new Dimension(310, 320));
+		//scrollClientes.setMaximumSize(new Dimension(600, 400));
+		//scrollClientes.setPreferredSize(new Dimension(310,320));
 		WebPanel verClientes1 = new WebPanel();	
 		
         DashedBorderPainter bp4 = new DashedBorderPainter(new float[]{3f, 3f});
         bp4.setWidth(2);
         bp4.setColor(new Color(205, 205, 205));
         verClientes1.setPainter(bp4);
-		verClientes1.add(scrollClientes);	
+		verClientes1.add(scrollClientes);
 		
-		gbc.insets = new Insets(3,3,3,50);
-		gbc.gridwidth = 3;
-		gbc.gridx = 1;	// colunas
-		gbc.gridy = 1;	// linhas		
-		painelClientes.add(campoBusca, gbc);		
-		
-		gbc.insets = new Insets(3,3,3,50);
-		gbc.gridheight = 8;
-		gbc.gridwidth = 3;
-		gbc.gridx = 1;	// colunas
-		gbc.gridy = 2;	// linhas		
-		painelClientes.add(verClientes1, gbc);
-		
-		gbc.insets = new Insets(3,3,3,3);
-		gbc.gridheight = 1;
-		gbc.gridwidth = 1;
-		
-		gbc.gridx = 4;	// colunas
-		gbc.gridy = 1;	// linhas
-		
-		if(Configuracao.INSTANCE.getModo() == UtilCoffe.CLIENT)
-			gbc.gridy++;
-		
-		painelClientes.add(labelNome, gbc);
-		
-		gbc.gridwidth = 3;
-		gbc.gridx = 5;	// colunas
-		//gbc.gridy = 1;	// linhas		
-		painelClientes.add(campoNome, gbc);
-		
-		gbc.gridwidth = 1;
-		gbc.gridx = 8;	// colunas
-		//gbc.gridy = 1;	// linhas		
-		painelClientes.add(labelApelido, gbc);
-		
-		gbc.gridx = 9;	// colunas
-		//gbc.gridy = 1;	// linhas		
-		painelClientes.add(campoApelido, gbc);
-		
-		gbc.gridx = 4;	// colunas
-		gbc.gridy++;	// linhas		
-		painelClientes.add(labelCPF, gbc);
-		
-		gbc.gridwidth = 2;
-		gbc.gridx = 5;	// colunas
-		//gbc.gridy = 2;	// linhas		
-		painelClientes.add(campoCPF, gbc);
-		
-		gbc.gridwidth = 1;
-		gbc.gridx = 8;	// colunas
-		//gbc.gridy = 2;	// linhas		
-		painelClientes.add(labelTelefone, gbc);
-		
-		gbc.gridx = 9;	// colunas
-		//gbc.gridy = 2;	// linhas		
-		painelClientes.add(campoTelefone, gbc);
-		
-		gbc.gridx = 4;	// colunas
-		gbc.gridy++;	// linhas		
-		painelClientes.add(labelCEP, gbc);
-		
-		gbc.gridx = 5;	// colunas
-		//gbc.gridy = 3;	// linhas		
-		painelClientes.add(campoCEP, gbc);
-		
-		labelLoad = new JLabel();
-		labelLoad.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/loadcep.gif")));
-		labelLoad.setVisible(false);
-		
-		gbc.gridx = 6;	// colunas
-		//gbc.gridy = 3;	// linhas		
-		painelClientes.add(labelLoad, gbc);		
-		
-		gbc.gridx = 4;	// colunas
-		gbc.gridy++;	// linhas		
-		painelClientes.add(labelEndereco, gbc);
-		
-		gbc.gridwidth = 5;
-		gbc.gridx = 5;	// colunas
-		//gbc.gridy = 4;	// linhas		
-		painelClientes.add(campoEndereco, gbc);			
-		
-		gbc.gridwidth = 1;
-		gbc.gridx = 4;	// colunas
-		gbc.gridy++;	// linhas		
-		painelClientes.add(labelNumero, gbc);
-		
-		gbc.gridx = 5;	// colunas
-		//gbc.gridy = 5;	// linhas		
-		painelClientes.add(campoNumero, gbc);
-		
-		gbc.gridx = 8;	// colunas
-		//gbc.gridy = 5;	// linhas		
-		painelClientes.add(labelBairro, gbc);
-		
-		gbc.gridx = 9;	// colunas
-		//gbc.gridy = 5;	// linhas		
-		painelClientes.add(campoBairro, gbc);		
-		
-		gbc.gridx = 4;	// colunas
-		gbc.gridy++;	// linhas		
-		painelClientes.add(labelComplemento, gbc);
-		
-		gbc.gridwidth = 5;
-		gbc.gridx = 5;	// colunas
-		//gbc.gridy = 6;	// linhas		
-		painelClientes.add(campoComplemento, gbc);
+		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
+		{
+			painelClientes.add(campoBusca, "cell 0 0, grow, w 30%, h 2%, hmax 40px");	
+			painelClientes.add(verClientes1, "cell 0 1, span 1 6, grow, w 30%");
+			painelClientes.add(labelNome, "cell 1 0");	
+			painelClientes.add(campoNome, "cell 2 0, grow, pushx, h 2%, hmax 40px");	
+			painelClientes.add(labelApelido, "cell 3 0");
+			painelClientes.add(campoApelido, "cell 4 0, grow, pushx, h 2%, hmax 40px");
+			painelClientes.add(labelCPF, "cell 1 1");
+			painelClientes.add(campoCPF, "cell 2 1, grow, h 2%, hmax 40px");
+			painelClientes.add(labelTelefone, "cell 3 1");
+			painelClientes.add(campoTelefone, "cell 4 1, grow, h 2%, hmax 40px");
+			painelClientes.add(labelCEP, "cell 1 2");
+			painelClientes.add(campoCEP, "cell 2 2, grow, h 2%, hmax 40px");
+			
+			labelLoad = new JLabel();
+			labelLoad.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/loadcep.gif")));
+			labelLoad.setVisible(false);
+			
+			painelClientes.add(labelLoad, "cell 3 2, align left");
+			painelClientes.add(labelEndereco, "cell 1 3");	
+			painelClientes.add(campoEndereco, "cell 2 3, span 3 1, grow, pushx, h 2%, hmax 40px");			
+			painelClientes.add(labelNumero, "cell 1 4");
+			painelClientes.add(campoNumero, "cell 2 4, grow, pushx, h 2%, hmax 40px");	
+			painelClientes.add(labelBairro, "cell 3 4");
+			painelClientes.add(campoBairro, "cell 4 4, grow, pushx, h 2%, hmax 40px");				
+			painelClientes.add(labelComplemento, "cell 1 5");
+			painelClientes.add(campoComplemento, "cell 2 5, span 3 1, grow, pushx, h 2%, hmax 40px");	
+		}
+		else
+		{
+			painelClientes.add(campoBusca, "cell 0 0, grow, w 30%, h 2%, hmax 40px");	
+			painelClientes.add(verClientes1, "cell 0 1, span 1 6, grow, w 30%");
+			painelClientes.add(labelNome, "cell 1 1");	
+			painelClientes.add(campoNome, "cell 2 1, grow, pushx, h 2%, hmax 40px");	
+			painelClientes.add(labelApelido, "cell 3 1");
+			painelClientes.add(campoApelido, "cell 4 1, grow, pushx, h 2%, hmax 40px");
+			painelClientes.add(labelCPF, "cell 1 2");
+			painelClientes.add(campoCPF, "cell 2 2, grow, h 2%, hmax 40px");
+			painelClientes.add(labelTelefone, "cell 3 2");
+			painelClientes.add(campoTelefone, "cell 4 2, grow, h 2%, hmax 40px");
+			painelClientes.add(labelCEP, "cell 1 3");
+			painelClientes.add(campoCEP, "cell 2 3, grow, h 2%, hmax 40px");
+			
+			labelLoad = new JLabel();
+			labelLoad.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/loadcep.gif")));
+			labelLoad.setVisible(false);
+			
+			painelClientes.add(labelLoad, "cell 3 3, align left");
+			painelClientes.add(labelEndereco, "cell 1 4");	
+			painelClientes.add(campoEndereco, "cell 2 4, span 3 1, grow, pushx, h 2%, hmax 40px");			
+			painelClientes.add(labelNumero, "cell 1 5");
+			painelClientes.add(campoNumero, "cell 2 5, grow, pushx, h 2%, hmax 40px");	
+			painelClientes.add(labelBairro, "cell 3 5");
+			painelClientes.add(campoBairro, "cell 4 5, grow, pushx, h 2%, hmax 40px");				
+			painelClientes.add(labelComplemento, "cell 1 6");
+			painelClientes.add(campoComplemento, "cell 2 6, span 3 1, grow, pushx, h 2%, hmax 40px");			
+		}
 		
 		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
 		{
 			tabela = new DefaultTableModel() {
 
-			    /**
+				/**
 				 * 
 				 */
 				private static final long serialVersionUID = 1L;
@@ -376,9 +329,6 @@ public class PainelClientes extends JPanel implements ActionListener
 			tabela.addColumn("Status");
 			
 			tabelaUltimasVendas = new JTable() {
-				/**
-				 * 
-				 */
 				private static final long serialVersionUID = 1L;
 				Color alternate = new Color(206, 220, 249);
 			    
@@ -396,26 +346,21 @@ public class PainelClientes extends JPanel implements ActionListener
 			tabelaUltimasVendas.setModel(tabela);
 			tabelaUltimasVendas.getColumnModel().getColumn(0).setMinWidth(0);
 			tabelaUltimasVendas.getColumnModel().getColumn(0).setMaxWidth(0);
-			tabelaUltimasVendas.getColumnModel().getColumn(1).setMinWidth(100);
-			tabelaUltimasVendas.getColumnModel().getColumn(1).setMaxWidth(200);
-			tabelaUltimasVendas.getColumnModel().getColumn(2).setMinWidth(100);
-			tabelaUltimasVendas.getColumnModel().getColumn(2).setMaxWidth(200);		
-			tabelaUltimasVendas.getColumnModel().getColumn(3).setMinWidth(100);
-			tabelaUltimasVendas.getColumnModel().getColumn(3).setMaxWidth(200);		
+			tabelaUltimasVendas.getColumnModel().getColumn(1).setMinWidth(150);
+			tabelaUltimasVendas.getColumnModel().getColumn(1).setMaxWidth(600);
+			tabelaUltimasVendas.getColumnModel().getColumn(2).setMinWidth(150);
+			tabelaUltimasVendas.getColumnModel().getColumn(2).setMaxWidth(600);		
+			tabelaUltimasVendas.getColumnModel().getColumn(3).setMinWidth(150);
+			tabelaUltimasVendas.getColumnModel().getColumn(3).setMaxWidth(600);		
 			tabelaUltimasVendas.setRowHeight(25);
 			tabelaUltimasVendas.getTableHeader().setReorderingAllowed(false);
 			tabelaUltimasVendas.getColumn("Total").setCellRenderer(new JLabelRenderer());
 			tabelaUltimasVendas.getColumn("Data").setCellRenderer(new CustomRenderer());
 			tabelaUltimasVendas.getColumn("Status").setCellRenderer(new CustomRenderer());
-			tabelaUltimasVendas.setPreferredScrollableViewportSize(new Dimension(350, 100));
+			tabelaUltimasVendas.setPreferredScrollableViewportSize(new Dimension(350, 90));
 			
 			scrolltabela = new JScrollPane(tabelaUltimasVendas, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			
-			gbc.gridwidth = 6;
-			gbc.gridheight = 1;
-			gbc.gridx = 4;	// colunas
-			gbc.gridy = 8;	// linhas		
-			painelClientes.add(scrolltabela, gbc);			
+			painelClientes.add(scrolltabela, "cell 1 6, span 4 1, grow, h 36%, hmax 600px");			
 		}
 		else
 		{
@@ -425,39 +370,24 @@ public class PainelClientes extends JPanel implements ActionListener
 		
 		bVenda = new WebButton("Venda");
 		bVenda.setRolloverShine(true);
-		bVenda.setPreferredSize(new Dimension(90, 35));
+		bVenda.setPreferredSize(new Dimension(110, 35));
 		bVenda.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/plus2.png")));
 		bVenda.addActionListener(this);
-		
-		gbc.gridheight = 1;
-		gbc.gridwidth = 1;
-		gbc.gridx = 4;	// colunas
-		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
-			gbc.gridy = 10;	// linhas
-		else
-			gbc.gridy = 8;	// linhas
-		
-		painelClientes.add(bVenda, gbc);
+		painelClientes.add(bVenda, "cell 1 7");
 		
 		bDivida = new WebButton("0,00");
 		
 		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
 		{
-			gbc.gridx = 8;	// colunas
-			gbc.gridy = 10;	// linhas		
-			painelClientes.add(labelDivida, gbc);
-			
+			painelClientes.add(labelDivida, "cell 3 7");
 			bDivida.setRolloverShine(true);
-			bDivida.setPreferredSize(new Dimension(70, 30));
+			bDivida.setPreferredSize(new Dimension(110, 35));
 			bDivida.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/fiados1.png")));
 			bDivida.addActionListener(this);
-			
-			gbc.gridx = 9;	// colunas
-			gbc.gridy = 10;	// linhas		
-			painelClientes.add(bDivida, gbc);				
+			painelClientes.add(bDivida, "cell 4 7");				
 		}	
 		
-		JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
+		JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
 		
 		bSalvarCliente = new WebButton("");
 		bSalvarCliente.setToolTipText("Salvar cliente.");
@@ -483,12 +413,7 @@ public class PainelClientes extends JPanel implements ActionListener
 		painelBotoes.add(bSalvarCliente);
 		painelBotoes.add(bNovoCliente);
 		painelBotoes.add(bDeletarCliente);
-		
-		gbc.insets = new Insets(0,0,0,50);
-		gbc.gridwidth = 3;
-		gbc.gridx = 1;	// colunas
-		gbc.gridy = 10;	// linhas		
-		painelClientes.add(painelBotoes, gbc);
+		painelClientes.add(painelBotoes, "cell 0 7, align center");
 		
 		divisaoPainel.addTab("Clientes", new ImageIcon(getClass().getClassLoader().getResource("imgs/report_user_mini.png")), painelClientes, "Gerenciar Clientes.");			
 		add(divisaoPainel);

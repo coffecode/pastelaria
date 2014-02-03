@@ -2,6 +2,8 @@ package codecoffe.restaurantes.primitivas;
 
 import java.io.Serializable;
 
+import codecoffe.restaurantes.utilitarios.UtilCoffe;
+
 public class Clientes implements Serializable
 {
 	private int idUnico;
@@ -39,33 +41,42 @@ public class Clientes implements Serializable
 	}
 	
 	public boolean containCliente(String texto)
-	{		
-		if(this.nome.toLowerCase().contains(texto.toLowerCase()))
-			return true;
+	{
+		if(!UtilCoffe.vaziu(this.nome))
+			if(this.nome.toLowerCase().contains(texto.toLowerCase()))
+				return true;
 		
-		if(this.apelido.toLowerCase().contains(texto.toLowerCase()))
-			return true;
+		if(!UtilCoffe.vaziu(this.apelido))
+			if(this.apelido.toLowerCase().contains(texto.toLowerCase()))
+				return true;
 		
-		if(this.telefone.toLowerCase().contains(texto.toLowerCase()))
-			return true;
+		if(!UtilCoffe.vaziu(this.telefone))
+			if(this.telefone.toLowerCase().contains(texto.toLowerCase()))
+				return true;
 		
-		if(this.endereco.toLowerCase().contains(texto.toLowerCase()))
-			return true;
+		if(!UtilCoffe.vaziu(this.endereco))
+			if(this.endereco.toLowerCase().contains(texto.toLowerCase()))
+				return true;
 		
-		if(this.bairro.toLowerCase().contains(texto.toLowerCase()))
-			return true;
+		if(!UtilCoffe.vaziu(this.bairro))
+			if(this.bairro.toLowerCase().contains(texto.toLowerCase()))
+				return true;
 		
-		if(this.complemento.toLowerCase().contains(texto.toLowerCase()))
-			return true;
+		if(!UtilCoffe.vaziu(this.complemento))
+			if(this.complemento.toLowerCase().contains(texto.toLowerCase()))
+				return true;
 		
-		if(this.cpf.toLowerCase().contains(texto.toLowerCase()))
-			return true;
+		if(!UtilCoffe.vaziu(this.cpf))
+			if(this.cpf.toLowerCase().contains(texto.toLowerCase()))
+				return true;
 		
-		if(this.cep.toLowerCase().contains(texto.toLowerCase()))
-			return true;
+		if(!UtilCoffe.vaziu(this.cep))
+			if(this.cep.toLowerCase().contains(texto.toLowerCase()))
+				return true;
 		
-		if(this.numero.toLowerCase().contains(texto.toLowerCase()))
-			return true;		
+		if(!UtilCoffe.vaziu(this.numero))
+			if(this.numero.toLowerCase().contains(texto.toLowerCase()))
+				return true;	
 		
 		return false;
 	}
