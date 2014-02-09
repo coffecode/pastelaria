@@ -50,26 +50,17 @@ public class Client implements Runnable
 		return ClientSingletonHolder.INSTANCE;
 	}
 	
-	public void atualizaConexao(InetAddress host, int porta)
+	public void atualizaConexao(InetAddress host, int porta) throws IOException
 	{
 		hostname = host;
-		port = porta;		
+		port = porta;
+		socket = new Socket(hostname, port);
 	}
 
 	@Override
 	public void run()
 	{
-		try 
-		{
-			socket = new Socket(hostname, port);
-			conexaoEstabelecida();
-		} 
-		catch (IOException e) 
-		{
-			e.printStackTrace();
-			new PainelErro(e);
-			System.exit(0);
-		}
+		conexaoEstabelecida();
 	}
 	
 	private void conexaoEstabelecida()

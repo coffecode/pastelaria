@@ -52,10 +52,6 @@ public class BroadcastServer extends Thread
 			
 			ArrayList<String> listaBroadcasts = pegaBroadcasts();
 			
-			listaBroadcasts.add("192.168.1.255");
-			listaBroadcasts.add("192.168.0.255");
-			listaBroadcasts.add("255.255.255.255");
-			
 			this.socket = new DatagramSocket(this.porta);
 			System.out.println("Server UDP iniciado na porta: " + this.porta);
 			
@@ -73,7 +69,7 @@ public class BroadcastServer extends Thread
 					this.socket.send(packet);
 				}				
 				
-				sleep((long)(Math.random() * 4000));
+				sleep((long)(Math.random() * 2000));
 			}
 			
 			this.socket.close();

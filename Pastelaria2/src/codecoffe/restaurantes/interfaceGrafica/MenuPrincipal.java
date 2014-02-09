@@ -143,15 +143,15 @@ public class MenuPrincipal
 		janela.setResizable(true);
 		janela.setIconImage(new ImageIcon(getClass().getClassLoader().getResource("imgs/icone_programa.png")).getImage());
 		
-		Login.getInstance();
+		/*Login.getInstance();
 		Login.getInstance().pack();
 		Login.getInstance().setLocationRelativeTo(null);
-		Login.getInstance().setVisible(true);
+		Login.getInstance().setVisible(true);*/
 		
-		/*Usuario.INSTANCE.setNome("André Alves " + modo);
+		Usuario.INSTANCE.setNome("André Alves " + Configuracao.INSTANCE.getModo());
 		Usuario.INSTANCE.setLevel(3);
-		PainelStatus.setNome(Usuario.INSTANCE.getNome());
-		setarVisible(true);*/		
+		PainelStatus.getInstance().setNome(Usuario.INSTANCE.getNome());
+		setarVisible(true);
 	
 	/*
 	 	t = new Timer(500, new ActionListener()

@@ -31,6 +31,7 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.swing.event.ListSelectionEvent;
@@ -57,12 +58,15 @@ public class PainelClientes extends JPanel implements ActionListener
 	private JScrollPane scrolltabela;
 	private boolean flag_aciona;
 	private int callBack = 0;
+	private int callBackVisualiza = 0;
 	private CacheClientes todosClientes;
 	private Clientes clienteSelecionado;
+	private ArrayList<VisualizarVenda> vv;
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private PainelClientes()
-	{		
+	{
+		vv = new ArrayList<VisualizarVenda>();
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		divisaoPainel = new JTabbedPane();			
 		painelClientes = new JPanel();
@@ -355,7 +359,7 @@ public class PainelClientes extends JPanel implements ActionListener
 			tabelaUltimasVendas.setPreferredScrollableViewportSize(new Dimension(350, 90));
 			
 			scrolltabela = new JScrollPane(tabelaUltimasVendas, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			painelClientes.add(scrolltabela, "cell 1 6, span 4 1, grow, h 36%, hmax 600px");			
+			painelClientes.add(scrolltabela, "cell 1 6, span 4 1, grow, h 34%, hmax 600px");			
 		}
 		else
 		{
@@ -425,45 +429,56 @@ public class PainelClientes extends JPanel implements ActionListener
 	}
 	
 	public void atualizarClientes()
-	{		
-		try {
-			modeloLista.clear();
-			todosClientes.getListaClientes().clear();
+	{
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					modeloLista.clear();
+					todosClientes.getListaClientes().clear();
 
-			Query pega = new Query();
-			pega.executaQuery("SELECT * FROM fiados ORDER BY nome");
+					Query pega = new Query();
+					pega.executaQuery("SELECT * FROM fiados ORDER BY nome");
 
-			while(pega.next())
-			{
-				Clientes cliente = new Clientes(pega.getInt("fiador_id"), pega.getString("nome"), 
-				pega.getString("apelido"), pega.getString("telefone"), pega.getString("endereco"), 
-				pega.getString("bairro"), pega.getString("complemento"), pega.getString("cpf"), 
-				pega.getString("cep"), pega.getString("numero"));
-				
-				todosClientes.getListaClientes().add(cliente);
-				modeloLista.addElement(new ClienteModel(pega.getString("nome"), pega.getInt("fiador_id")));
+					while(pega.next())
+					{
+						Clientes cliente = new Clientes(pega.getInt("fiador_id"), pega.getString("nome"), 
+						pega.getString("apelido"), pega.getString("telefone"), pega.getString("endereco"), 
+						pega.getString("bairro"), pega.getString("complemento"), pega.getString("cpf"), 
+						pega.getString("cep"), pega.getString("numero"));
+						
+						todosClientes.getListaClientes().add(cliente);
+						modeloLista.addElement(new ClienteModel(pega.getString("nome"), pega.getInt("fiador_id")));
+					}
+					
+					pega.fechaConexao();
+					clienteSelecionado = null;
+				} catch (ClassNotFoundException | SQLException e1) {
+					e1.printStackTrace();
+					new PainelErro(e1);
+					System.exit(0);
+				}		
 			}
-			
-			pega.fechaConexao();
-			clienteSelecionado = null;
-		} catch (ClassNotFoundException | SQLException e1) {
-			e1.printStackTrace();
-			new PainelErro(e1);
-			System.exit(0);
-		}		
+		});	
 	}
 	
 	public void atualizarClientes(CacheClientes cc)
 	{
 		todosClientes = cc;
-		modeloLista.clear();
-		for(int i = 0; i < todosClientes.getListaClientes().size(); i++)
-		{
-			modeloLista.addElement(new ClienteModel(todosClientes.getListaClientes().get(i).getNome(),
-					todosClientes.getListaClientes().get(i).getIdUnico()));
-		}
-		
-		clienteSelecionado = null;
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				modeloLista.clear();
+				for(int i = 0; i < todosClientes.getListaClientes().size(); i++)
+				{
+					modeloLista.addElement(new ClienteModel(todosClientes.getListaClientes().get(i).getNome(),
+							todosClientes.getListaClientes().get(i).getIdUnico()));
+				}
+				
+				clienteSelecionado = null;	
+			}
+		});
 	}
 	
 	public CacheClientes getTodosClientes()
@@ -474,6 +489,19 @@ public class PainelClientes extends JPanel implements ActionListener
 	public void setCallBack(int menu)
 	{
 		callBack = menu;
+		callBackVisualiza = 0;
+	}
+	
+	public void setCallBack(VisualizarVenda lol, int id)
+	{
+		vv.clear();
+		vv.add(lol);
+		callBackVisualiza = 1;
+		
+		if(id > 0)
+		{
+			receberCliente(todosClientes.getClienteID(id));
+		}
 	}
 	
 	class ClienteModel
@@ -488,26 +516,30 @@ public class PainelClientes extends JPanel implements ActionListener
 	}
 	
 	class buscarCEP implements Runnable {
-		  public void run () {
-			  
-			  	buscaCEP pegaDados = new buscaCEP();
-			  
-				try {
-					String resultadoEnd = pegaDados.getEndereco(campoCEP.getText());
-					String resultadoBairro = pegaDados.getBairro(campoCEP.getText());
-					
-					if(!resultadoEnd.equals(campoCEP.getText()))
-					{
-						campoEndereco.setText(resultadoEnd);
-						campoBairro.setText(resultadoBairro);
-					}
-					
-				} catch (IOException e1) {
-					JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e1.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
-				} finally {
-					labelLoad.setVisible(false);
+		public void run () {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					buscaCEP pegaDados = new buscaCEP();
+
+					try {
+						String resultadoEnd = pegaDados.getEndereco(campoCEP.getText());
+						String resultadoBairro = pegaDados.getBairro(campoCEP.getText());
+
+						if(!resultadoEnd.equals(campoCEP.getText()))
+						{
+							campoEndereco.setText(resultadoEnd);
+							campoBairro.setText(resultadoBairro);
+						}
+
+					} catch (IOException e1) {
+						new PainelErro(e1);
+					} finally {
+						labelLoad.setVisible(false);
+					}	
 				}
-		  }
+			});
+		}
 	}
 	
 	private void setarAtivado(boolean set)
@@ -743,23 +775,33 @@ public class PainelClientes extends JPanel implements ActionListener
 		
 		if(e.getSource() == bVenda)
 		{
-			if(clienteSelecionado != null)
+			if(clienteSelecionado == null)
 			{
 				JOptionPane.showMessageDialog(null, "Escolha um cliente antes!");
 			}
 			else
 			{
-				if(callBack > 0)	// retorna para o painel mesas;
+				if(callBackVisualiza > 0)
 				{
-					PainelMesas.getInstance().verMesa(callBack-1);
-					PainelVendaMesa.getInstance().setFiado(clienteSelecionado.getNome(), clienteSelecionado.getIdUnico());
-					callBack = 0;
+					callBackVisualiza = 0;
+					vv.get(0).setarCliente(clienteSelecionado.getIdUnico(), clienteSelecionado.getNome());
+					vv.get(0).setVisible(true);
+					vv.get(0).setLocationRelativeTo(SwingUtilities.getRoot(this));
 				}
 				else
 				{
-					PainelVendaRapida.getInstance().setFiado(clienteSelecionado.getNome(), clienteSelecionado.getIdUnico(),
-					campoTelefone.getText(), campoEndereco.getText(), campoNumero.getText(), campoComplemento.getText());
-					MenuPrincipal.getInstance().AbrirPrincipal(0);
+					if(callBack > 0)	// retorna para o painel mesas;
+					{
+						PainelMesas.getInstance().verMesa(callBack-1);
+						PainelVendaMesa.getInstance().setFiado(clienteSelecionado.getNome(), clienteSelecionado.getIdUnico());
+						callBack = 0;
+					}
+					else
+					{
+						PainelVendaRapida.getInstance().setFiado(clienteSelecionado.getNome(), clienteSelecionado.getIdUnico(),
+						campoTelefone.getText(), campoEndereco.getText(), campoNumero.getText(), campoComplemento.getText());
+						MenuPrincipal.getInstance().AbrirPrincipal(0);
+					}					
 				}
 			}
 		}

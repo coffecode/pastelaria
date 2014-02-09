@@ -10,12 +10,13 @@ public abstract class UtilCoffe
 	public static final int PEDIDO_FAZENDO = 2;
 	public static final int PEDIDO_REMOVER = 3;
 	public static final int PEDIDO_NOVO = 4;
-	public static final int PEDIDO_NOVO2 = 5;
-	public static final int PEDIDO_DELETADO = 6;
+	public static final int PEDIDO_DELETADO = 5;
+	public static final int PEDIDO_EDITAR = 6;
 	
 	public static final int PEDIDO_ADICIONA = 1;
 	public static final int PEDIDO_DELETA = 2;
 	public static final int PEDIDO_STATUS = 3;
+	public static final int PEDIDO_EDITADO = 4;
 	
 	public static final int CLASSE_VENDA_MESA = 1;
 	public static final int CLASSE_VENDA_RAPIDA = 2;
@@ -36,6 +37,16 @@ public abstract class UtilCoffe
 	public static String limpaNumero(String campo)
 	{
 		String limpeza = campo.replaceAll("[^0-9]+","");
+		if(!"".equals(limpeza.trim()))
+		{
+			return limpeza;
+		}
+		return "";
+	}
+	
+	public static String limpaNumeroDecimal(String campo)
+	{
+		String limpeza = campo.replaceAll("[^0-9],.+","");
 		if(!"".equals(limpeza.trim()))
 		{
 			return limpeza;

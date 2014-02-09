@@ -11,7 +11,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 import codecoffe.restaurantes.primitivas.Adicionais;
-import codecoffe.restaurantes.primitivas.Pedido;
 import codecoffe.restaurantes.primitivas.Produto;
 import codecoffe.restaurantes.primitivas.Venda;
 import codecoffe.restaurantes.sockets.CacheAviso;
@@ -22,7 +21,6 @@ import codecoffe.restaurantes.utilitarios.Bartender;
 import codecoffe.restaurantes.utilitarios.Configuracao;
 import codecoffe.restaurantes.utilitarios.Usuario;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
-import codecoffe.restaurantes.utilitarios.VisualizarRecibo;
 
 import com.alee.extended.painter.DashedBorderPainter;
 import com.alee.extended.painter.TitledBorderPainter;
@@ -39,10 +37,7 @@ import java.awt.dnd.DragSource;
 import java.awt.dnd.DragSourceDragEvent;
 import java.awt.dnd.DragSourceMotionListener;
 import java.awt.event.*;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -81,6 +76,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 	private JCheckBox adicionarDezPorcento;
 	private double taxaOpcional;
 	private CacheTodosProdutos todosProdutos;
+	private CacheAviso aviso;
 
 	@SuppressWarnings("rawtypes")
 	private PainelVendaMesa()
@@ -557,10 +553,16 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 	public void atualizaProdutos(CacheTodosProdutos tp)
 	{
 		todosProdutos = tp;
-		addProduto.atualizaProdutosCampo(tp);
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				addProduto.atualizaProdutosCampo(todosProdutos);
 
-		for(int i = 0; i < addAdicional.size(); i++)
-			addAdicional.get(i).atualizaProdutosCampo(tp);
+				for(int i = 0; i < addAdicional.size(); i++)
+					addAdicional.get(i).atualizaProdutosCampo(todosProdutos);				
+			}
+		});
 	}	
 
 	class DragPanel extends JPanel {
@@ -715,16 +717,19 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				}
 
 				String pegaPreco;
+				
+				if(Configuracao.INSTANCE.getDezPorcento())
+				{
+					taxaOpcional = total * 0.10;
+					adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
+				}
 
 				if(adicionarDezPorcento.isSelected())
 				{
-					taxaOpcional = total * 0.10;
 					pegaPreco = String.format("%.2f", (total + (total * 0.10)));
-					adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
 				}
 				else
 				{
-					taxaOpcional = 0.0;
 					pegaPreco = String.format("%.2f", total);
 				}
 
@@ -770,49 +775,55 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		}
 	}
 
-	public void receberAviso(CacheAviso aviso)
+	public void receberAviso(CacheAviso cacheAviso)
 	{
-		if(aviso.getTipo() == 1)
-		{
-			if(!Configuracao.INSTANCE.getReciboFim())
-				JOptionPane.showMessageDialog(null, aviso.getMensagem(), aviso.getTitulo(), JOptionPane.INFORMATION_MESSAGE);
-			else
-			{
-				int opcao = JOptionPane.showConfirmDialog(null, aviso.getMensagem() + "\n\nDeseja imprimir o recibo?", "Venda #" + aviso.getTitulo(), JOptionPane.YES_NO_OPTION);
-				if(opcao == JOptionPane.YES_OPTION)
+		aviso = cacheAviso;
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				if(aviso.getTipo() == 1)
 				{
-					criarRecibo();
-					VisualizarRecibo.imprimirRecibo();
-				}			
-			}		
+					if(!Configuracao.INSTANCE.getReciboFim())
+						JOptionPane.showMessageDialog(null, aviso.getMensagem(), aviso.getTitulo(), JOptionPane.INFORMATION_MESSAGE);
+					else
+					{
+						int opcao = JOptionPane.showConfirmDialog(null, aviso.getMensagem() + "\n\nDeseja imprimir o recibo?", "Venda #" + aviso.getTitulo(), JOptionPane.YES_NO_OPTION);
+						if(opcao == JOptionPane.YES_OPTION)
+						{
+							criarRecibo();
+						}			
+					}		
 
-			campoValor.setText("");
-			adicionarDezPorcento.setSelected(false);	
-			campoQuantidade.setText("1");
-			campoTotal.setText("0,00");
-			campoRecebido.setText("");
-			campoTroco.setText("0,00");
-			campoForma.setSelectedIndex(0);
-			addProduto.zeraString();
-			addAdicional.clear();
-			addRemover.clear();			
-			adicionaisPainel.removeAll();
-			adicionaisPainel.revalidate();
-			adicionaisPainel.repaint();
-			fiadorIDSalvo = 0;
-			escolherCliente.setText("Escolher");
-			painelDropOut.removeAll();
-			painelDropOut.revalidate();
-			painelDropOut.repaint();
-			taxaOpcional = 0.0;			    		
-			campoRecibo.setText("### Nenhum produto marcado ###");
-			PainelMesas.getInstance().atualizaMesa(mesaID, vendaRapida);
-			termina(false);					
-		}
-		else
-		{
-			JOptionPane.showMessageDialog(null, aviso.getMensagem(), aviso.getTitulo(), JOptionPane.ERROR_MESSAGE);
-		}
+					campoValor.setText("");
+					adicionarDezPorcento.setSelected(false);	
+					campoQuantidade.setText("1");
+					campoTotal.setText("0,00");
+					campoRecebido.setText("");
+					campoTroco.setText("0,00");
+					campoForma.setSelectedIndex(0);
+					addProduto.zeraString();
+					addAdicional.clear();
+					addRemover.clear();			
+					adicionaisPainel.removeAll();
+					adicionaisPainel.revalidate();
+					adicionaisPainel.repaint();
+					fiadorIDSalvo = 0;
+					escolherCliente.setText("Escolher");
+					painelDropOut.removeAll();
+					painelDropOut.revalidate();
+					painelDropOut.repaint();
+					taxaOpcional = 0.0;
+					adicionarDezPorcento.setText("+ 10% Opcional");
+					campoRecibo.setText("### Nenhum produto marcado ###");
+					PainelMesas.getInstance().atualizaMesa(mesaID, vendaRapida);
+					termina(false);					
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(null, aviso.getMensagem(), aviso.getTitulo(), JOptionPane.ERROR_MESSAGE);
+				}				
+			}
+		});
 	}
 
 	public void updateCampo()
@@ -878,9 +889,12 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				adc.precoAdicional = vendaRapida.getProduto(dragL.getId()).getAdicional(x).precoAdicional;
 				p.adicionrAdc(adc);
 			}
-
+			
+			p.calcularPreco();
 			vendaAgora.adicionarProduto(p);
 		}
+		
+		vendaAgora.calculaTotal();
 
 		for(int i = 0; i < vendaAgora.getQuantidadeProdutos(); i++)
 		{
@@ -937,141 +951,58 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 
 		formataRecibo += ("===========================\n");
 		formataRecibo += ("                     -------------------\n");
-		formataRecibo += ("Total                            R$" + campoTotal.getText() + "\n");
+		formataRecibo += ("Total                            R$" + UtilCoffe.doubleToPreco(vendaAgora.getTotal()) + "\n");
 
 		if(Configuracao.INSTANCE.getDezPorcento())
 		{
 			formataRecibo += ("                     ----------------------\n");
-			formataRecibo += ("10% Opcional                     R$" + UtilCoffe.doubleToPreco((UtilCoffe.precoToDouble(campoTotal.getText()) + taxaOpcional)) + "\n");            	  
+			formataRecibo += ("10% Opcional                     R$" + UtilCoffe.doubleToPreco(vendaAgora.getTotal() + taxaOpcional) + "\n");            	  
 		}		
 
 		formataRecibo += ("===========================\n");
 		formataRecibo += ("       OBRIGADO E VOLTE SEMPRE!	          \n");
-		formataRecibo += ("       POWERED BY CodeCoffe V1.0    		  \n");
+		formataRecibo += ("       POWERED BY CodeCoffe V2.0    		  \n");
 
 		campoRecibo.setText(formataRecibo);		
 	}	
 
-	private boolean criarRecibo()
+	private void criarRecibo()
 	{
-		try{
-			File arquivo = new File("codecoffe/recibo.txt");
-			FileWriter arquivoTxt = new FileWriter(arquivo, false);
-			PrintWriter linhasTxt = new PrintWriter(arquivoTxt);
+		Venda vendaAgora = new Venda();
 
-			String pegaPreco = "";
-			linhasTxt.println("===========================================");
-			linhasTxt.println(String.format("              %s              ", Configuracao.INSTANCE.getRestaurante()));
-			linhasTxt.println("===========================================");
-			linhasTxt.println("*********** NAO TEM VALOR FISCAL **********");
-			linhasTxt.println("===========================================");
-			linhasTxt.println("PRODUTO              QTDE  VALOR UN.  VALOR");
-
-			Venda vendaAgora = new Venda();
-
-			for(int i = 0; i < painelDropOut.getComponentCount(); i++)
-			{
-				DragLabel dragL = (DragLabel)painelDropOut.getComponent(i);
-				Produto p = new Produto();
-
-				p.setNome(dragL.getNome());
-				p.setPreco(dragL.getPreco());
-
-				for(int x = 0; x < vendaRapida.getProduto(dragL.getId()).getTotalAdicionais(); x++)
-				{
-					Adicionais adc = new Adicionais();
-					adc.nomeAdicional = vendaRapida.getProduto(dragL.getId()).getAdicional(x).nomeAdicional;
-					adc.precoAdicional = vendaRapida.getProduto(dragL.getId()).getAdicional(x).precoAdicional;
-					p.adicionrAdc(adc);
-				}
-
-				vendaAgora.adicionarProduto(p);
-			}              
-
-			for(int i = 0; i < vendaAgora.getQuantidadeProdutos(); i++)
-			{
-				linhasTxt.print(String.format("%-20.20s", vendaAgora.getProduto(i).getNome()));
-				linhasTxt.print(String.format("%3s     ", vendaAgora.getProduto(i).getQuantidade()));
-
-				double totalsub = 0.0;
-
-				for(int j = 0; j < vendaAgora.getProduto(i).getTotalAdicionais(); j++)
-				{
-					totalsub += vendaAgora.getProduto(i).getAdicional(j).precoAdicional;
-				}					
-
-				pegaPreco = String.format("%.2f", (vendaAgora.getProduto(i).getPreco() - totalsub));
-				pegaPreco.replaceAll(",", ".");							
-
-				linhasTxt.print(String.format("%5s    ", pegaPreco));
-
-				pegaPreco = String.format("%.2f", ((vendaAgora.getProduto(i).getPreco() - totalsub)*vendaAgora.getProduto(i).getQuantidade()));
-				pegaPreco.replaceAll(",", ".");							
-
-				linhasTxt.print(String.format("%6s    ", pegaPreco));
-				linhasTxt.println();
-
-				for(int j = 0; j < vendaAgora.getProduto(i).getTotalAdicionais(); j++)
-				{
-					linhasTxt.print(String.format("%-20.20s", "+" + vendaAgora.getProduto(i).getAdicional(j).nomeAdicional));
-					linhasTxt.print(String.format("%3s     ", vendaAgora.getProduto(i).getQuantidade()));
-
-					pegaPreco = String.format("%.2f", vendaAgora.getProduto(i).getAdicional(j).precoAdicional);
-					pegaPreco.replaceAll(",", ".");							
-
-					linhasTxt.print(String.format("%5s    ", pegaPreco));
-
-					pegaPreco = String.format("%.2f", (vendaAgora.getProduto(i).getAdicional(j).precoAdicional*vendaAgora.getProduto(i).getQuantidade()));
-					pegaPreco.replaceAll(",", ".");							
-
-					linhasTxt.print(String.format("%6s    ", pegaPreco));
-					linhasTxt.println();
-				}
-			}            
-
-			linhasTxt.println("===========================================");
-			linhasTxt.println("   INFORMACOES PARA FECHAMENTO DE CONTA    ");
-			linhasTxt.println("===========================================");
-
-			linhasTxt.print(String.format("%-18.18s", "Atendido por: "));
-			linhasTxt.println(Usuario.INSTANCE.getNome());
-
-			Locale locale = new Locale("pt","BR"); 
-			GregorianCalendar calendar = new GregorianCalendar(); 
-			SimpleDateFormat formatador = new SimpleDateFormat("EEE, dd'/'MM'/'yyyy' - 'HH':'mm", locale);		                
-
-			linhasTxt.print(String.format("%-18.18s", "Data: "));
-			linhasTxt.println(formatador.format(calendar.getTime()));
-
-			linhasTxt.println("===========================================");
-			linhasTxt.println("                     ----------------------");
-			linhasTxt.println("Total                            R$" + campoTotal.getText());
-
-			if(Configuracao.INSTANCE.getDezPorcento())
-			{
-				linhasTxt.println("                     ----------------------");
-				linhasTxt.println("10% Opcional                     R$" + UtilCoffe.doubleToPreco((UtilCoffe.precoToDouble(campoTotal.getText()) + taxaOpcional)));            	  
-			}
-
-			linhasTxt.println("===========================================");
-			linhasTxt.println("       OBRIGADO E VOLTE SEMPRE!	          ");
-			linhasTxt.println("       POWERED BY CodeCoffe V1.0    		  ");
-
-			int i = 0;
-			while(i < 10){
-				i++;
-				linhasTxt.println();
-			}
-
-			arquivoTxt.close();
-			linhasTxt.close();
-			return true;
-		}
-		catch(IOException error)
+		for(int i = 0; i < painelDropOut.getComponentCount(); i++)
 		{
-			JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + error.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
-			return false;
-		}			
+			DragLabel dragL = (DragLabel)painelDropOut.getComponent(i);
+			Produto p = new Produto();
+
+			p.setNome(dragL.getNome());
+			p.setPreco(dragL.getPreco());
+
+			for(int x = 0; x < vendaRapida.getProduto(dragL.getId()).getTotalAdicionais(); x++)
+			{
+				Adicionais adc = new Adicionais();
+				adc.nomeAdicional = vendaRapida.getProduto(dragL.getId()).getAdicional(x).nomeAdicional;
+				adc.precoAdicional = vendaRapida.getProduto(dragL.getId()).getAdicional(x).precoAdicional;
+				p.adicionrAdc(adc);
+			}
+			
+			p.calcularPreco();
+			vendaAgora.adicionarProduto(p);
+		}
+		
+		vendaAgora.calculaTotal();
+		
+		CacheVendaFeita criaImpressao		= new CacheVendaFeita(vendaAgora);
+		criaImpressao.total 				= UtilCoffe.doubleToPreco(vendaAgora.getTotal());
+		criaImpressao.atendente 			= Usuario.INSTANCE.getNome();
+		criaImpressao.fiado_id 				= fiadorIDSalvo;
+		criaImpressao.caixa 				= (mesaID+1);
+		criaImpressao.delivery 				= "0,00";
+		criaImpressao.dezporcento			= UtilCoffe.doubleToPreco(vendaAgora.getTotal() + taxaOpcional);
+		criaImpressao.classe				= 1;
+		criaImpressao.imprimir 				= true;
+		
+		Bartender.INSTANCE.criarImpressao(criaImpressao);		
 	}
 
 	private class DragLabel extends JLabel {
@@ -1181,7 +1112,6 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		if(e.getSource() == imprimir)
 		{
 			criarRecibo();
-			VisualizarRecibo.imprimirRecibo();
 		}
 		else if(e.getSource() == deletarCliente)
 		{
@@ -1212,15 +1142,19 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				}
 
 				String pegaPreco;
-				if(adicionarDezPorcento.isSelected())
+				
+				if(Configuracao.INSTANCE.getDezPorcento())
 				{
 					taxaOpcional = total * 0.10;
-					pegaPreco = String.format("%.2f", (total + (total * 0.10)));
 					adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
+				}				
+				
+				if(adicionarDezPorcento.isSelected())
+				{
+					pegaPreco = String.format("%.2f", (total + (total * 0.10)));
 				}
 				else
 				{
-					taxaOpcional = 0.0;
 					pegaPreco = String.format("%.2f", total);
 				}      
 
@@ -1253,15 +1187,19 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				}
 
 				String pegaPreco;
-				if(adicionarDezPorcento.isSelected())
+				
+				if(Configuracao.INSTANCE.getDezPorcento())
 				{
 					taxaOpcional = total * 0.10;
-					pegaPreco = String.format("%.2f", (total + (total * 0.10)));
 					adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
+				}
+				
+				if(adicionarDezPorcento.isSelected())
+				{
+					pegaPreco = String.format("%.2f", (total + (total * 0.10)));
 				}
 				else
 				{
-					taxaOpcional = 0.0;
 					pegaPreco = String.format("%.2f", total);
 				}
 
@@ -1379,7 +1317,12 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							vendaMesaFeita.fiado_id 			= fiadorIDSalvo;
 							vendaMesaFeita.caixa 				= (mesaID+1);
 							vendaMesaFeita.delivery 			= "0,00";
-							vendaMesaFeita.dezporcento			= UtilCoffe.doubleToPreco(taxaOpcional);
+							
+							if(adicionarDezPorcento.isSelected())
+								vendaMesaFeita.dezporcento			= UtilCoffe.doubleToPreco(taxaOpcional);
+							else
+								vendaMesaFeita.dezporcento			= UtilCoffe.doubleToPreco(0.0);
+								
 							vendaMesaFeita.classe				= UtilCoffe.CLASSE_VENDA_MESA;
 
 							Bartender.INSTANCE.enviarVenda(vendaMesaFeita, 0);	// agora aguarda a resposta.
@@ -1769,7 +1712,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							vendaRapida.calculaTotal();
 							PainelMesas.getInstance().atualizaMesa(mesaID, vendaRapida);
 
-							CacheMesaHeader mh = new CacheMesaHeader(mesaID, prod, vendaRapida, UtilCoffe.MESA_DELETAR, 0);
+							CacheMesaHeader mh = new CacheMesaHeader(mesaID, prod, vendaRapida, UtilCoffe.MESA_DELETAR, prod.getQuantidade());
 							Bartender.INSTANCE.enviarMesa(mh, 0);
 						}
 
@@ -1781,15 +1724,19 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 						}
 
 						String pegaPreco;
-						if(adicionarDezPorcento.isSelected())
+						
+						if(Configuracao.INSTANCE.getDezPorcento())
 						{
 							taxaOpcional = total * 0.10;
-							pegaPreco = String.format("%.2f", (total + (total * 0.10)));
 							adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
+						}
+						
+						if(adicionarDezPorcento.isSelected())
+						{
+							pegaPreco = String.format("%.2f", (total + (total * 0.10)));
 						}
 						else
 						{
-							taxaOpcional = 0.0;
 							pegaPreco = String.format("%.2f", total);
 						}
 
@@ -1831,36 +1778,39 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 	}
 
 	public void setarMesa(int mesa, Venda v)
-	{		
-		campoValor.setText("");
-		campoQuantidade.setText("1");
-		campoTotal.setText("0,00");
-		campoRecebido.setText("");
-		campoTroco.setText("0,00");
-		campoForma.setSelectedIndex(0);
-		addProduto.zeraString();
-		addAdicional.clear();
-		addRemover.clear();			
-		adicionaisPainel.removeAll();
-		adicionaisPainel.revalidate();
-		adicionaisPainel.repaint();
-		fiadorIDSalvo = 0;
-		escolherCliente.setText("Escolher");
-		painelDropOut.removeAll();
-		painelDropOut.revalidate();
-		painelDropOut.repaint();
-		painelDropIn.removeAll();
-		painelDropIn.revalidate();
-		painelDropIn.repaint();    		
-		campoRecibo.setText("### Nenhum produto marcado ###");
-		addProduto.setFocus();
-
+	{
 		mesaID = mesa;
-		divisaoPainel.setTitleAt(0, "Mesa " + (mesaID+1));
 		vendaRapida = v;
 
 		SwingUtilities.invokeLater(new Runnable() {  
-			public void run() {  
+			public void run() {
+				adicionarDezPorcento.setSelected(false);
+				campoValor.setText("");
+				campoQuantidade.setText("1");
+				campoTotal.setText("0,00");
+				campoRecebido.setText("");
+				campoTroco.setText("0,00");
+				campoForma.setSelectedIndex(0);
+				addProduto.zeraString();
+				addAdicional.clear();
+				addRemover.clear();			
+				adicionaisPainel.removeAll();
+				adicionaisPainel.revalidate();
+				adicionaisPainel.repaint();
+				fiadorIDSalvo = 0;
+				escolherCliente.setText("Escolher");
+				painelDropOut.removeAll();
+				painelDropOut.revalidate();
+				painelDropOut.repaint();
+				painelDropIn.removeAll();
+				painelDropIn.revalidate();
+				painelDropIn.repaint();    		
+				campoRecibo.setText("### Nenhum produto marcado ###");
+				addProduto.setFocus();
+				taxaOpcional = 0.0;
+				adicionarDezPorcento.setText("+ 10% Opcional");
+				
+				divisaoPainel.setTitleAt(0, "Mesa " + (mesaID+1));
 				tabela.setNumRows(0);
 
 				for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
@@ -1939,14 +1889,10 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				taxaOpcional = (UtilCoffe.precoToDouble(campoTotal.getText()) * 0.10);
 				campoTotal.setText(UtilCoffe.doubleToPreco((UtilCoffe.precoToDouble(campoTotal.getText()) + taxaOpcional)));
 				adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
-				atualizarCampoRecibo();
 			}
 			else
 			{
-				adicionarDezPorcento.setText("+ 10% Opcional");
 				campoTotal.setText(UtilCoffe.doubleToPreco((UtilCoffe.precoToDouble(campoTotal.getText()) - taxaOpcional)));
-				taxaOpcional = 0.0;
-				atualizarCampoRecibo();
 			}
 		}
 	}
@@ -2293,9 +2239,9 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 					else
 					{
 						boolean continua = true;
-						String nomeProduto = vendaRapida.getProduto(tabelaPedido.getSelectedRow()).getNome();
-						String adicionaisProduto = vendaRapida.getProduto(tabelaPedido.getSelectedRow()).getAllAdicionais();
-						int quantidadeProduto = vendaRapida.getProduto(tabelaPedido.getSelectedRow()).getQuantidade();
+						String nomeProduto = vendaRapida.getProduto(linha).getNome();
+						String adicionaisProduto = vendaRapida.getProduto(linha).getAllAdicionais();
+						int quantidadeProduto = vendaRapida.getProduto(linha).getQuantidade();
 						int fazendo = PainelCozinha.getInstance().verificaStatusPedido((mesaID+1), quantidadeProduto, nomeProduto, adicionaisProduto);
 
 						if(fazendo >= quantidadeProduto)
@@ -2388,14 +2334,25 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 								vendaRapida.calculaTotal();
 								PainelMesas.getInstance().atualizaMesa(mesaID, vendaRapida);
 								
-								CacheMesaHeader mh = new CacheMesaHeader(mesaID, prod, vendaRapida, UtilCoffe.MESA_DELETAR, 0);
+								CacheMesaHeader mh = new CacheMesaHeader(mesaID, prod, vendaRapida, UtilCoffe.MESA_DELETAR, 1);
 								Bartender.INSTANCE.enviarMesa(mh, 0);
 
-								SwingUtilities.invokeLater(new Runnable() {  
-									public void run() {  
-										tabela.removeRow(linha);
-									}  
-								});
+								if(tabela.getRowCount() == 1)
+								{
+									SwingUtilities.invokeLater(new Runnable() {  
+										public void run() {  
+											tabela.setNumRows(0);
+										}  
+									});   
+								}
+								else
+								{
+									SwingUtilities.invokeLater(new Runnable() {  
+										public void run() {  
+											tabela.removeRow(linha);
+										}  
+									});
+								}
 							}
 							else
 							{
@@ -2421,15 +2378,19 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							}
 
 							String pegaPreco;
-							if(adicionarDezPorcento.isSelected())
+							
+							if(Configuracao.INSTANCE.getDezPorcento())
 							{
 								taxaOpcional = total * 0.10;
-								pegaPreco = String.format("%.2f", (total + (total * 0.10)));
 								adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
+							}
+							
+							if(adicionarDezPorcento.isSelected())
+							{
+								pegaPreco = String.format("%.2f", (total + (total * 0.10)));
 							}
 							else
 							{
-								taxaOpcional = 0.0;
 								pegaPreco = String.format("%.2f", total);
 							}
 

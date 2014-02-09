@@ -78,22 +78,44 @@ public class PainelMenu extends JPanel implements MouseListener
 			add(consulta);			
 		}
 		
-		ActionMap actionMap = getActionMap();
-		actionMap.put("botao1", new SpaceAction(4));
-		actionMap.put("botao2", new SpaceAction(0));
-		actionMap.put("botao3", new SpaceAction(1));
-		actionMap.put("botao4", new SpaceAction(2));
-		actionMap.put("botao5", new SpaceAction(3));
-		actionMap.put("botao6", new SpaceAction(999));
-		setActionMap(actionMap);
-		
-		InputMap imap = getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
-		imap.put(KeyStroke.getKeyStroke("F1"), "botao1");
-		imap.put(KeyStroke.getKeyStroke("F2"), "botao2");
-		imap.put(KeyStroke.getKeyStroke("F3"), "botao3"); 
-		imap.put(KeyStroke.getKeyStroke("F4"), "botao4"); 
-		imap.put(KeyStroke.getKeyStroke("F5"), "botao5");
-		imap.put(KeyStroke.getKeyStroke("ESCAPE"), "botao6");
+		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
+		{
+			ActionMap actionMap = getActionMap();
+			actionMap.put("botao1", new SpaceAction(0));
+			actionMap.put("botao2", new SpaceAction(1));
+			actionMap.put("botao3", new SpaceAction(2));
+			actionMap.put("botao4", new SpaceAction(3));
+			actionMap.put("botao5", new SpaceAction(4));
+			actionMap.put("botao6", new SpaceAction(5));
+			actionMap.put("botao7", new SpaceAction(6));
+			setActionMap(actionMap);
+			
+			InputMap imap = getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
+			imap.put(KeyStroke.getKeyStroke("F1"), "botao1");
+			imap.put(KeyStroke.getKeyStroke("F2"), "botao2");
+			imap.put(KeyStroke.getKeyStroke("F3"), "botao3"); 
+			imap.put(KeyStroke.getKeyStroke("F4"), "botao4"); 
+			imap.put(KeyStroke.getKeyStroke("F5"), "botao5");
+			imap.put(KeyStroke.getKeyStroke("F6"), "botao6");
+			imap.put(KeyStroke.getKeyStroke("ESCAPE"), "botao7");	
+		}
+		else
+		{
+			ActionMap actionMap = getActionMap();
+			actionMap.put("botao1", new SpaceAction(0));
+			actionMap.put("botao2", new SpaceAction(1));
+			actionMap.put("botao4", new SpaceAction(3));
+			actionMap.put("botao5", new SpaceAction(4));
+			actionMap.put("botao7", new SpaceAction(6));
+			setActionMap(actionMap);
+			
+			InputMap imap = getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
+			imap.put(KeyStroke.getKeyStroke("F1"), "botao1");
+			imap.put(KeyStroke.getKeyStroke("F2"), "botao2");
+			imap.put(KeyStroke.getKeyStroke("F3"), "botao4"); 
+			imap.put(KeyStroke.getKeyStroke("F4"), "botao5");
+			imap.put(KeyStroke.getKeyStroke("ESCAPE"), "botao7");				
+		}
 	}
 	
 	private static class MenuSingletonHolder { 
@@ -105,35 +127,62 @@ public class PainelMenu extends JPanel implements MouseListener
 	}	
 	
 	private class SpaceAction extends AbstractAction {
-		
+
 		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
 		private int tipo = 0;
-		
-		public SpaceAction() {
-	        super();
-	    }
-		
+
 		public SpaceAction(int tipo) {
-	        this.tipo = tipo;
-	    }		
-		
-        @Override
-        public void actionPerformed(ActionEvent e) {
-        	
-        	if(this.tipo == 999)
-        	{
-    			int opcao = JOptionPane.showConfirmDialog(null, "Você tem certeza que deseja sair?", "Logout", JOptionPane.YES_NO_OPTION);
-    			
-    			if(opcao == JOptionPane.YES_OPTION)
-    				MenuPrincipal.getInstance().logout();
-        	}
-        	else
-        		MenuPrincipal.getInstance().AbrirPrincipal(this.tipo);
-        }
-    }
+			this.tipo = tipo;
+		}		
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			switch(this.tipo)
+			{
+				case 0:
+				{
+					MenuPrincipal.getInstance().AbrirPrincipal(4);
+					break;
+				}
+				case 1:
+				{
+					MenuPrincipal.getInstance().AbrirPrincipal(0);
+					break;
+				}
+				case 2:
+				{
+					MenuPrincipal.getInstance().AbrirPrincipal(1);
+					break;
+				}
+				case 3:
+				{
+					MenuPrincipal.getInstance().AbrirPrincipal(5);
+					break;
+				}
+				case 4:
+				{
+					MenuPrincipal.getInstance().AbrirPrincipal(6);
+					break;
+				}
+				case 5:
+				{
+					MenuPrincipal.getInstance().AbrirPrincipal(3);
+					break;
+				}
+				default:
+				{
+					int opcao = JOptionPane.showConfirmDialog(null, "Você tem certeza que deseja sair?", "Logout", JOptionPane.YES_NO_OPTION);
+
+					if(opcao == JOptionPane.YES_OPTION)
+						MenuPrincipal.getInstance().logout();
+				}
+			}
+		}
+	}
 	
 	@Override
 	public void mouseClicked(MouseEvent e)

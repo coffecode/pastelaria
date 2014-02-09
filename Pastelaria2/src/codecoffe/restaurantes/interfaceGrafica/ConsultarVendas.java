@@ -51,6 +51,7 @@ public class ConsultarVendas extends JPanel implements ActionListener
 	Date dataFim, dataInicio;
 	private WebButton botaoPesquisar, botaoExportar, botaoExportar2;
 	private JPanel painelBotoes, painelImportar;
+	private JPopupMenu popup;
 	
 	private com.itextpdf.text.Font catFont;
 	private com.itextpdf.text.Font catFont2;
@@ -160,7 +161,22 @@ public class ConsultarVendas extends JPanel implements ActionListener
 		
 		painelBotoes.add(botaoPesquisar, gbc);
 		
-		JPanel painelTabela = new JPanel(new BorderLayout());	
+		JPanel painelTabela = new JPanel(new BorderLayout());
+		
+		ActionListener al = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(tabelaUltimasVendas.getSelectedRowCount() == 1)
+				{
+					new VisualizarVenda((int) tabela.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0)).setLocationRelativeTo(SwingUtilities.getRoot(popup));
+				}
+			}
+		};
+		
+        popup = new JPopupMenu();
+        JMenuItem menuItem = new JMenuItem("Ver detalhes");
+        menuItem.addActionListener(al);
+        popup.add(menuItem);
 		
 		tabela = new DefaultTableModel() {
 
@@ -202,7 +218,25 @@ public class ConsultarVendas extends JPanel implements ActionListener
 		            stamp.setBackground(this.getBackground());
 		        return stamp;
 		    }				
-		};		
+		};
+		
+		tabelaUltimasVendas.addMouseListener(new MouseAdapter()
+        {
+            public void mouseReleased(MouseEvent e)
+            {
+                if (e.isPopupTrigger())
+                {
+                    JTable source = (JTable)e.getSource();
+                    int row = source.rowAtPoint( e.getPoint() );
+                    int column = source.columnAtPoint( e.getPoint() );
+
+                    if (!source.isRowSelected(row))
+                        source.changeSelection(row, column, false, false);
+
+                    popup.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
 		
 		tabelaUltimasVendas.setModel(tabela);
 		tabelaUltimasVendas.setAutoResizeMode( JTable.AUTO_RESIZE_ALL_COLUMNS );

@@ -26,6 +26,7 @@ public class UltimasVendas extends JPanel
 	private static final long serialVersionUID = 1L;
 	private JTable tabelaUltimasVendas;
 	private DefaultTableModel tabela;
+	private JPopupMenu popup;
 	
 	public UltimasVendas()
 	{
@@ -51,6 +52,21 @@ public class UltimasVendas extends JPanel
 		        g2d.fillRect(0, 0, w, h);
 		    }			
 		};
+		
+		ActionListener al = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(tabelaUltimasVendas.getSelectedRowCount() == 1)
+				{
+					new VisualizarVenda((int) tabela.getValueAt(tabelaUltimasVendas.getSelectedRow(), 0)).setLocationRelativeTo(SwingUtilities.getRoot(popup));
+				}
+			}
+		};
+		
+        popup = new JPopupMenu();
+        JMenuItem menuItem = new JMenuItem("Ver detalhes");
+        menuItem.addActionListener(al);
+        popup.add(menuItem);
 
 		tabela = new DefaultTableModel() {
 
@@ -134,6 +150,24 @@ public class UltimasVendas extends JPanel
 		    }    
 		};
 		
+		tabelaUltimasVendas.addMouseListener(new MouseAdapter()
+        {
+            public void mouseReleased(MouseEvent e)
+            {
+                if (e.isPopupTrigger())
+                {
+                    JTable source = (JTable)e.getSource();
+                    int row = source.rowAtPoint( e.getPoint() );
+                    int column = source.columnAtPoint( e.getPoint() );
+
+                    if (!source.isRowSelected(row))
+                        source.changeSelection(row, column, false, false);
+
+                    popup.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
+		
 		tabelaUltimasVendas.setModel(tabela);
 		tabelaUltimasVendas.setAutoResizeMode( JTable.AUTO_RESIZE_ALL_COLUMNS );
 		tabelaUltimasVendas.getColumnModel().getColumn(0).setMinWidth(50);
@@ -200,47 +234,52 @@ public class UltimasVendas extends JPanel
 	
 	public void refresh()
 	{
-		tabela.setNumRows(0);
-		
-		try {
-			Query pega = new Query();
-			pega.executaQuery("SELECT * FROM vendas ORDER BY vendas_id DESC limit 0, 25");
-			
-			while(pega.next())
-			{
-				Vector<Serializable> linha = new Vector<Serializable>();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				tabela.setNumRows(0);
+				
+				try {
+					Query pega = new Query();
+					pega.executaQuery("SELECT * FROM vendas ORDER BY vendas_id DESC limit 0, 25");
 					
-				linha.add(pega.getInt("vendas_id"));
-				linha.add(pega.getString("horario"));
-				linha.add(pega.getString("forma_pagamento"));
-				linha.add(pega.getString("total"));
-				
-				if((Double.parseDouble(pega.getString("total").replaceAll(",", ".")) > Double.parseDouble(pega.getString("valor_pago").replaceAll(",", "."))))
-				{
-					if(pega.getString("forma_pagamento").equals("Fiado"))
+					while(pega.next())
 					{
-						linha.add("Não Pago");
+						Vector<Serializable> linha = new Vector<Serializable>();
+							
+						linha.add(pega.getInt("vendas_id"));
+						linha.add(pega.getString("horario"));
+						linha.add(pega.getString("forma_pagamento"));
+						linha.add(pega.getString("total"));
+						
+						if((Double.parseDouble(pega.getString("total").replaceAll(",", ".")) > Double.parseDouble(pega.getString("valor_pago").replaceAll(",", "."))))
+						{
+							if(pega.getString("forma_pagamento").equals("Fiado"))
+							{
+								linha.add("Não Pago");
+							}
+							else
+							{
+								linha.add("Pago");
+							}
+						}
+						else
+						{
+							linha.add("Pago");
+						}
+						
+						linha.add(pega.getString("atendente"));
+						linha.add("");
+						tabela.addRow(linha);
 					}
-					else
-					{
-						linha.add("Pago");
-					}
-				}
-				else
-				{
-					linha.add("Pago");
-				}
-				
-				linha.add(pega.getString("atendente"));
-				linha.add("");
-				tabela.addRow(linha);
+					
+					pega.fechaConexao();
+				} catch (NumberFormatException | ClassNotFoundException | SQLException e) {
+					e.printStackTrace();
+					new PainelErro(e);
+				}	
 			}
-			
-			pega.fechaConexao();
-		} catch (NumberFormatException | ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
-			new PainelErro(e);
-		}
+		});
 	}	
 	
 	class JLabelRenderer implements TableCellRenderer {

@@ -44,11 +44,7 @@ public class PainelPedido extends WebPanel
 		HotkeyPainter pintura = new HotkeyPainter();
 		setPainter(pintura);
 		statusBar = new JStatusBar();
-		
-		if(pedidoAtt.getHeader() == UtilCoffe.PEDIDO_NOVO2)
-			statusBar.setBackground(new Color(218, 238, 220));
-		else
-			refreshStatus();
+		refreshStatus();
 		
 		if(p.getLocal() > 0)
 		{
@@ -189,14 +185,29 @@ public class PainelPedido extends WebPanel
 	{
 		switch(pedidoAtt.getStatus())
 		{
-			case 2:
+			case UtilCoffe.PEDIDO_FAZENDO:
 			{
 				statusBar.setBackground(new Color(251, 242, 197));
 				break;
 			}
-			case 3:
+			case UtilCoffe.PEDIDO_REMOVER:
 			{
 				statusBar.setBackground(new Color(251, 197, 197));
+				break;
+			}
+			case UtilCoffe.PEDIDO_NOVO:
+			{
+				statusBar.setBackground(new Color(218, 238, 220));
+				break;
+			}
+			case UtilCoffe.PEDIDO_DELETADO:
+			{
+				statusBar.setBackground(new Color(227, 216, 231));
+				break;
+			}
+			case UtilCoffe.PEDIDO_EDITAR:
+			{
+				statusBar.setBackground(new Color(227, 239, 250));
 				break;
 			}
 			default:
@@ -204,5 +215,10 @@ public class PainelPedido extends WebPanel
 				statusBar.setBackground(new Color(237, 237, 237));	
 			}
 		}
+	}
+	
+	public void refreshQuantidade()
+	{
+		labelQuantidade.setText(" " + pedidoAtt.getProduto().getQuantidade());
 	}
 }

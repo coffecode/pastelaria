@@ -42,7 +42,7 @@ public class Server implements Runnable
 		port = porta;
 		procurandoConexoes = true;
 		listaClientes = new ArrayList<ClienteThread>();
-		System.out.println("Iniciando modo servidor.");		
+		System.out.println("Server TCP iniciado na porta: " + porta);
 	}
 	
 	synchronized void remove(int id)
@@ -253,12 +253,7 @@ public class Server implements Runnable
 					else if(dataRecebida instanceof Pedido)	// é um pedido
 					{
 						Pedido ped = (Pedido)dataRecebida;
-						if(ped.getHeader() == UtilCoffe.PEDIDO_ADICIONA)
-							ped.setHora(new Date());
-						
-						ped.setUltimaEdicao(new Date());
-						enviaTodos(ped);					//transmitir essa informação para todos os clientes
-						PainelCozinha.getInstance().atualizaPedido(ped);	//atualizar para o proprio servidor
+						Bartender.INSTANCE.enviarPedido(ped);
 					}
 					else if(dataRecebida instanceof CacheVendaFeita)	// é uma venda realizada
 					{

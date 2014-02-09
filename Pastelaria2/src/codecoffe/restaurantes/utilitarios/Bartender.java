@@ -19,6 +19,7 @@ import codecoffe.restaurantes.interfaceGrafica.PainelVendaMesa;
 import codecoffe.restaurantes.interfaceGrafica.PainelVendaRapida;
 import codecoffe.restaurantes.mysql.Query;
 import codecoffe.restaurantes.primitivas.Pedido;
+import codecoffe.restaurantes.primitivas.Produto;
 import codecoffe.restaurantes.sockets.CacheAviso;
 import codecoffe.restaurantes.sockets.CacheClientes;
 import codecoffe.restaurantes.sockets.CacheMesaHeader;
@@ -177,13 +178,26 @@ public enum Bartender
 					
 					Server.getInstance().enviaTodos(m, usuario);
 					
+					Produto pNovo = new Produto();
+					pNovo.setNome(m.getProdutoMesa().getNome());
+					pNovo.setPagos(m.getProdutoMesa().getPagos());
+					pNovo.setPreco(m.getProdutoMesa().getPreco());
+					pNovo.setQuantidade(m.getHeaderExtra(), 0);
+					pNovo.setAdicionaisList(m.getProdutoMesa().getAdicionaisList());
+					pNovo.calcularPreco();
+					
 					/* adicionar pedido */
 					if(m.getHeaderExtra() > 0) // se for menor que zero ele ta deletando um pedido..
 					{
-						m.getProdutoMesa().setQuantidade(m.getHeaderExtra(), 0);
-						Pedido ped = new Pedido(m.getProdutoMesa(), m.getAtendente(), "", (m.getMesaId()+1));
+						Pedido ped = new Pedido(pNovo, m.getAtendente(), "", (m.getMesaId()+1));
 						enviarPedido(ped);		
-					}				
+					}
+					else
+					{
+						Pedido ped = new Pedido(pNovo, m.getAtendente(), "", (m.getMesaId()+1));
+						ped.setHeader(UtilCoffe.PEDIDO_STATUS);
+						enviarPedido(ped);						
+					}
 				} catch (ClassNotFoundException | SQLException e) {
 					e.printStackTrace();
 					
@@ -222,6 +236,15 @@ public enum Bartender
 					}
 					
 					pega.fechaConexao();
+					
+					if(m.getHeader() == UtilCoffe.MESA_DELETAR)
+					{
+						m.getProdutoMesa().setQuantidade(m.getHeaderExtra(), 0);
+						Pedido ped = new Pedido(m.getProdutoMesa(), m.getAtendente(), "", (m.getMesaId()+1));
+						ped.setHeader(UtilCoffe.PEDIDO_STATUS);
+						enviarPedido(ped);		
+					}
+					
 				} catch (ClassNotFoundException | SQLException e) {
 					e.printStackTrace();
 					
@@ -271,131 +294,142 @@ public enum Bartender
 				p.setHora(new Date());
 			
 			p.setUltimaEdicao(new Date());
-			Server.getInstance().enviaTodos(p);
 			PainelCozinha.getInstance().atualizaPedido(p);
 		}
 	}
 	
-	public boolean criarImpressao(CacheVendaFeita v)
+	public void criarImpressao(CacheVendaFeita v)
 	{
 		if(Configuracao.INSTANCE.getModo() > UtilCoffe.SERVER)
 		{
 			System.out.println("Enviando impressão para o Servidor.");
 			Client.getInstance().enviarObjeto(v);
-			return false;
 		}
 		else
 		{
-		      try{
-		          File arquivo = new File("codecoffe/recibo.txt");
-		            
-	              FileWriter arquivoTxt = new FileWriter(arquivo, false);
-	              PrintWriter linhasTxt = new PrintWriter(arquivoTxt);
-	              
-	              String pegaPreco = "";
-	              
-		          linhasTxt.println("===========================================");
-		          linhasTxt.println(String.format("              %s              ", Configuracao.INSTANCE.getRestaurante()));
-		          linhasTxt.println("===========================================");
-		          linhasTxt.println("*********** NAO TEM VALOR FISCAL **********");
-		          linhasTxt.println("===========================================");
-	              linhasTxt.println("PRODUTO              QTDE  VALOR UN.  VALOR");
-	              
-					for(int i = 0; i < v.vendaFeita.getQuantidadeProdutos(); i++)
+			try{
+				String nomeRecibo = "codecoffe/recibo_";
+				nomeRecibo += v.caixa;
+				nomeRecibo += ".txt";
+				
+				File arquivo = new File(nomeRecibo);
+
+				FileWriter arquivoTxt = new FileWriter(arquivo, false);
+				PrintWriter linhasTxt = new PrintWriter(arquivoTxt);
+
+				String pegaPreco = "";
+
+				linhasTxt.println("===========================================");
+				linhasTxt.println(String.format("              %s              ", Configuracao.INSTANCE.getRestaurante()));
+				linhasTxt.println("===========================================");
+				linhasTxt.println("*********** NAO TEM VALOR FISCAL **********");
+				linhasTxt.println("===========================================");
+				linhasTxt.println("PRODUTO              QTDE  VALOR UN.  VALOR");
+
+				for(int i = 0; i < v.vendaFeita.getQuantidadeProdutos(); i++)
+				{
+					linhasTxt.print(String.format("%-20.20s", v.vendaFeita.getProduto(i).getNome()));
+					linhasTxt.print(String.format("%3s     ", v.vendaFeita.getProduto(i).getQuantidade()));
+
+					pegaPreco = String.format("%.2f", v.vendaFeita.getProduto(i).getPreco());
+					pegaPreco.replaceAll(",", ".");							
+
+					linhasTxt.print(String.format("%5s    ", pegaPreco));
+
+					pegaPreco = String.format("%.2f", (v.vendaFeita.getProduto(i).getPreco()*v.vendaFeita.getProduto(i).getQuantidade()));
+					pegaPreco.replaceAll(",", ".");							
+
+					linhasTxt.print(String.format("%6s    ", pegaPreco));
+					linhasTxt.println();
+
+					for(int j = 0; j < v.vendaFeita.getProduto(i).getTotalAdicionais(); j++)
 					{
-						linhasTxt.print(String.format("%-20.20s", v.vendaFeita.getProduto(i).getNome()));
+						linhasTxt.print(String.format("%-20.20s", "+" + v.vendaFeita.getProduto(i).getAdicional(j).nomeAdicional));
 						linhasTxt.print(String.format("%3s     ", v.vendaFeita.getProduto(i).getQuantidade()));
-												
-						pegaPreco = String.format("%.2f", v.vendaFeita.getProduto(i).getPreco());
+
+						pegaPreco = String.format("%.2f", v.vendaFeita.getProduto(i).getAdicional(j).precoAdicional);
 						pegaPreco.replaceAll(",", ".");							
-						
+
 						linhasTxt.print(String.format("%5s    ", pegaPreco));
-						
-						pegaPreco = String.format("%.2f", (v.vendaFeita.getProduto(i).getPreco()*v.vendaFeita.getProduto(i).getQuantidade()));
+
+						pegaPreco = String.format("%.2f", (v.vendaFeita.getProduto(i).getAdicional(j).precoAdicional*v.vendaFeita.getProduto(i).getQuantidade()));
 						pegaPreco.replaceAll(",", ".");							
-						
+
 						linhasTxt.print(String.format("%6s    ", pegaPreco));
 						linhasTxt.println();
-						
-						for(int j = 0; j < v.vendaFeita.getProduto(i).getTotalAdicionais(); j++)
-						{
-							linhasTxt.print(String.format("%-20.20s", "+" + v.vendaFeita.getProduto(i).getAdicional(j).nomeAdicional));
-							linhasTxt.print(String.format("%3s     ", v.vendaFeita.getProduto(i).getQuantidade()));
-							
-							pegaPreco = String.format("%.2f", v.vendaFeita.getProduto(i).getAdicional(j).precoAdicional);
-							pegaPreco.replaceAll(",", ".");							
-							
-							linhasTxt.print(String.format("%5s    ", pegaPreco));
-							
-							pegaPreco = String.format("%.2f", (v.vendaFeita.getProduto(i).getAdicional(j).precoAdicional*v.vendaFeita.getProduto(i).getQuantidade()));
-							pegaPreco.replaceAll(",", ".");							
-							
-							linhasTxt.print(String.format("%6s    ", pegaPreco));
-							linhasTxt.println();
-						}
-					}            
-	              
-	              linhasTxt.println("===========================================");
-	              linhasTxt.println("   INFORMACOES PARA FECHAMENTO DE CONTA    ");
-	              linhasTxt.println("===========================================");
-	              
-	              linhasTxt.print(String.format("%-18.18s", "Atendido por: "));
-	              linhasTxt.println(v.atendente);
-	              
-	              Locale locale = new Locale("pt","BR"); 
-	              GregorianCalendar calendar = new GregorianCalendar(); 
-	              SimpleDateFormat formatador = new SimpleDateFormat("EEE, dd'/'MM'/'yyyy' - 'HH':'mm", locale);		                
-	              
-	              linhasTxt.print(String.format("%-18.18s", "Data: "));
-	              linhasTxt.println(formatador.format(calendar.getTime()));
-	              
-	              if(UtilCoffe.precoToDouble(v.delivery) > 0 && v.fiado_id > 0)
-	              {
-	            	  try {
+					}
+				}            
+
+				linhasTxt.println("===========================================");
+				linhasTxt.println("   INFORMACOES PARA FECHAMENTO DE CONTA    ");
+				linhasTxt.println("===========================================");
+
+				linhasTxt.print(String.format("%-18.18s", "Atendido por: "));
+				linhasTxt.println(v.atendente);
+
+				Locale locale = new Locale("pt","BR"); 
+				GregorianCalendar calendar = new GregorianCalendar(); 
+				SimpleDateFormat formatador = new SimpleDateFormat("EEE, dd'/'MM'/'yyyy' - 'HH':'mm", locale);		                
+
+				linhasTxt.print(String.format("%-18.18s", "Data: "));
+				linhasTxt.println(formatador.format(calendar.getTime()));
+
+				if(UtilCoffe.precoToDouble(v.delivery) > 0 && v.fiado_id > 0 && v.classe == 2)
+				{
+					try {
 						linhasTxt.println();
-						  Query pegaCliente = new Query();
-						  pegaCliente.executaQuery("SELECT nome, telefone, endereco, numero, bairro, complemento FROM fiados WHERE fiador_id = " + v.fiado_id);
-						  
-						  if(pegaCliente.next())
-						  {
-							  linhasTxt.println(pegaCliente.getString("nome") + " - TEL: " + pegaCliente.getString("telefone"));
-							  linhasTxt.println(pegaCliente.getString("endereco") + " - " + pegaCliente.getString("numero"));
-							  linhasTxt.println(pegaCliente.getString("complemento"));      				
-						  }
-						 
-						  pegaCliente.fechaConexao();
+						Query pegaCliente = new Query();
+						pegaCliente.executaQuery("SELECT nome, telefone, endereco, numero, bairro, complemento FROM fiados WHERE fiador_id = " + v.fiado_id);
+
+						if(pegaCliente.next())
+						{
+							linhasTxt.println(pegaCliente.getString("nome") + " - TEL: " + pegaCliente.getString("telefone"));
+							linhasTxt.println(pegaCliente.getString("endereco") + " - " + pegaCliente.getString("numero"));
+							linhasTxt.println(pegaCliente.getString("complemento"));      				
+						}
+
+						pegaCliente.fechaConexao();
 					} catch (ClassNotFoundException | SQLException e) {
 						e.printStackTrace();
 						new PainelErro(e);
 					}
-	              }              
-		            
-	              linhasTxt.println("===========================================");
-	              
-	              if(UtilCoffe.precoToDouble(v.delivery) > 0)
-	            	  linhasTxt.println("Taxa de Entrega                  R$" + v.delivery + "\n");              
-	              
-	              linhasTxt.println("                     ----------------------");
-	              linhasTxt.println("Total                            R$" + v.total);
-	              linhasTxt.println("===========================================");
-	              linhasTxt.println("       OBRIGADO E VOLTE SEMPRE!	          ");
-	              linhasTxt.println("       POWERED BY CodeCoffe V1.5    		  ");
-	              
-	              int i = 0;
-	              while(i < 10){
-	                  i++;
-	                  linhasTxt.println();
-	              }
-	              
-	              arquivoTxt.close();
-	              linhasTxt.close();
-	              return true;
-		      }
-		      catch(IOException error)
-		      {
-		    	  JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + error.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
-		          return false;
-		      }			
+				}              
+
+				linhasTxt.println("===========================================");
+
+				if(UtilCoffe.precoToDouble(v.delivery) > 0)
+					linhasTxt.println("Taxa de Entrega                  R$" + v.delivery);              
+
+				linhasTxt.println("                     ----------------------");
+				linhasTxt.println("Total                            R$" + v.total);
+
+				if(Configuracao.INSTANCE.getDezPorcento() && v.classe == 1)
+				{
+					linhasTxt.println("                     ----------------------");
+					linhasTxt.println("10% Opcional                     R$" + v.dezporcento);            	  
+				}	              
+
+				linhasTxt.println("===========================================");
+				linhasTxt.println("       OBRIGADO E VOLTE SEMPRE!	          ");
+				linhasTxt.println("       POWERED BY CodeCoffe V2.0    		  ");
+
+				int i = 0;
+				while(i < 10){
+					i++;
+					linhasTxt.println();
+				}
+
+				arquivoTxt.close();
+				linhasTxt.close();
+				
+				if(v.imprimir)
+					Recibo.imprimir(v.caixa);
+			}
+			catch(IOException error)
+			{
+				error.printStackTrace();
+				new PainelErro(error);
+			}			
 		}
 	}
 	
@@ -480,7 +514,7 @@ public enum Bartender
 					String formatacao;
 					Query envia = new Query();
 					formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id, caixa, delivery, dezporcento, data) VALUES('"
-					+ UtilCoffe.doubleToPreco((UtilCoffe.precoToDouble(v.total)-UtilCoffe.precoToDouble(v.dezporcento))) +
+					+ v.total +
 					"', '" + Usuario.INSTANCE.getNome() +
 					"', " + v.ano + ", "
 					+ v.mes + ", "

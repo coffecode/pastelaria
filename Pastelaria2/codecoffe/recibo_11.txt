@@ -4,22 +4,21 @@
 *********** NAO TEM VALOR FISCAL **********
 ===========================================
 PRODUTO              QTDE  VALOR UN.  VALOR
-pastel de pizza       2      1,50      3,00    
+pastel de palmito     1      1,10      1,10    
 pastel de pizza       1      1,50      1,50    
-+queijo               1      0,50      0,50    
 ===========================================
    INFORMACOES PARA FECHAMENTO DE CONTA    
 ===========================================
-Atendido por:     André Alves
-Data:             Sáb, 18/01/2014 - 21:08
+Atendido por:     André Alves 1
+Data:             Dom, 09/02/2014 - 14:50
 ===========================================
-Taxa de Entrega                  R$2.0
-
                      ----------------------
-Total                            R$7,00
+Total                            R$2,60
+                     ----------------------
+10% Opcional                     R$2,86
 ===========================================
        OBRIGADO E VOLTE SEMPRE!	          
-       POWERED BY CodeCoffe V1.5    		  
+       POWERED BY CodeCoffe V2.0    		  
 
 
 

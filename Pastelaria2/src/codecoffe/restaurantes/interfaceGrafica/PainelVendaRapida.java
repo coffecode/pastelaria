@@ -19,7 +19,6 @@ import codecoffe.restaurantes.utilitarios.Bartender;
 import codecoffe.restaurantes.utilitarios.Configuracao;
 import codecoffe.restaurantes.utilitarios.Usuario;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
-import codecoffe.restaurantes.utilitarios.VisualizarRecibo;
 
 import com.alee.extended.painter.DashedBorderPainter;
 import com.alee.laf.button.WebButton;
@@ -64,6 +63,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	private double taxaEntrega;
 	private CacheTodosProdutos todosProdutos;
 	private String fiadorTelefone, fiadorEndereco, fiadorNumero, fiadorComplemento;
+	private CacheAviso aviso;
 
 	private PainelVendaRapida()
 	{		
@@ -450,10 +450,16 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	public void atualizaProdutos(CacheTodosProdutos tp)
 	{
 		todosProdutos = tp;
-		addProduto.AtualizaProdutosCampo(tp);
 		
-		for(int i = 0; i < addAdicional.size(); i++)
-			addAdicional.get(i).AtualizaProdutosCampo(tp);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				addProduto.AtualizaProdutosCampo(todosProdutos);
+
+				for(int i = 0; i < addAdicional.size(); i++)
+					addAdicional.get(i).AtualizaProdutosCampo(todosProdutos);				
+			}
+		});
 	}
 	
 	class OpcoesCellComponent extends JPanel
@@ -723,7 +729,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		formataRecibo += ("Total                            R$" + campoTotal.getText() + "\n");
 		formataRecibo += ("===========================\n");
 		formataRecibo += ("       OBRIGADO E VOLTE SEMPRE!	          \n");
-		formataRecibo += ("       POWERED BY CodeCoffe V1.5    		  \n");
+		formataRecibo += ("       POWERED BY CodeCoffe V2.0    		  \n");
 		
 		campoRecibo.setText(formataRecibo);		
 	}	
@@ -743,51 +749,57 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		Bartender.INSTANCE.criarImpressao(criaImpressao);
 	}
 	
-	public void receberAviso(CacheAviso aviso)
+	public void receberAviso(CacheAviso cacheAviso)
 	{
-		if(aviso.getTipo() == 1)
-		{
-			if(!Configuracao.INSTANCE.getReciboFim())
-				JOptionPane.showMessageDialog(null, aviso.getMensagem(), aviso.getTitulo(), JOptionPane.INFORMATION_MESSAGE);
-			else
-			{
-				int opcao = JOptionPane.showConfirmDialog(null, aviso.getMensagem() + "\n\nDeseja imprimir o recibo?", "Venda #" + aviso.getTitulo(), JOptionPane.YES_NO_OPTION);
-				if(opcao == JOptionPane.YES_OPTION)
+		aviso = cacheAviso;
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				if(aviso.getTipo() == 1)
 				{
-					criarRecibo();
-					VisualizarRecibo.imprimirRecibo();
-				}			
+					if(!Configuracao.INSTANCE.getReciboFim())
+						JOptionPane.showMessageDialog(null, aviso.getMensagem(), aviso.getTitulo(), JOptionPane.INFORMATION_MESSAGE);
+					else
+					{
+						int opcao = JOptionPane.showConfirmDialog(null, aviso.getMensagem() + "\n\nDeseja imprimir o recibo?", "Venda #" + aviso.getTitulo(), JOptionPane.YES_NO_OPTION);
+						if(opcao == JOptionPane.YES_OPTION)
+						{
+							criarRecibo();
+						}			
+					}
+
+					for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
+					{
+						Pedido ped = new Pedido(vendaRapida.getProduto(i), Usuario.INSTANCE.getNome(), "", 0);
+						Bartender.INSTANCE.enviarPedido(ped);
+					}			
+
+					vendaRapida.clear();
+					campoEntrega.setSelected(false);
+					campoValor.setText("");
+					campoQuantidade.setText("1");
+					campoTotal.setText("0,00");
+					campoRecebido.setText("");
+					campoTroco.setText("0,00");
+					campoForma.setSelectedIndex(0);
+					addProduto.zeraString();
+					addAdicional.clear();
+					addRemover.clear();			
+					adicionaisPainel.removeAll();
+					adicionaisPainel.revalidate();
+					adicionaisPainel.repaint();
+					tabela.setNumRows(0);
+					fiadorIDSalvo = 0;
+					escolherCliente.setText("Escolher");
+					campoRecibo.setText("### Nenhum produto marcado ###");			
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(null, aviso.getMensagem(), aviso.getTitulo(), JOptionPane.ERROR_MESSAGE);
+				}				
 			}
-			
-			for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
-			{
-				Pedido ped = new Pedido(vendaRapida.getProduto(i), Usuario.INSTANCE.getNome(), "", 0);
-				Bartender.INSTANCE.enviarPedido(ped);
-			}			
-			
-			vendaRapida.clear();
-			campoEntrega.setSelected(false);
-			campoValor.setText("");
-			campoQuantidade.setText("1");
-			campoTotal.setText("0,00");
-			campoRecebido.setText("");
-			campoTroco.setText("0,00");
-			campoForma.setSelectedIndex(0);
-			addProduto.zeraString();
-			addAdicional.clear();
-			addRemover.clear();			
-			adicionaisPainel.removeAll();
-			adicionaisPainel.revalidate();
-			adicionaisPainel.repaint();
-			tabela.setNumRows(0);
-			fiadorIDSalvo = 0;
-			escolherCliente.setText("Escolher");
-			campoRecibo.setText("### Nenhum produto marcado ###");			
-		}
-		else
-		{
-			JOptionPane.showMessageDialog(null, aviso.getMensagem(), aviso.getTitulo(), JOptionPane.ERROR_MESSAGE);
-		}
+		});
 	}
 
 	@Override
@@ -797,7 +809,6 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		if(e.getSource() == imprimir)
 		{
 			criarRecibo();
-			VisualizarRecibo.imprimirRecibo();
 		}
 		else if(e.getSource() == deletarCliente)
 		{

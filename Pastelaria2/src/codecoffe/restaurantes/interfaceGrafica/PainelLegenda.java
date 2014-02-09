@@ -79,7 +79,7 @@ public class PainelLegenda extends WebStatusBar
                 try {
                     Thread.sleep(5000L);
                 } catch (InterruptedException e) {
-                	JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
+                	new PainelErro(e);
                 }
             }
         }

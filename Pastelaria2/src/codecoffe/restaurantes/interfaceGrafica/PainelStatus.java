@@ -13,6 +13,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -28,19 +30,20 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import codecoffe.restaurantes.mysql.Query;
-import codecoffe.restaurantes.sockets.Client;
+import codecoffe.restaurantes.sockets.Server;
 import codecoffe.restaurantes.utilitarios.Configuracao;
-import codecoffe.restaurantes.utilitarios.DiarioLog;
 import codecoffe.restaurantes.utilitarios.Usuario;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
 import com.alee.extended.button.WebSwitch;
 import com.alee.extended.filechooser.WebDirectoryChooser;
+import com.alee.extended.layout.ToolbarLayout;
 import com.alee.laf.button.WebButton;
 import com.alee.laf.filechooser.WebFileChooser;
 import com.alee.laf.menu.WebMenu;
@@ -90,6 +93,18 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 			menuConfiguracoes.add(itemBackup);
 			menuConfiguracoes.add(itemFuncionarios);
 			add(menuConfiguracoes);
+			
+			try {
+				InetAddress ipMaquina = InetAddress.getLocalHost();
+				JLabel labelIP = new JLabel("<html><b>IP:  </b>" + ipMaquina.getHostAddress() + "</html>");
+				labelIP.setPreferredSize(new Dimension(120, 20));
+				add(labelIP, ToolbarLayout.END);
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+				JLabel labelIP = new JLabel("<html><b>IP:  </b>Indisponível</html>");
+				labelIP.setPreferredSize(new Dimension(120, 20));
+				add(labelIP, ToolbarLayout.END);
+			}
 		}
     }
     
@@ -135,8 +150,13 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 			        			
 			        			Configuracao.INSTANCE.setUltimoBackup(new Date());
 			        			
-			        			SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy - HH:mm.");
-			        			labelUltimo.setText("Último backup realizado: " + formatter2.format(Configuracao.INSTANCE.getUltimoBackup()));				        			
+			        			SwingUtilities.invokeLater(new Runnable() {
+			        				@Override
+			        				public void run() {
+					        			SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy - HH:mm.");
+					        			labelUltimo.setText("Último backup realizado: " + formatter2.format(Configuracao.INSTANCE.getUltimoBackup()));		
+			        				}
+			        			});			        			
 			                    
 			                } else {
 			                	System.out.println("Erro, não foi possível criar o backup automático.");
@@ -580,7 +600,9 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 							 
 							            if (processComplete == 0) {
 							            	TooltipManager.showOneTimeTooltip(labelRestaura, null, "Banco de dados restaurado com sucesso!", TooltipWay.up );
-
+							            	JOptionPane.showMessageDialog(null, "O programa precisa ser reiniciado para concluir a restauração.");
+							            	Server.getInstance().enviaTodos("BYE");
+							            	System.exit(0);
 							            } else {
 							            	TooltipManager.showOneTimeTooltip(labelRestaura, null, "Erro, não foi possível restaurar o banco.", TooltipWay.up );
 							            }
