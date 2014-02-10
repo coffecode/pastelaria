@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.JOptionPane;
 
+import codecoffe.restaurantes.interfaceGrafica.Loading;
 import codecoffe.restaurantes.interfaceGrafica.Login;
 import codecoffe.restaurantes.interfaceGrafica.MenuPrincipal;
 import codecoffe.restaurantes.interfaceGrafica.PainelClientes;
@@ -346,7 +347,7 @@ public class Client implements Runnable
 								Configuracao.INSTANCE.atualizarConfiguracao(configAtualizada);
 								
 								if(!reLoad)
-									MenuPrincipal.getInstance();
+									new Loading(UtilCoffe.CLIENT);
 								else
 								{
 							    	System.out.println("Enviando pedido da lista de produtos atualizado.");

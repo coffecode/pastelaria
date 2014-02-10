@@ -16,7 +16,7 @@ public class Query
 	public void executaQuery(String query) throws ClassNotFoundException, SQLException
 	{
 		Class.forName("com.mysql.jdbc.Driver");
-		this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/pastelaria", "root", "puc4321");	// URL, user, senha
+		this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/restaurante", "root", "puc4321");	// URL, user, senha
 		this.st = this.con.prepareStatement(query);
 		this.resultado = this.st.executeQuery();
 	}
@@ -24,7 +24,7 @@ public class Query
 	public void executaUpdate(String query) throws SQLException, ClassNotFoundException
 	{
 		Class.forName("com.mysql.jdbc.Driver");
-		this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/pastelaria", "root", "puc4321");	// URL, user, senha
+		this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/restaurante", "root", "puc4321");	// URL, user, senha
 		this.st = this.con.prepareStatement(query);
 		this.st.executeUpdate();		
 	}	

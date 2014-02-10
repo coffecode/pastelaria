@@ -5,7 +5,6 @@ import java.util.Calendar;
 import java.util.Date;
 
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import com.alee.extended.layout.ToolbarLayout;

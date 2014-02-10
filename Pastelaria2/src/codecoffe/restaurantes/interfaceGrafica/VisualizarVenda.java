@@ -40,6 +40,8 @@ import javax.swing.table.TableCellRenderer;
 import net.miginfocom.swing.MigLayout;
 import codecoffe.restaurantes.mysql.Query;
 import codecoffe.restaurantes.utilitarios.Configuracao;
+import codecoffe.restaurantes.utilitarios.DiarioLog;
+import codecoffe.restaurantes.utilitarios.Usuario;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
 import com.alee.laf.WebLookAndFeel;
@@ -347,6 +349,11 @@ public class VisualizarVenda extends JFrame
 										
 										pega6.executaUpdate(formata);
 										pega6.fechaConexao();
+										DiarioLog.add(Usuario.INSTANCE.getNome(), "Editou a venda #" + vendaID + " de valor R$" + campoTotal.getText() + ".", 7);
+										
+										PainelVendas.getInstance().ultimasVendasRefresh();	/* atualizar no painel vendas */
+										if(clienteID > 0)
+											PainelVendas.getInstance().refresh();	/* atualizar no painel de fiados */
 										
 										TooltipManager.showOneTimeTooltip(bSalvarVenda, null, "Venda salva!", TooltipWay.up);
 									} catch (ClassNotFoundException | SQLException e1) {
@@ -452,6 +459,7 @@ public class VisualizarVenda extends JFrame
 			pega.fechaConexao();
 		} catch (ClassNotFoundException | SQLException e1) {
 			e1.printStackTrace();
+			new PainelErro(e1);
 		}
 		
 		add(visualizaPainel);

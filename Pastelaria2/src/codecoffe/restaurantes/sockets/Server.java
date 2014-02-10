@@ -6,8 +6,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
-
 import codecoffe.restaurantes.interfaceGrafica.PainelClientes;
 import codecoffe.restaurantes.interfaceGrafica.PainelCozinha;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;

@@ -9,14 +9,13 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
-import javax.swing.JOptionPane;
-
 import codecoffe.restaurantes.interfaceGrafica.PainelClientes;
 import codecoffe.restaurantes.interfaceGrafica.PainelCozinha;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
 import codecoffe.restaurantes.interfaceGrafica.PainelMesas;
 import codecoffe.restaurantes.interfaceGrafica.PainelVendaMesa;
 import codecoffe.restaurantes.interfaceGrafica.PainelVendaRapida;
+import codecoffe.restaurantes.interfaceGrafica.PainelVendas;
 import codecoffe.restaurantes.mysql.Query;
 import codecoffe.restaurantes.primitivas.Pedido;
 import codecoffe.restaurantes.primitivas.Produto;
@@ -84,6 +83,10 @@ public enum Bartender
 					
 					PainelClientes.getInstance().removerClientes(cc);
 					Server.getInstance().enviaTodos(new CacheClientes(cc.getListaClientes().get(0), UtilCoffe.CLIENTE_REMOVER, cc.getAtendente()));
+					
+					PainelVendas.getInstance().ultimasVendasRefresh();	/* atualizar no painel vendas */
+					PainelVendas.getInstance().refresh();	/* atualizar no painel de fiados */
+					
 					return true;
 				} catch (ClassNotFoundException | SQLException e1) {
 					e1.printStackTrace();
@@ -114,6 +117,10 @@ public enum Bartender
 					
 					PainelClientes.getInstance().editarClientes(cc);
 					Server.getInstance().enviaTodos(new CacheClientes(cc.getListaClientes().get(0), UtilCoffe.CLIENTE_EDITAR, cc.getAtendente()));
+					
+					PainelVendas.getInstance().ultimasVendasRefresh();	/* atualizar no painel vendas */
+					PainelVendas.getInstance().refresh();	/* atualizar no painel de fiados */
+					
 					return true;
 				} catch (ClassNotFoundException | SQLException e1) {
 					e1.printStackTrace();
@@ -495,6 +502,11 @@ public enum Bartender
 						}
 						
 						DiarioLog.add(v.atendente, "Adicionou a Venda #" + venda_id + " de R$" + v.total + " (fiado).", 1);
+						
+						PainelVendas.getInstance().ultimasVendasRefresh();	/* atualizar no painel vendas */
+						if(v.fiado_id > 0)
+							PainelVendas.getInstance().refresh();	/* atualizar no painel de fiados */
+						
 						return venda_id;
 					}
 				} catch (ClassNotFoundException | SQLException e) {
@@ -562,6 +574,11 @@ public enum Bartender
 						}
 						
 						DiarioLog.add(v.atendente, "Adicionou a Venda #" + venda_id + " de R$" + v.total + " (fiado).", 1);
+						
+						PainelVendas.getInstance().ultimasVendasRefresh();	/* atualizar no painel vendas */
+						if(v.fiado_id > 0)
+							PainelVendas.getInstance().refresh();	/* atualizar no painel de fiados */
+						
 						enviarMesa(v.vendaMesa, usuario);
 						return venda_id;
 					}

@@ -192,7 +192,7 @@ public class PainelMenu extends JPanel implements MouseListener
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		if(e.getSource() == vendaRapida) // apenas teste
+		if(e.getSource() == vendaRapida)
 		{
 			MenuPrincipal.getInstance().AbrirPrincipal(0);
 		}
@@ -211,7 +211,7 @@ public class PainelMenu extends JPanel implements MouseListener
 				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}
 		else if(e.getSource() == inicio)
-		{			
+		{
 			MenuPrincipal.getInstance().AbrirPrincipal(4);
 		}
 		else if(e.getSource() == clientes)

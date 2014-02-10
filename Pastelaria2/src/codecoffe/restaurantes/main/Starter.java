@@ -5,40 +5,27 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
 import javax.xml.stream.XMLStreamException;
 
 import net.miginfocom.swing.MigLayout;
-import codecoffe.restaurantes.interfaceGrafica.MenuPrincipal;
-import codecoffe.restaurantes.interfaceGrafica.PainelDisconnect;
+import codecoffe.restaurantes.interfaceGrafica.Loading;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
 import codecoffe.restaurantes.sockets.BroadcastServer;
 import codecoffe.restaurantes.sockets.Client;
@@ -53,24 +40,21 @@ import com.alee.laf.button.WebButton;
 import com.alee.laf.progressbar.WebProgressBar;
 import com.alee.laf.text.WebTextField;
 import com.alee.managers.language.LanguageManager;
-import com.alee.utils.ThreadUtils;
 
 public class Starter implements ActionListener
 {
-	private JFrame seleciona, splash;
-	private JPanel inicio;
+	private JFrame seleciona;
 	private JTabbedPane selecionaPanel;
-	private JProgressBar progressBar;
-	private JLabel descricaoOperacao, statusProgress;
+	private JLabel descricaoOperacao;
 	private WebTextField campoIP;
 	private WebButton bTerminal, bPrincipal;
 	private WebProgressBar verificandoBar;
 	private JCheckBox modoTouch;
-	
-	private static final int portaConnect = 27013;
+	private int portaConnect;
 	
 	public Starter()
 	{
+		portaConnect = 27013;
 		System.setProperty("java.net.preferIPv4Stack", "true");
 		LanguageManager.DEFAULT = LanguageManager.PORTUGUESE;
 		WebLookAndFeel.install();
@@ -171,133 +155,6 @@ public class Starter implements ActionListener
 			e.printStackTrace();
 			new PainelErro(e);
 		}
-		
-		/*splash = new JFrame();
-		inicio = new JPanel();
-		inicio.setLayout(null);
-		
-		//UIManager.put("ProgressBar.foreground", new Color(100, 100, 100));
-		
-		JLabel splashImage = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("imgs/splashscreen.png")));
-		splashImage.setBounds(1,1,445,276); // Coluna, Linha, Largura, Altura!
-		
-    	progressBar = new JProgressBar(0, 100); // progresso
-    	progressBar.setValue(0);
-    	progressBar.setStringPainted(true);
-    	progressBar.setBounds(1, 220, 443, 55); // Coluna, Linha, Largura, Altura
-    	
-    	statusProgress = new JLabel("Preparando inicialização...");
-    	statusProgress.setBounds(10, 184, 443, 55); // Coluna, Linha, Largura, Altura
-    	
-    	inicio.add(statusProgress);
-    	inicio.add(progressBar);
-    	inicio.add(splashImage);
-		splash.add(inicio);
-		
-		splash.setUndecorated(true);
-		splash.setSize(445,276);							// Largura, Altura
-		splash.setLocationRelativeTo(null);				// Abre no centro da tela
-		splash.setIconImage(new ImageIcon(getClass().getClassLoader().getResource("imgs/icone_programa.png")).getImage());
-		splash.setResizable(false);
-		splash.setVisible(true);
-		
-		try {
-			Thread.sleep(600);
-		} catch (InterruptedException e) {
-			JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
-		}
-		
-		progressBar.setValue(2);
-		statusProgress.setText("Verificando banco de dados...");
-		
-		String line;
-		String pidInfo ="";
-
-		try {
-			Process p = Runtime.getRuntime().exec(System.getenv("windir") +"\\system32\\"+"tasklist.exe");
-			BufferedReader input =  new BufferedReader(new InputStreamReader(p.getInputStream()));
-			while ((line = input.readLine()) != null) {
-			    pidInfo+=line; 
-			}
-			input.close();
-		} catch (IOException e) {
-			JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
-		}
-		
-		try {
-			Thread.sleep(800);
-		} catch (InterruptedException e) {
-			JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
-		}		
-
-		if(pidInfo.contains("mysqld"))
-		{
-			progressBar.setValue(10);
-			statusProgress.setText("Banco de dados está OK, continuando...");
-		}
-		else
-		{
-			statusProgress.setText("Iniciando banco de dados...");
-			boolean ligando = true;
-			
-			while(ligando)
-			{
-				String command = System.getProperty("user.dir") + "\\mysql-5.6.15-win32\\bin\\mysqld.exe";
-				try
-				{
-				    Runtime.getRuntime().exec(command);
-					try {
-						Thread.sleep(1000);
-						
-						try {
-							Process p = Runtime.getRuntime().exec(System.getenv("windir") +"\\system32\\"+"tasklist.exe");
-							BufferedReader input =  new BufferedReader(new InputStreamReader(p.getInputStream()));
-							while ((line = input.readLine()) != null) {
-							    pidInfo+=line; 
-							}
-							input.close();
-						} catch (IOException e) {
-							JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
-						}	
-
-						if(pidInfo.contains("mysqld"))
-						{
-							progressBar.setValue(10);
-							statusProgress.setText("Banco de dados ligado, continuando...");
-							ligando = false;
-						}
-						else
-						{
-							statusProgress.setText("Não foi possível ligar o banco de dados, tentando novamente ...");
-							Thread.sleep(1000);
-						}
-					} catch (InterruptedException e) {
-						JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
-					}			    
-				} 
-				catch (IOException e)
-				{
-				    e.printStackTrace();
-				}					
-			}
-		}
-		
-		try {
-			Thread.sleep(800);
-		} catch (InterruptedException e) {
-			JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
-		}		
-		
-		progressBar.setValue(20);
-		statusProgress.setText("Carregando programa...");
-		
-		try {
-			Thread.sleep(800);
-		} catch (InterruptedException e) {
-			JOptionPane.showMessageDialog(null, "Ocorreu o seguine erro no sistema:\n" + e.getMessage(), "Houve um erro ;(", JOptionPane.ERROR_MESSAGE);
-		}*/
-		
-		//new MenuPrincipal(2);
 	}
 	
 	@Override
@@ -377,7 +234,17 @@ public class Starter implements ActionListener
 			try {
 				Client.getInstance().atualizaConexao(host, porta);
 				new Thread(Client.getInstance()).start();
+				
 				seleciona.dispose();
+				seleciona = null;
+				selecionaPanel = null;
+				descricaoOperacao = null;
+				campoIP = null;
+				bTerminal = null;
+				bPrincipal = null;
+				verificandoBar = null;
+				modoTouch = null;
+				
 			} catch (IOException e) {
 				if(e.getMessage().toLowerCase().contains("refused") || e.getMessage().toLowerCase().contains("timed out"))
 				{
@@ -393,28 +260,25 @@ public class Starter implements ActionListener
 		}
 		else
 		{
-			seleciona.dispose();
-			Configuracao.INSTANCE.setModo(UtilCoffe.SERVER);		
-
-			Server.getInstance().atualizaConexao(porta);
+			Server.getInstance().atualizaConexao(portaConnect);
 			new Thread(Server.getInstance()).start();
 
-			BroadcastServer serverUDP = new BroadcastServer(porta);
+			BroadcastServer serverUDP = new BroadcastServer(portaConnect);
 			new Thread(serverUDP).start();
-
-			MenuPrincipal.getInstance();
+			
+			seleciona.dispose();
+			seleciona = null;
+			selecionaPanel = null;
+			descricaoOperacao = null;
+			campoIP = null;
+			bTerminal = null;
+			bPrincipal = null;
+			verificandoBar = null;
+			modoTouch = null;
+			
+			Configuracao.INSTANCE.setModo(UtilCoffe.SERVER);
+			new Loading(UtilCoffe.SERVER);
 		}
-	}
-	
-	public void setarProgresso(String texto, int valor)
-	{
-		progressBar.setValue(valor);
-		statusProgress.setText(texto);
-	}
-	
-	public void loadingFinalizado()
-	{
-		splash.dispose();
 	}
 	
 	public static void main(String[] args) {

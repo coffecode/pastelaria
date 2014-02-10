@@ -16,6 +16,11 @@ import net.miginfocom.swing.MigLayout;
 
 public class PainelDisconnect extends JFrame
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public PainelDisconnect()
 	{
 		setTitle("CodeCoffe - Conexão perdida");

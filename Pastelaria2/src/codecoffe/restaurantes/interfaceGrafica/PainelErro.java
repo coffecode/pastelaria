@@ -20,7 +20,41 @@ public class PainelErro
 {
 	public PainelErro(Exception e)
 	{
-        JOptionPane.showMessageDialog(null, getConteudo(e), "CodeCoffe Restaurantes " + UtilCoffe.VERSAO, JOptionPane.OK_CANCEL_OPTION);		
+		if(e.getMessage().toLowerCase().contains("link failure"))
+		{
+			JOptionPane.showMessageDialog(null, "<html>O programa não conseguiu se conectar no Banco de Dados.<br><br>"
+					+ "Verifique se o processo <b>mysqld.exe</b> existe ou tente reiniciar todo o programa.</html>", "CodeCoffe Restaurantes " + UtilCoffe.VERSAO, JOptionPane.ERROR_MESSAGE);
+			
+			System.exit(0);
+		}
+		else if(e.getMessage().toLowerCase().contains("unknown database"))
+		{
+			JOptionPane.showMessageDialog(null, "<html>O Banco de dados está corrompido ou desatualizado (faltando database).<br>"
+					+ "Entre em contato com o suporte: <b>contato@codecoffe.com.br</b><br><br>"
+					+ "Erro: " + e.getMessage() + "</html>", "CodeCoffe Restaurantes " + UtilCoffe.VERSAO, JOptionPane.ERROR_MESSAGE);
+			
+			System.exit(0);
+		}
+		else if(e.getMessage().toLowerCase().contains("table"))
+		{
+			JOptionPane.showMessageDialog(null, "<html>O Banco de dados está corrompido ou desatualizado (faltando tabelas).<br>"
+					+ "Entre em contato com o suporte: <b>contato@codecoffe.com.br</b><br><br>"
+					+ "Erro: " + e.getMessage() + "</html>", "CodeCoffe Restaurantes " + UtilCoffe.VERSAO, JOptionPane.ERROR_MESSAGE);
+			
+			System.exit(0);
+		}
+		else if(e.getMessage().toLowerCase().contains("column"))
+		{
+			JOptionPane.showMessageDialog(null, "<html>O Banco de dados está corrompido ou desatualizado (faltando colunas).<br>"
+					+ "Entre em contato com o suporte: <b>contato@codecoffe.com.br</b><br><br>"
+					+ "Erro: " + e.getMessage() + "</html>", "CodeCoffe Restaurantes " + UtilCoffe.VERSAO, JOptionPane.ERROR_MESSAGE);
+			
+			System.exit(0);
+		}
+		else
+		{
+			JOptionPane.showMessageDialog(null, getConteudo(e), "CodeCoffe Restaurantes " + UtilCoffe.VERSAO, JOptionPane.ERROR_MESSAGE);
+		}		
 	}
 	
 	private JPanel getConteudo(Exception e) 

@@ -3,8 +3,6 @@ import java.awt.*;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -181,22 +179,6 @@ public class PainelVendas extends JPanel
 		
 		ImageIcon iconeDiario = new ImageIcon(getClass().getClassLoader().getResource("imgs/diario_mini.png"));
 		tabbedPane.addTab("Diário", iconeDiario, painelConsultarDiario, "Registro de todas as ações de funcionários.");	
-		
-		ChangeListener changeListener = new ChangeListener() {
-		      public void stateChanged(ChangeEvent changeEvent) {
-		        JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
-		        if(sourceTabbedPane.getSelectedIndex() == 0) // Ultimas Vendas
-		        {
-		        	painelUltimas.refresh();
-		        }
-		        else if(sourceTabbedPane.getSelectedIndex() == 2) // Fiados
-		        {
-		        	refresh();
-		        }
-		      }
-		};
-		
-		tabbedPane.addChangeListener(changeListener);
 
 		add(tabbedPane);
 		ToolTipManager.sharedInstance().setDismissDelay(40000);
@@ -476,6 +458,7 @@ public class PainelVendas extends JPanel
 									
 									pega.fechaConexao();
 									refresh();
+									painelUltimas.refresh();
 								} catch (NumberFormatException | ClassNotFoundException | SQLException e) {
 									e.printStackTrace();
 									new PainelErro(e);
@@ -507,6 +490,7 @@ public class PainelVendas extends JPanel
 							}
 							pega.fechaConexao();
 							refresh();
+							painelUltimas.refresh();
 						} catch (NumberFormatException | ClassNotFoundException | SQLException e) {
 							e.printStackTrace();
 							new PainelErro(e);
