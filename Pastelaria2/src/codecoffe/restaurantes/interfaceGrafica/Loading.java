@@ -23,7 +23,7 @@ public class Loading {
 	
 	public Loading(int m)
 	{
-		boolean fast_mod = false;
+		boolean fast_mod = true;
 		
 		if(fast_mod)
 		{
