@@ -129,7 +129,7 @@ public class Loading {
         				
         				while(ligando)
         				{
-        					String command = System.getProperty("user.dir") + "\\mysql-5.6.15-win32\\bin\\mysqld.exe";
+        					String command = System.getProperty("user.dir") + "\\mysql\\bin\\mysqld.exe";
         					Runtime.getRuntime().exec(command);
         					
 							Process p2 = Runtime.getRuntime().exec(System.getenv("windir") +"\\system32\\"+"tasklist.exe");
@@ -158,6 +158,7 @@ public class Loading {
         		} catch (IOException e) {
         			e.printStackTrace();
         			new PainelErro(e);
+        			System.exit(0);
         		}
             }
         }).start();

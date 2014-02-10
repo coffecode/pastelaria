@@ -135,7 +135,7 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 						Process p = null;
 			            try {
 			                Runtime runtime = Runtime.getRuntime();
-			                p = runtime.exec("C:\\Users\\andre\\Desktop\\Pastelaria\\v1.50\\mysql-5.6.15-win32\\bin\\mysqldump.exe -uroot -ppuc4321 --add-drop-database -B pastelaria -r " 
+			                p = runtime.exec(System.getProperty("user.dir") + "\\mysql\\bin\\mysqldump.exe -uroot -ppuc4321 --add-drop-database -B restaurante -r " 
 			                + file.getPath()
 			                + "/BackupRest_" + formatter.format(new Date()) +".sql");
 			                
@@ -163,6 +163,7 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 			                }
 			            } catch (Exception ex) {
 			            	System.out.println("Erro, não foi possível criar o backup automático.");
+			            	ex.printStackTrace();
 			                new PainelErro(ex);
 			            }	    					
     				}
@@ -545,7 +546,8 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 							Process p = null;
 				            try {
 				                Runtime runtime = Runtime.getRuntime();
-				                p = runtime.exec("C:\\Users\\andre\\Desktop\\Pastelaria\\v1.50\\mysql-5.6.15-win32\\bin\\mysqldump.exe -uroot -ppuc4321 --add-drop-database -B pastelaria -r " 
+				                String command = System.getProperty("user.dir") + "\\mysql\\bin\\mysqldump.exe -uroot -ppuc4321 --add-drop-database -B restaurante -r ";
+				                p = runtime.exec(command 
 				                + file.getPath()
 				                + "/BackupRest_" + formatter.format(new Date()) +".sql");
 				                
@@ -591,7 +593,7 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 								File file = escolherBackup.getSelectedFile();
 								if(file.getPath().contains(".sql"))
 								{
-									String[] restoreCmd = new String[]{"C:\\Users\\andre\\Desktop\\Pastelaria\\v1.50\\mysql-5.6.15-win32\\bin\\mysql.exe"
+									String[] restoreCmd = new String[]{System.getProperty("user.dir") + "\\mysql\\bin\\mysql.exe"
 											+ " ", "--user=" + "root", "--password=" + "puc4321", "-e", "source " + file.getPath()};
 									
 							        try {

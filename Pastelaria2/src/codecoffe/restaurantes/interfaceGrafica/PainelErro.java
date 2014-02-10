@@ -51,6 +51,30 @@ public class PainelErro
 			
 			System.exit(0);
 		}
+		else if(e.getMessage().toLowerCase().contains("mysqld.exe") && e.getMessage().toLowerCase().contains("encontrar"))
+		{
+			JOptionPane.showMessageDialog(null, "<html>O Banco de dados está desligado e o programa não o encontrou.<br><br>"
+					+ "1º - Verifique se o banco de dados está instalado nesse computador:<br>"
+					+ "Uma pasta chamada <b>mysql</b> deve exisitr em: <br><br><b>" + System.getProperty("user.dir") + "</b><br><br>"
+					+ "Se a pasta existir, procure pelo <b>mysqld.exe</b> em <b>/mysql/bin/</b><br>"
+					+ "Dê dois cliques no arquivo para executa-lo e tente iniciar o programa novamente.<br><br>"
+					+ "2º - Caso a pasta ou o arquivo não existam:<br>"
+					+ "O banco de dados não foi instalado ou está corrompido/deletado.<br>"
+					+ "É preciso abrir o instalador do programa e instalar o banco de dados na pasta:<br><b>" + System.getProperty("user.dir") + 
+					"</b><br><br>Em caso de dúvidas: contato@codecoffe.com.br</html>", "CodeCoffe Restaurantes " + UtilCoffe.VERSAO, JOptionPane.ERROR_MESSAGE);
+			
+			System.exit(0);
+		}
+		else if(e.getMessage().toLowerCase().contains("mysqldump.exe") && e.getMessage().toLowerCase().contains("encontrar"))
+		{
+			JOptionPane.showMessageDialog(null, "<html>Não foi possível encontrar o arquivo <b>mysqldump.exe</b> na pasta:<b><br><br>"
+					+ System.getProperty("user.dir") + "\\mysql\\bin\\</b></html>", "CodeCoffe Restaurantes " + UtilCoffe.VERSAO, JOptionPane.ERROR_MESSAGE);
+		}
+		else if(e.getMessage().toLowerCase().contains("mysql.exe") && e.getMessage().toLowerCase().contains("encontrar"))
+		{
+			JOptionPane.showMessageDialog(null, "<html>Não foi possível encontrar o arquivo <b>mysql.exe</b> na pasta:<b><br><br>"
+					+ System.getProperty("user.dir") + "\\mysql\\bin\\</b></html>", "CodeCoffe Restaurantes " + UtilCoffe.VERSAO, JOptionPane.ERROR_MESSAGE);
+		}
 		else
 		{
 			JOptionPane.showMessageDialog(null, getConteudo(e), "CodeCoffe Restaurantes " + UtilCoffe.VERSAO, JOptionPane.ERROR_MESSAGE);
