@@ -246,7 +246,12 @@ public class Starter implements ActionListener
 				modoTouch = null;
 				
 			} catch (IOException e) {
-				if(e.getMessage().toLowerCase().contains("refused") || e.getMessage().toLowerCase().contains("timed out"))
+				if(e.getMessage().toLowerCase().contains("refused"))
+				{
+					descricaoOperacao.setText("Conexão recusada em: " + host.getHostAddress());
+					verificandoBar.setVisible(false);
+				}
+				else if(e.getMessage().toLowerCase().contains("timed out"))
 				{
 					descricaoOperacao.setText("Não foi possível conectar em: " + host.getHostAddress());
 					verificandoBar.setVisible(false);

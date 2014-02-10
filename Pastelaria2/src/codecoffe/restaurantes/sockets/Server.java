@@ -6,6 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
+
 import codecoffe.restaurantes.interfaceGrafica.PainelClientes;
 import codecoffe.restaurantes.interfaceGrafica.PainelCozinha;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
@@ -71,10 +72,16 @@ public class Server implements Runnable
 			
 			while(procurandoConexoes)	//fica procurando conexao para aceitar.
 			{
-				Socket socket = serverSocket.accept();
-				ClienteThread cliente = new ClienteThread(socket);		// Cria uma Thread para esse cliente.
-				listaClientes.add(cliente);								// Adiciona na lista de clientes.
-				cliente.start();										// Começa a conexão com esse cara.
+				try {
+					Socket socket = serverSocket.accept();
+					System.out.println("Conexao recebida de: " + socket.getInetAddress());
+					ClienteThread cliente = new ClienteThread(socket);		// Cria uma Thread para esse cliente.
+					listaClientes.add(cliente);								// Adiciona na lista de clientes.
+					cliente.start();	
+				} catch (ClassNotFoundException | IOException e) {
+					e.printStackTrace();
+					System.out.println("Erro na conexão, kickando cliente.");
+				}
 			}
 			
 			for(int i = 0; i < listaClientes.size(); ++i)
@@ -142,34 +149,27 @@ public class Server implements Runnable
 		ObjectInputStream sInput;
 		ObjectOutputStream sOutput;
 
-		ClienteThread(Socket socket)
+		ClienteThread(Socket socket) throws IOException, ClassNotFoundException
 		{
 			this.id = ++uniqueId;
 			this.socket = socket;
 			
-			try {
-				sOutput = new ObjectOutputStream(socket.getOutputStream());
-				sInput  = new ObjectInputStream(socket.getInputStream());
-				
-				Object data = sInput.readUnshared();
-				
-				if(data instanceof String)
+			sOutput = new ObjectOutputStream(socket.getOutputStream());
+			sInput  = new ObjectInputStream(socket.getInputStream());
+			
+			Object data = sInput.readUnshared();
+			
+			if(data instanceof String)
+			{
+				if(!data.toString().equals(UtilCoffe.VERSAO))
 				{
-					if(!data.toString().equals(UtilCoffe.VERSAO))
-					{
-						sOutput.reset();
-						sOutput.writeObject("WRONG VERSION");						
-						this.clienteConectado = false;	// kicka, versão diferente do servidor.
-					}
+					sOutput.reset();
+					sOutput.writeObject("WRONG VERSION");						
+					this.clienteConectado = false;	// kicka, versão diferente do servidor.
 				}
-				else
-					this.clienteConectado = false;	// kicka pois não informou versão.
-				
-			} catch (IOException | ClassNotFoundException e) {
-				e.printStackTrace();
-				new PainelErro(e);
-				this.clienteConectado = false;	// kicka pois não informou versão.
 			}
+			else
+				this.clienteConectado = false;	// kicka pois não informou versão.
 		}
 		
 		public void run()		// fica rodando sempre
