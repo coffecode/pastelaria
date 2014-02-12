@@ -121,7 +121,7 @@ public class PainelVendas extends JPanel
 		    @Override
 		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
 		        Component stamp = super.prepareRenderer(renderer, row, column);
-		        if (row % 2 == 0 && column != 5 && column != 0)
+		        if (row % 2 == 0)
 		            stamp.setBackground(alternate);
 		        else
 		            stamp.setBackground(this.getBackground());

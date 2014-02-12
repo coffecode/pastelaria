@@ -4,16 +4,32 @@ import java.util.ArrayList;
 
 public class Produto implements Serializable 
 {
-	private String nome;
+	private String nome, referencia;
 	private double preco;
 	private double totalProduto;
-	private int quantidade;
-	private int pagos;
-	private ArrayList<Adicionais> adicionais;
+	private int idUnico, codigo, quantidade, pagos;
+	private ArrayList<Adicionais> adicionais = new ArrayList<Adicionais>();
 	
+	public Produto(String nome, double preco) 
+	{
+		this.nome = nome;
+		this.preco = preco;
+		this.quantidade = 1;
+		this.totalProduto = 0;
+	}
+
+	public Produto(String nome, String referencia, double preco, int idUnico, int codigo) {
+		this.nome = nome;
+		this.referencia = referencia;
+		this.preco = preco;
+		this.idUnico = idUnico;
+		this.codigo = codigo;
+		this.quantidade = 1;
+		this.totalProduto = 0;
+	}
+
 	public Produto()
 	{
-		this.adicionais = new ArrayList<Adicionais>();
 		this.totalProduto = 0;
 		this.quantidade = 1;
 	}
@@ -52,7 +68,31 @@ public class Produto implements Serializable
 	{
 		return this.adicionais.size();
 	}
-	
+
+	public String getReferencia() {
+		return referencia;
+	}
+
+	public void setReferencia(String referencia) {
+		this.referencia = referencia;
+	}
+
+	public int getIdUnico() {
+		return idUnico;
+	}
+
+	public void setIdUnico(int idUnico) {
+		this.idUnico = idUnico;
+	}
+
+	public int getCodigo() {
+		return codigo;
+	}
+
+	public void setCodigo(int codigo) {
+		this.codigo = codigo;
+	}
+
 	public String getNome() {
 		return this.nome;
 	}
@@ -135,5 +175,10 @@ public class Produto implements Serializable
 
 	public void setPreco(double preco) {
 		this.preco = preco;
+	}
+	
+	@Override
+	public String toString() {
+		return this.nome;
 	}
 }

@@ -605,8 +605,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		};
 		private final JWindow window = new JWindow();
 		public LabelTransferHandler() {
-			localObjectFlavor = new ActivationDataFlavor(
-					DragPanel.class, DataFlavor.javaJVMLocalObjectMimeType, "DragLabel");
+			localObjectFlavor = new ActivationDataFlavor(DragPanel.class, DataFlavor.javaJVMLocalObjectMimeType, "DragLabel");
 			window.add(label);
 			window.setAlwaysOnTop(true);
 			window.setBackground(new Color(0,true));
@@ -1507,10 +1506,13 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 
 			for(int i = 0; i < todosProdutos.getProdutos().size(); i++)
 			{
-				if(addProduto.getSelecionado().equals(todosProdutos.getProdutos().get(i).getNome()))
+				if(addProduto != null && addProduto.getSelecionado() != null)
 				{
-					aDouble += todosProdutos.getProdutos().get(i).getPreco();
-					break;
+					if(addProduto.getSelecionado().equals(todosProdutos.getProdutos().get(i).getNome()))
+					{
+						aDouble += todosProdutos.getProdutos().get(i).getPreco();
+						break;
+					}	
 				}
 			}
 

@@ -192,15 +192,25 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 		}
 		else if(e.getSource() == itemConfGerais)
 		{
-	        menuOpcoes.pack ();
-	        menuOpcoes.setLocationRelativeTo(null);
-	        menuOpcoes.setVisible(true);
+			if(Usuario.INSTANCE.getLevel() > 1)
+			{
+		        menuOpcoes.pack ();
+		        menuOpcoes.setLocationRelativeTo(null);
+		        menuOpcoes.setVisible(true);
+			}
+			else
+				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}
 		else if(e.getSource() == itemBackup)
 		{
-			menuBackup.pack ();
-			menuBackup.setLocationRelativeTo(null);
-			menuBackup.setVisible(true);
+			if(Usuario.INSTANCE.getLevel() > 1)
+			{
+				menuBackup.pack ();
+				menuBackup.setLocationRelativeTo(null);
+				menuBackup.setVisible(true);
+			}
+			else
+				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}
 		else if(e.getSource() == itemFuncionarios)
 		{
