@@ -14,9 +14,9 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import codecoffe.restaurantes.mysql.Query;
-import codecoffe.restaurantes.primitivas.Adicionais;
 import codecoffe.restaurantes.primitivas.Pedido;
 import codecoffe.restaurantes.primitivas.Produto;
+import codecoffe.restaurantes.primitivas.ProdutoVenda;
 import codecoffe.restaurantes.sockets.CacheTodosPedidos;
 import codecoffe.restaurantes.sockets.Server;
 import codecoffe.restaurantes.utilitarios.Bartender;
@@ -210,41 +210,71 @@ public class PainelCozinha extends JPanel
 			
 			while(pega.next())
 			{
-				Produto prod = new Produto();
-				prod.setNome(pega.getString("produto"));
-				prod.setPreco(0);	// o preço nao é importante
-				prod.setQuantidade(pega.getInt("quantidade"), 0);
+				ProdutoVenda produto = new ProdutoVenda();
+				produto.setIdUnico(pega.getInt("produto"));
+				produto.setQuantidade(pega.getInt("quantidade"), 0);
+				produto.setComentario(pega.getString("observacao"));
 				
-				if(!UtilCoffe.vaziu(pega.getString("adicionais")))
+				Query pega1 = new Query();
+				pega1.executaQuery("SELECT * FROM produtos_new WHERE id = " + produto.getIdUnico());
+				
+				if(pega1.next())
 				{
-					String[] adcArray = pega.getString("adicionais").split("\\s*,\\s*");
+					produto.setNome(pega1.getString("nome"));
+					produto.setReferencia(pega1.getString("referencia"));
+					produto.setCodigo(pega1.getInt("codigo"));
+					produto.setPreco(0);
 					
-					for(int x = 0; x < adcArray.length; x++)
+					if(!UtilCoffe.vaziu(pega.getString("adicionais")))
 					{
-						Adicionais adc = new Adicionais();
-						adc.nomeAdicional = adcArray[x];
-						adc.precoAdicional = 0;	// o preço nao é importante
-						prod.adicionrAdc(adc);
-					}	
+						String[] adcArray = pega.getString("adicionais").split("\\s+");
+						
+						if(adcArray.length > 0)
+						{
+							for(int x = 0; x < adcArray.length; x++)
+							{
+								if(UtilCoffe.isNumeric(adcArray[x]) && !UtilCoffe.vaziu(adcArray[x]))
+								{
+									Query pega2 = new Query();
+									pega2.executaQuery("SELECT * FROM produtos_new WHERE id = " + Integer.parseInt(adcArray[x]));
+									if(pega2.next())
+									{
+										Produto adicional = new Produto(pega2.getString("nome"), pega2.getString("referencia"), 
+												UtilCoffe.precoToDouble(pega2.getString("preco")), pega2.getInt("id"), pega2.getInt("codigo"));
+										
+										produto.adicionrAdc(adicional);
+									}
+									pega2.fechaConexao();	
+								}
+							}	
+						}
+					}
+					
+					Date date = formataData.parse(pega.getString("data"));
+					
+	        		long duration = System.currentTimeMillis() - date.getTime();
+	        		long minutes = TimeUnit.MILLISECONDS.toMinutes(duration);  
+	        		
+	        		if(minutes > 120)	// deleta o pedidos antigos...
+	        		{
+	        			Query deleta = new Query();
+	        			deleta.executaUpdate("DELETE FROM pedidos WHERE `id` = "+ pega.getInt("id") +";");
+	        			deleta.fechaConexao();
+	        		}
+	        		else
+	        		{
+	    				todosPedidos.add(new Pedido(produto, date, pega.getString("atendido"), 
+	    						pega.getInt("local"), pega.getInt("status"), pega.getInt("id")));	
+	        		}
 				}
-				
-				Date date = formataData.parse(pega.getString("data"));
-				
-        		long duration = System.currentTimeMillis() - date.getTime();
-        		long minutes = TimeUnit.MILLISECONDS.toMinutes(duration);  
-        		
-        		if(minutes > 120)	// deleta o pedidos antigos...
-        		{
+				else	// esse produto não existe mais, então flw!
+				{
         			Query deleta = new Query();
         			deleta.executaUpdate("DELETE FROM pedidos WHERE `id` = "+ pega.getInt("id") +";");
         			deleta.fechaConexao();
-        		}
-        		else
-        		{
-    				todosPedidos.add(new Pedido(prod, date, 
-    						pega.getString("atendido"), pega.getString("observacao"), 
-    						pega.getInt("local"), pega.getInt("status"), pega.getInt("id")));	
-        		}
+				}
+				
+				pega1.fechaConexao();
 			}
 			
 			pega.fechaConexao();
@@ -268,21 +298,20 @@ public class PainelCozinha extends JPanel
 		return tp;
 	}
 	
-	public int verificaStatusPedido(int local, int qntd, String nome, String adicionais)
+	public int verificaStatusPedido(int local, ProdutoVenda produto)
 	{
 		int produtos_fazendo = 0;
 		for(int i = 0; i < todosPedidos.size(); i++)
 		{
 			if(todosPedidos.get(i).getLocal() == local)
 			{
-				if(todosPedidos.get(i).getProduto().getNome().equals(nome) && todosPedidos.get(i).getProduto().getAllAdicionais().equals(adicionais))
+				if(todosPedidos.get(i).getProduto().compareTo(produto))
 				{	
 					if(todosPedidos.get(i).getStatus() == UtilCoffe.PEDIDO_FAZENDO)
 						produtos_fazendo += todosPedidos.get(i).getProduto().getQuantidade();
 				}
 			}
 		}
-		
 		return produtos_fazendo;
 	}
 	
@@ -295,7 +324,7 @@ public class PainelCozinha extends JPanel
 		{
 			if(todosPedidos.get(i).getLocal() == p.getLocal())
 			{
-				if(todosPedidos.get(i).getProduto().getNome().equals(p.getProduto().getNome()) && todosPedidos.get(i).getProduto().getAllAdicionais().equals(p.getProduto().getAllAdicionais()))
+				if(todosPedidos.get(i).getProduto().compareTo(p.getProduto())) 
 				{
 					if(todosPedidos.get(i).getStatus() != UtilCoffe.PEDIDO_DELETADO && todosPedidos.get(i).getStatus() != UtilCoffe.PEDIDO_REMOVER)
 					{
@@ -380,16 +409,8 @@ public class PainelCozinha extends JPanel
 	public void atualizaPedido(Pedido p)
 	{		
 		/* tive que criar o objeto denovo... 
-		 * se nao ele passava  referencia no array list
-		 * bug filho da puta!*/
-		
-		Produto pNovo = new Produto();
-		pNovo.setNome(p.getProduto().getNome());
-		pNovo.setPagos(p.getProduto().getPagos());
-		pNovo.setPreco(p.getProduto().getPreco());
-		pNovo.setQuantidade(p.getProduto().getQuantidade(), 0);
-		pNovo.setAdicionaisList(p.getProduto().getAdicionaisList());
-		pNovo.calcularPreco();
+		 * se nao ele passava  referencia no array list */
+		ProdutoVenda pNovo = UtilCoffe.cloneProdutoVenda(p.getProduto());
 		
 		if(p.getHeader() == UtilCoffe.PEDIDO_ADICIONA) // adiciona
 		{
@@ -404,11 +425,11 @@ public class PainelCozinha extends JPanel
 					envia.executaUpdate("INSERT INTO pedidos(local, status, observacao, atendido, data, produto, adicionais, quantidade)"
 							+ " VALUES(" + p.getLocal() + ", "
 							+ UtilCoffe.PEDIDO_NORMAL + ", '" 
-							+ p.getObs() + "', '" 
+							+ pNovo.getComentario() + "', '" 
 							+ p.getAtendido() + "', '" 
-							+ formataData.format(p.getHora()) + "', '" 
-							+ pNovo.getNome() + "', '" 
-							+ pNovo.getAllAdicionais() + "', " 
+							+ formataData.format(p.getHora()) + "', " 
+							+ pNovo.getIdUnico() + ", '" 
+							+ pNovo.getAllAdicionaisId() + "', " 
 							+ pNovo.getQuantidade() + ");");
 					
 					envia.executaQuery("SELECT id FROM pedidos ORDER BY id DESC limit 0, 1");
@@ -538,7 +559,7 @@ public class PainelCozinha extends JPanel
 		        				atualiza.fechaConexao();
 							} catch (ClassNotFoundException | SQLException e) {
 								e.printStackTrace();
-							}	
+							}
 						}
 						
 						break;

@@ -15,13 +15,18 @@ import javax.swing.SwingUtilities;
 import codecoffe.restaurantes.interfaceGrafica.MenuPrincipal;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
 import codecoffe.restaurantes.interfaceGrafica.PainelProdutos;
+import codecoffe.restaurantes.interfaceGrafica.PainelVendaMesa;
+import codecoffe.restaurantes.interfaceGrafica.PainelVendaRapida;
 import codecoffe.restaurantes.mysql.Query;
 import codecoffe.restaurantes.primitivas.Categoria;
+import codecoffe.restaurantes.sockets.CacheTodosProdutos;
+import codecoffe.restaurantes.sockets.Server;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
 import com.alee.laf.button.WebButton;
 import com.alee.laf.text.WebTextField;
 import com.alee.managers.notification.NotificationManager;
+
 import net.miginfocom.swing.MigLayout;
 
 public class AbaCategorias extends JPanel
@@ -92,7 +97,11 @@ public class AbaCategorias extends JPanel
 							new PainelErro(e1);
 						}
 						
-						if(!flag_salvar)
+						if(categoriaEditando.getIdCategoria() == 1)
+						{
+							JOptionPane.showMessageDialog(null, "A categoria adicionais não pode ser alterada!");
+						}
+						else if(!flag_salvar)
 						{
 							JOptionPane.showMessageDialog(null, "Já existe uma categoria com esse nome!");
 						}
@@ -129,6 +138,11 @@ public class AbaCategorias extends JPanel
 								}
 								
 								pega.fechaConexao();
+								
+								CacheTodosProdutos todosP = new CacheTodosProdutos(PainelProdutos.getInstance().getModel().getTodosProdutos());
+								PainelVendaMesa.getInstance().atualizaProdutos(todosP);
+								PainelVendaRapida.getInstance().atualizaProdutos(todosP);
+								Server.getInstance().enviaTodos(todosP);
 							} catch (ClassNotFoundException | SQLException e1) {
 								e1.printStackTrace();
 								new PainelErro(e1);
@@ -156,8 +170,11 @@ public class AbaCategorias extends JPanel
 							flag_deletar = false;
 							new PainelErro(e1);
 						}
-						
-						if(!flag_deletar)
+						if(categoriaEditando.getIdCategoria() == 1)
+						{
+							JOptionPane.showMessageDialog(null, "A categoria adicionais não pode ser deletada.");
+						}
+						else if(!flag_deletar)
 						{
 							JOptionPane.showMessageDialog(null, "Remova todos os produtos dessa categoria antes de deleta-la.");
 						}

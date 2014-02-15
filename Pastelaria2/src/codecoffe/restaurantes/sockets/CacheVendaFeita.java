@@ -5,6 +5,10 @@ import codecoffe.restaurantes.primitivas.Venda;
 
 public class CacheVendaFeita implements Serializable 
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public Venda vendaFeita, vendaTotal;	// nem fudendo que vo fazer setter e getter pra tudo isso.
 	public CacheMesaHeader vendaMesa;
 	public String total, atendente, horario, forma_pagamento, valor_pago, troco, delivery, dezporcento;

@@ -10,9 +10,9 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
-import codecoffe.restaurantes.primitivas.Adicionais;
-import codecoffe.restaurantes.primitivas.Produto;
+import codecoffe.restaurantes.primitivas.ProdutoVenda;
 import codecoffe.restaurantes.primitivas.Venda;
+import codecoffe.restaurantes.produtos.ProdutosComboBox;
 import codecoffe.restaurantes.sockets.CacheAviso;
 import codecoffe.restaurantes.sockets.CacheMesaHeader;
 import codecoffe.restaurantes.sockets.CacheTodosProdutos;
@@ -61,8 +61,8 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 	private JTextField campoTotal, campoRecebido, campoTroco;
 	private JTextField campoValor;
 	private JTextField campoQuantidade;
-	private VendaMesaProdutoCampo addProduto;
-	private ArrayList<VendaMesaAdicionaisCampo> addAdicional;
+	private ProdutosComboBox addProduto;
+	private ArrayList<ProdutosComboBox> addAdicional;
 	private ArrayList<JButton> addRemover;
 	private Venda vendaRapida;
 	private int fiadorIDSalvo;
@@ -116,7 +116,8 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		campoQuantidade = new JTextField("1");
 		campoQuantidade.setHorizontalAlignment(SwingConstants.CENTER);
 		campoQuantidade.setPreferredSize(new Dimension(40, 35));
-		addProduto = new VendaMesaProdutoCampo(new CacheTodosProdutos());
+		addProduto = new ProdutosComboBox();
+		addProduto.addActionListener(this);
 
 		adicionarADC = new WebButton("Adicionais");
 		adicionarADC.setHorizontalTextPosition(AbstractButton.CENTER);
@@ -220,7 +221,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				return false;
 			}
 		};
-		
+
 		tabela.addColumn("+/-");
 		tabela.addColumn("Nome");
 		tabela.addColumn("Qntd");
@@ -553,17 +554,19 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 	public void atualizaProdutos(CacheTodosProdutos tp)
 	{
 		todosProdutos = tp;
-		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				addProduto.atualizaProdutosCampo(todosProdutos);
+		addProduto.atualizaProdutosCombo(tp.getCategorias());
 
+		for(int x = 0; x < tp.getCategorias().size(); x++)
+		{
+			if(tp.getCategorias().get(x).getIdCategoria() == 1)
+			{
 				for(int i = 0; i < addAdicional.size(); i++)
-					addAdicional.get(i).atualizaProdutosCampo(todosProdutos);				
+					addAdicional.get(i).atualizaAdicionaisCombo(tp.getCategorias().get(x));
+
+				break;
 			}
-		});
-	}	
+		}
+	}
 
 	class DragPanel extends JPanel {
 		/**
@@ -663,11 +666,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 			DragPanel p = (DragPanel)c;
 			label.setIcon(p.draggingLabel.getIcon());
 			label.setText(p.draggingLabel.getText());
-			label.setFont(p.draggingLabel.getFont());
-			label.setNome(p.draggingLabel.getNome());
-			label.setAdicionais(p.draggingLabel.getAdicionais());
-			label.setPreco(p.draggingLabel.getPreco());
-			label.setId(p.draggingLabel.getId());		    
+			label.setFont(p.draggingLabel.getFont());    
 			window.pack();
 			Point pt = p.draggingLabel.getLocation();
 			SwingUtilities.convertPointToScreen(pt, p);
@@ -681,13 +680,11 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 			try {
 				DragPanel src = (DragPanel)support.getTransferable().getTransferData(localObjectFlavor);
 				DragLabel l = new DragLabel();
+				l.setProduto(UtilCoffe.cloneProdutoVenda(src.draggingLabel.getProduto()));
+				
 				l.setIcon(src.draggingLabel.getIcon());
 				l.setText(src.draggingLabel.getText());
 				l.setFont(src.draggingLabel.getFont());
-				l.setNome(src.draggingLabel.getNome());
-				l.setAdicionais(src.draggingLabel.getAdicionais());
-				l.setPreco(src.draggingLabel.getPreco());
-				l.setId(src.draggingLabel.getId());
 
 				target.add(l);
 				target.revalidate();		      
@@ -703,7 +700,8 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		}
 		@Override protected void exportDone(JComponent c, Transferable data, int action) {
 			DragPanel src = (DragPanel)c;
-			if(action == TransferHandler.MOVE) {
+			if(action == TransferHandler.MOVE) 
+			{				
 				src.remove(src.draggingLabel);
 				src.revalidate();
 				src.repaint();
@@ -712,11 +710,9 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				for(int i = 0; i < painelDropOut.getComponentCount(); i++)
 				{
 					DragLabel dragL = (DragLabel)painelDropOut.getComponent(i);
-					total += dragL.getPreco();
+					total += dragL.getProduto().getTotalProduto();
 				}
 
-				String pegaPreco;
-				
 				if(Configuracao.INSTANCE.getDezPorcento())
 				{
 					taxaOpcional = total * 0.10;
@@ -724,16 +720,10 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				}
 
 				if(adicionarDezPorcento.isSelected())
-				{
-					pegaPreco = String.format("%.2f", (total + (total * 0.10)));
-				}
+					campoTotal.setText(UtilCoffe.doubleToPreco((total + (total * 0.10))));
 				else
-				{
-					pegaPreco = String.format("%.2f", total);
-				}
+					campoTotal.setText(UtilCoffe.doubleToPreco(total));
 
-				pegaPreco.replaceAll(".", ",");
-				campoTotal.setText(pegaPreco);
 				atualizarCampoRecibo();
 			}
 			src.draggingLabel = null;
@@ -800,7 +790,6 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 					campoRecebido.setText("");
 					campoTroco.setText("0,00");
 					campoForma.setSelectedIndex(0);
-					addProduto.zeraString();
 					addAdicional.clear();
 					addRemover.clear();			
 					adicionaisPainel.removeAll();
@@ -827,31 +816,15 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 
 	public void updateCampo()
 	{
-		if(addProduto.getSelecionado() != null)
+		if(addProduto.getProdutoSelecionado() != null)
 		{
-			double aDouble = 0;
-
-			for(int i = 0; i < todosProdutos.getProdutos().size(); i++)
-			{
-				if(addProduto.getSelecionado().equals(todosProdutos.getProdutos().get(i).getNome()))
-				{
-					aDouble += todosProdutos.getProdutos().get(i).getPreco();
-					break;
-				}
-			}
+			double aDouble = addProduto.getProdutoSelecionado().getPreco();
 
 			for(int i = 0; i < addAdicional.size() ; i++)
 			{
-				if(addAdicional.get(i).getSelecionado() != null)
-				{					
-					for(int x = 0; x < todosProdutos.getAdicionais().size(); x++)
-					{
-						if(addAdicional.get(i).getSelecionado().equals(todosProdutos.getAdicionais().get(x).getNome()))
-						{
-							aDouble += todosProdutos.getAdicionais().get(x).getPreco();
-							break;
-						}
-					}		
+				if(addAdicional.get(i).getProdutoSelecionado() != null)
+				{
+					aDouble += addAdicional.get(i).getProdutoSelecionado().getPreco();	
 				}
 			}
 
@@ -862,7 +835,6 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 	private void atualizarCampoRecibo()
 	{
 		String formataRecibo = "";
-		String pegaPreco = "";
 
 		formataRecibo += ("===========================\n");
 		formataRecibo += (String.format("              %s              \n", Configuracao.INSTANCE.getRestaurante()));
@@ -876,61 +848,32 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		for(int i = 0; i < painelDropOut.getComponentCount(); i++)
 		{
 			DragLabel dragL = (DragLabel)painelDropOut.getComponent(i);
-			Produto p = new Produto();
-
-			p.setNome(dragL.getNome());
-			p.setPreco(dragL.getPreco());
-
-			for(int x = 0; x < vendaRapida.getProduto(dragL.getId()).getTotalAdicionais(); x++)
-			{
-				Adicionais adc = new Adicionais();
-				adc.nomeAdicional = vendaRapida.getProduto(dragL.getId()).getAdicional(x).nomeAdicional;
-				adc.precoAdicional = vendaRapida.getProduto(dragL.getId()).getAdicional(x).precoAdicional;
-				p.adicionrAdc(adc);
-			}
-			
-			p.calcularPreco();
-			vendaAgora.adicionarProduto(p);
+			vendaAgora.adicionarProduto(UtilCoffe.cloneProdutoVenda(dragL.getProduto()));
 		}
-		
+
 		vendaAgora.calculaTotal();
 
 		for(int i = 0; i < vendaAgora.getQuantidadeProdutos(); i++)
 		{
-			formataRecibo += (String.format("%-20.20s", vendaAgora.getProduto(i).getNome()));
+			formataRecibo += (String.format("%-20.20s", vendaAgora.getProduto(i).getReferencia()));
 			formataRecibo += (String.format("%4s     ", vendaAgora.getProduto(i).getQuantidade()));
 
 			double totalsub = 0.0;
 
 			for(int j = 0; j < vendaAgora.getProduto(i).getTotalAdicionais(); j++)
 			{
-				totalsub += vendaAgora.getProduto(i).getAdicional(j).precoAdicional;
+				totalsub += vendaAgora.getProduto(i).getAdicional(j).getPreco();
 			}
 
-			pegaPreco = String.format("%.2f", (vendaAgora.getProduto(i).getPreco() - totalsub));
-			pegaPreco.replaceAll(",", ".");							
-
-			formataRecibo += (String.format("%7s       ", pegaPreco));
-
-			pegaPreco = String.format("%.2f", ((vendaAgora.getProduto(i).getPreco() - totalsub) * vendaAgora.getProduto(i).getQuantidade()));
-			pegaPreco.replaceAll(",", ".");							
-
-			formataRecibo += (String.format("%6s     \n", pegaPreco));
+			formataRecibo += (String.format("%7s       ", UtilCoffe.doubleToPreco((vendaAgora.getProduto(i).getPreco() - totalsub))));
+			formataRecibo += (String.format("%6s     \n", UtilCoffe.doubleToPreco((vendaAgora.getProduto(i).getPreco() - totalsub) * vendaAgora.getProduto(i).getQuantidade())));
 
 			for(int j = 0; j < vendaAgora.getProduto(i).getTotalAdicionais(); j++)
 			{
-				formataRecibo += (String.format("%-20.20s", "+" + vendaAgora.getProduto(i).getAdicional(j).nomeAdicional));
+				formataRecibo += (String.format("%-20.20s", "+" + vendaAgora.getProduto(i).getAdicional(j).getReferencia()));
 				formataRecibo += (String.format("%3s     ", vendaAgora.getProduto(i).getQuantidade()));
-
-				pegaPreco = String.format("%.2f", vendaAgora.getProduto(i).getAdicional(j).precoAdicional);
-				pegaPreco.replaceAll(",", ".");							
-
-				formataRecibo += (String.format("%5s    ", pegaPreco));
-
-				pegaPreco = String.format("%.2f", (vendaAgora.getProduto(i).getAdicional(j).precoAdicional*vendaAgora.getProduto(i).getQuantidade()));
-				pegaPreco.replaceAll(",", ".");							
-
-				formataRecibo += (String.format("%6s    \n", pegaPreco));
+				formataRecibo += (String.format("%5s    ", UtilCoffe.doubleToPreco(vendaAgora.getProduto(i).getAdicional(j).getPreco())));
+				formataRecibo += (String.format("%6s    \n", UtilCoffe.doubleToPreco((vendaAgora.getProduto(i).getAdicional(j).getPreco()*vendaAgora.getProduto(i).getQuantidade()))));
 			}
 		}            
 
@@ -972,25 +915,11 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		for(int i = 0; i < painelDropOut.getComponentCount(); i++)
 		{
 			DragLabel dragL = (DragLabel)painelDropOut.getComponent(i);
-			Produto p = new Produto();
-
-			p.setNome(dragL.getNome());
-			p.setPreco(dragL.getPreco());
-
-			for(int x = 0; x < vendaRapida.getProduto(dragL.getId()).getTotalAdicionais(); x++)
-			{
-				Adicionais adc = new Adicionais();
-				adc.nomeAdicional = vendaRapida.getProduto(dragL.getId()).getAdicional(x).nomeAdicional;
-				adc.precoAdicional = vendaRapida.getProduto(dragL.getId()).getAdicional(x).precoAdicional;
-				p.adicionrAdc(adc);
-			}
-			
-			p.calcularPreco();
-			vendaAgora.adicionarProduto(p);
+			vendaAgora.adicionarProduto(UtilCoffe.cloneProdutoVenda(dragL.getProduto()));
 		}
-		
+
 		vendaAgora.calculaTotal();
-		
+
 		CacheVendaFeita criaImpressao		= new CacheVendaFeita(vendaAgora);
 		criaImpressao.total 				= UtilCoffe.doubleToPreco(vendaAgora.getTotal());
 		criaImpressao.atendente 			= Usuario.INSTANCE.getNome();
@@ -1000,102 +929,61 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		criaImpressao.dezporcento			= UtilCoffe.doubleToPreco(vendaAgora.getTotal() + taxaOpcional);
 		criaImpressao.classe				= 1;
 		criaImpressao.imprimir 				= true;
-		
+
 		Bartender.INSTANCE.criarImpressao(criaImpressao);		
 	}
 
-	private class DragLabel extends JLabel {
-
+	private class DragLabel extends JLabel 
+	{
 		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
-		private String nome;
-		private String adicionais;
-		private double preco = 0.0;
-		private int id;
+		private ProdutoVenda produto;
 
 		public DragLabel() {
 			super();
 		}
 
-		public void setNome(String texto)
-		{
-			this.nome = texto;
+		public ProdutoVenda getProduto() {
+			return produto;
 		}
 
-		public void setAdicionais(String texto)
-		{
-			this.adicionais = texto;
-		}
-
-		public void setPreco(double valor)
-		{
-			this.preco = valor;
-		}
-
-		public void setId(int id)
-		{
-			this.id = id;
-		}
-
-		public String getNome()
-		{
-			return this.nome;
-		}
-
-		public String getAdicionais()
-		{
-			return this.adicionais;
-		}
-
-		public double getPreco()
-		{
-			return this.preco;
-		}
-
-		public int getId()
-		{
-			return this.id;
+		public void setProduto(ProdutoVenda produto) {
+			this.produto = produto;
 		}
 	}
 
-	private void dragAdicionaProduto(Produto p, int id)
+	private void dragAdicionaProduto(ProdutoVenda p)
 	{
-		DragLabel dragP = new DragLabel();
-		dragP.setNome(p.getNome());
-		dragP.setId(id);
+		int cacheQuantidade = (p.getQuantidade() - p.getPagos());
 
-		String pegaAdicionais = "";
-		double pegaPreco = 0.0;
-		if(p.getTotalAdicionais() > 0)
+		for(int i = 0; i < cacheQuantidade; i++)
 		{
-			for(int x = 0; x < p.getTotalAdicionais() ; x++)
-			{
-				pegaAdicionais += p.getAdicional(x).nomeAdicional;
-				pegaPreco += p.getAdicional(x).precoAdicional;
+			DragLabel dragP = new DragLabel();
+			dragP.setProduto(UtilCoffe.cloneProdutoVenda(p));
+			dragP.getProduto().setQuantidade(1, 0);
+			dragP.getProduto().calcularPreco();
 
-				if(x != (p.getTotalAdicionais()-1))
-					pegaAdicionais += ", ";
-			}
+			dragP.setFont(new Font("Verdana", Font.PLAIN, 10));
+			dragP.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/icon_food.png")));
+
+			if(dragP.getProduto().getAdicionaisList().size() > 0)
+				dragP.setText(dragP.getProduto().getNome() + " com " + dragP.getProduto().getAllAdicionais() 
+						+ " - " + UtilCoffe.doubleToPreco(dragP.getProduto().getTotalProduto()));
+			else
+				dragP.setText(dragP.getProduto().getNome() + " - " + UtilCoffe.doubleToPreco(dragP.getProduto().getPreco()));
+
+			painelDropIn.add(dragP);
 		}
 
-		dragP.setPreco((p.getPreco() + pegaPreco));
-
-		String pegaPreco2 = String.format("%.2f", dragP.getPreco());
-		pegaPreco2.replaceAll(",", ".");		
-
-		dragP.setAdicionais(pegaAdicionais);
-		dragP.setFont(new Font("Verdana", Font.PLAIN, 10));
-		dragP.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/icon_food.png")));
-		if("".equals(dragP.getAdicionais()))
-			dragP.setText(dragP.getNome() + " - " + pegaPreco2);
-		else
-			dragP.setText(dragP.getNome() + " com " + dragP.getAdicionais() + " - " + pegaPreco2);
-
-		painelDropIn.add(dragP);
-		painelDropIn.revalidate();
-		painelDropIn.repaint();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				painelDropIn.revalidate();
+				painelDropIn.repaint();
+			}
+		});
 	}
 
 	public void termina(boolean delete)
@@ -1106,11 +994,13 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		boolean flag = false;
-
 		if(e.getSource() == imprimir)
 		{
 			criarRecibo();
+		}
+		else if(e.getSource() == addProduto)
+		{
+			updateCampo();
 		}
 		else if(e.getSource() == deletarCliente)
 		{
@@ -1137,34 +1027,30 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				for(int i = 0; i < painelDropOut.getComponentCount(); i++)
 				{
 					DragLabel dragL = (DragLabel)painelDropOut.getComponent(i);
-					total += dragL.getPreco();
+					total += dragL.getProduto().getTotalProduto();
 				}
 
-				String pegaPreco;
-				
 				if(Configuracao.INSTANCE.getDezPorcento())
 				{
 					taxaOpcional = total * 0.10;
 					adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
 				}				
-				
+
 				if(adicionarDezPorcento.isSelected())
-				{
-					pegaPreco = String.format("%.2f", (total + (total * 0.10)));
-				}
+					campoTotal.setText(UtilCoffe.doubleToPreco((total + (total * 0.10))));
 				else
-				{
-					pegaPreco = String.format("%.2f", total);
-				}      
+					campoTotal.setText(UtilCoffe.doubleToPreco(total));
 
-				pegaPreco.replaceAll(".", ",");
-				campoTotal.setText(pegaPreco);
-				atualizarCampoRecibo();				
-
-				painelDropOut.revalidate();
-				painelDropOut.repaint();
-				painelDropIn.revalidate();
-				painelDropIn.repaint();
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						atualizarCampoRecibo();
+						painelDropOut.revalidate();
+						painelDropOut.repaint();
+						painelDropIn.revalidate();
+						painelDropIn.repaint();
+					}
+				});
 			}
 		}
 		else if(e.getSource() == flecha2)
@@ -1182,34 +1068,30 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				for(int i = 0; i < painelDropOut.getComponentCount(); i++)
 				{
 					DragLabel dragL = (DragLabel)painelDropOut.getComponent(i);
-					total += dragL.getPreco();
+					total += dragL.getProduto().getTotalProduto();
 				}
 
-				String pegaPreco;
-				
 				if(Configuracao.INSTANCE.getDezPorcento())
 				{
 					taxaOpcional = total * 0.10;
 					adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
 				}
-				
+
 				if(adicionarDezPorcento.isSelected())
-				{
-					pegaPreco = String.format("%.2f", (total + (total * 0.10)));
-				}
+					campoTotal.setText(UtilCoffe.doubleToPreco((total + (total * 0.10))));
 				else
-				{
-					pegaPreco = String.format("%.2f", total);
-				}
+					campoTotal.setText(UtilCoffe.doubleToPreco(total));
 
-				pegaPreco.replaceAll(".", ",");
-				campoTotal.setText(pegaPreco);
-				atualizarCampoRecibo();				
-
-				painelDropOut.revalidate();
-				painelDropOut.repaint();
-				painelDropIn.revalidate();
-				painelDropIn.repaint();
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						atualizarCampoRecibo();
+						painelDropOut.revalidate();
+						painelDropOut.repaint();
+						painelDropIn.revalidate();
+						painelDropIn.repaint();
+					}
+				});
 			}
 		}
 		else if(e.getSource() == finalizarVenda)
@@ -1264,20 +1146,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							for(int i = 0; i < painelDropOut.getComponentCount(); i++)
 							{
 								DragLabel dragL = (DragLabel)painelDropOut.getComponent(i);
-								Produto p = new Produto();
-
-								p.setNome(dragL.getNome());
-								p.setPreco(dragL.getPreco());
-
-								for(int x = 0; x < vendaRapida.getProduto(dragL.getId()).getTotalAdicionais(); x++)
-								{
-									Adicionais adc = new Adicionais();
-									adc.nomeAdicional = vendaRapida.getProduto(dragL.getId()).getAdicional(x).nomeAdicional;
-									adc.precoAdicional = vendaRapida.getProduto(dragL.getId()).getAdicional(x).precoAdicional;
-									p.adicionrAdc(adc);
-								}
-
-								vendaAgora.adicionarProduto(p);
+								vendaAgora.adicionarProduto(UtilCoffe.cloneProdutoVenda(dragL.getProduto()));
 							}
 
 							Calendar c = Calendar.getInstance();
@@ -1316,14 +1185,13 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							vendaMesaFeita.fiado_id 			= fiadorIDSalvo;
 							vendaMesaFeita.caixa 				= (mesaID+1);
 							vendaMesaFeita.delivery 			= "0,00";
-							
+
 							if(adicionarDezPorcento.isSelected())
 								vendaMesaFeita.dezporcento			= UtilCoffe.doubleToPreco(taxaOpcional);
 							else
 								vendaMesaFeita.dezporcento			= UtilCoffe.doubleToPreco(0.0);
-								
-							vendaMesaFeita.classe				= UtilCoffe.CLASSE_VENDA_MESA;
 
+							vendaMesaFeita.classe				= UtilCoffe.CLASSE_VENDA_MESA;
 							Bartender.INSTANCE.enviarVenda(vendaMesaFeita, 0);	// agora aguarda a resposta.
 						}							
 					}
@@ -1361,102 +1229,82 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		}
 		else if(e.getSource() == adicionarProduto)
 		{
-			String nomeProduto = addProduto.getSelecionado();
-
-			if(nomeProduto == null)
+			if(addProduto.getProdutoSelecionado() == null)
 			{
 				JOptionPane.showMessageDialog(null, "Você precisa selecionar um produto antes!");
 			}
 			else
 			{
-				Produto p = new Produto();
+				ProdutoVenda produto = new ProdutoVenda(addProduto.getProdutoSelecionado().getNome(), 
+						addProduto.getProdutoSelecionado().getReferencia(), 
+						addProduto.getProdutoSelecionado().getPreco(), 
+						addProduto.getProdutoSelecionado().getIdUnico(), 
+						addProduto.getProdutoSelecionado().getCodigo());
 
-				for(int i = 0; i < todosProdutos.getProdutos().size(); i++)
+				if(addAdicional.size() > 0)
 				{
-					if(nomeProduto.equals(todosProdutos.getProdutos().get(i).getNome()))
+					for(int x = 0 ; x < addAdicional.size() ; x++)
 					{
-						p.setNome(nomeProduto);
-						p.setPreco(todosProdutos.getProdutos().get(i).getPreco());
-						if(addAdicional.size() > 0)
-						{
-							for(int x = 0 ; x < addAdicional.size() ; x++)
-							{
-								String nomeAdicional = addAdicional.get(x).getSelecionado();
-
-								for(int z = 0; z < todosProdutos.getAdicionais().size(); z++)
-								{
-									if(nomeAdicional.equals(todosProdutos.getAdicionais().get(z).getNome()))
-									{
-										Adicionais adcional = new Adicionais();
-										adcional.nomeAdicional = nomeAdicional;
-										adcional.precoAdicional = todosProdutos.getAdicionais().get(z).getPreco();
-										p.adicionrAdc(adcional);										
-										break;
-									}
-								}
-							}							
-						}
-						break;
+						produto.adicionrAdc(UtilCoffe.cloneProduto(addAdicional.get(x).getProdutoSelecionado()));
 					}
 				}
 
-				int qntdProduto = 0;
-				int linha = 0;
-				int cache = vendaRapida.getQuantidadeProdutos();
-				String limpeza = campoQuantidade.getText().replaceAll("[^0-9]+","");
-
-				if(!"".equals(limpeza.trim()))
+				String limpeza = UtilCoffe.limpaNumero(campoQuantidade.getText());
+				if(!UtilCoffe.vaziu(limpeza) && limpeza.length() < 6)
 				{
+					int sizeAntes = vendaRapida.getQuantidadeProdutos();
+					int ultimaIndex = 0;
+
 					if(Integer.parseInt(limpeza) > 0)
-						for(int i = 0; i < Integer.parseInt(limpeza) ; i++)
+					{
+						produto.setQuantidade(Integer.parseInt(limpeza), 0);
+						ultimaIndex = vendaRapida.adicionarProduto(produto);
+						dragAdicionaProduto(produto);
+
+						if(sizeAntes == vendaRapida.getQuantidadeProdutos())
 						{
-							linha = vendaRapida.adicionarProduto(p); 
-							dragAdicionaProduto(p, linha);
-							qntdProduto++;
-						}					
-				}
-				
-				if(qntdProduto > 0)
-				{
-					if(cache == vendaRapida.getQuantidadeProdutos())
-					{
-						double total = vendaRapida.getProduto(linha).getTotalProduto()*vendaRapida.getProduto(linha).getQuantidade();
-						tabela.setValueAt(UtilCoffe.doubleToPreco(total), linha, 4);
-						tabela.setValueAt(vendaRapida.getProduto(linha).getQuantidade(), linha, 2);						
-						
-						CacheMesaHeader mh = new CacheMesaHeader(mesaID, p, vendaRapida, UtilCoffe.MESA_ATUALIZAR, qntdProduto, Usuario.INSTANCE.getNome());
-						Bartender.INSTANCE.enviarMesa(mh, 0);						
+							double total = vendaRapida.getProduto(ultimaIndex).getTotalProduto()*vendaRapida.getProduto(ultimaIndex).getQuantidade();
+							tabela.setValueAt(UtilCoffe.doubleToPreco(total), ultimaIndex, 4);
+							tabela.setValueAt(vendaRapida.getProduto(ultimaIndex).getQuantidade(), ultimaIndex, 2);						
+
+							CacheMesaHeader mh = new CacheMesaHeader(mesaID, produto, vendaRapida, UtilCoffe.MESA_ATUALIZAR, Integer.parseInt(limpeza), Usuario.INSTANCE.getNome());
+							Bartender.INSTANCE.enviarMesa(mh, 0);
+						}
+						else
+						{
+							Vector<Serializable> newLinha = new Vector<Serializable>();
+							newLinha.add("");
+							newLinha.add(produto.getNome());
+							newLinha.add(produto.getQuantidade());
+							newLinha.add("0");						
+							newLinha.add(UtilCoffe.doubleToPreco((produto.getTotalProduto() * Integer.parseInt(limpeza))));
+							newLinha.add(produto.getAllAdicionais());
+							newLinha.add("Deletar");
+							tabela.addRow(newLinha);
+
+							CacheMesaHeader mh = new CacheMesaHeader(mesaID, produto, vendaRapida, UtilCoffe.MESA_ADICIONAR, Integer.parseInt(limpeza), Usuario.INSTANCE.getNome());
+							Bartender.INSTANCE.enviarMesa(mh, 0);
+						}
 					}
-					else
-					{
-						Vector<Serializable> newLinha = new Vector<Serializable>();
-						newLinha.add("");
-						newLinha.add(p.getNome());
-						newLinha.add(p.getQuantidade());
-						newLinha.add("0");						
-						newLinha.add(UtilCoffe.doubleToPreco((p.getTotalProduto() * qntdProduto)));
-						newLinha.add(p.getAllAdicionais());
-						newLinha.add("Deletar");
-						tabela.addRow(newLinha);
-						
-						CacheMesaHeader mh = new CacheMesaHeader(mesaID, p, vendaRapida, UtilCoffe.MESA_ADICIONAR, qntdProduto, Usuario.INSTANCE.getNome());
-						Bartender.INSTANCE.enviarMesa(mh, 0);							
-					}
-					
-					campoValor.setText("");
-					campoQuantidade.setText("1");
-					addProduto.zeraString();
-
-					addAdicional.clear();
-					addRemover.clear();
-
-					adicionaisPainel.removeAll();
-					adicionaisPainel.revalidate();
-					adicionaisPainel.repaint();
-					addProduto.setFocus();
-
-					PainelMesas.getInstance().atualizaMesa(mesaID, vendaRapida);
 				}
+
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						campoValor.setText("");
+						campoQuantidade.setText("1");
+
+						addAdicional.clear();
+						addRemover.clear();
+
+						adicionaisPainel.removeAll();
+						adicionaisPainel.revalidate();
+						adicionaisPainel.repaint();
+						addProduto.requestFocus();
+
+						PainelMesas.getInstance().atualizaMesa(mesaID, vendaRapida);
+					}
+				});
 			}
 		}
 		else if(e.getSource() == adicionarADC)
@@ -1467,8 +1315,15 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 			botao.setContentAreaFilled(false);
 			botao.addActionListener(this);
 
-			addAdicional.add(new VendaMesaAdicionaisCampo(todosProdutos));
-			addRemover.add(botao);
+			for(int x = 0; x < todosProdutos.getCategorias().size(); x++)
+			{
+				if(todosProdutos.getCategorias().get(x).getIdCategoria() == 1)
+				{
+					addAdicional.add(new ProdutosComboBox(todosProdutos.getCategorias().get(x)));
+					addRemover.add(botao);
+					break;
+				}
+			}
 
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx = 1;	// coluna
@@ -1481,7 +1336,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 
 			adicionaisPainel.revalidate();
 			adicionaisPainel.repaint();
-			addAdicional.get(addAdicional.size()-1).setFocus();
+			addAdicional.get(addAdicional.size()-1).requestFocus();
 		}
 
 		if(addRemover.size() > 0)
@@ -1494,46 +1349,36 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 					adicionaisPainel.remove(addRemover.get(i));
 					addAdicional.remove(i);
 					addRemover.remove(i);
-					flag = true;
+					double novoValor = 0.0;
+
+					if(addProduto != null)
+					{
+						if(addProduto.getProdutoSelecionado() != null)
+						{
+							novoValor += addProduto.getProdutoSelecionado().getPreco();
+						}
+					}
+
+					for(int x = 0; x < addAdicional.size() ; x++)
+					{
+						if(addAdicional.get(x).getProdutoSelecionado() != null)
+						{
+							novoValor += addAdicional.get(x).getProdutoSelecionado().getPreco();
+						}
+					}
+
+					campoValor.setText(UtilCoffe.doubleToPreco(novoValor));
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							adicionaisPainel.revalidate();
+							adicionaisPainel.repaint();	
+						}
+					});	
+
 					break;
 				}
 			}
-		}
-
-		if(flag)
-		{
-			double aDouble = 0;
-
-			for(int i = 0; i < todosProdutos.getProdutos().size(); i++)
-			{
-				if(addProduto != null && addProduto.getSelecionado() != null)
-				{
-					if(addProduto.getSelecionado().equals(todosProdutos.getProdutos().get(i).getNome()))
-					{
-						aDouble += todosProdutos.getProdutos().get(i).getPreco();
-						break;
-					}	
-				}
-			}
-
-			for(int i = 0; i < addAdicional.size() ; i++)
-			{
-				if(addAdicional.get(i).getSelecionado() != null)
-				{					
-					for(int x = 0; x < todosProdutos.getAdicionais().size(); x++)
-					{
-						if(addAdicional.get(i).getSelecionado().equals(todosProdutos.getAdicionais().get(x).getNome()))
-						{
-							aDouble += todosProdutos.getAdicionais().get(x).getPreco();
-							break;
-						}
-					}		
-				}
-			}
-
-			campoValor.setText(UtilCoffe.doubleToPreco(aDouble));
-			adicionaisPainel.revalidate();
-			adicionaisPainel.repaint();			
 		}
 	}
 
@@ -1606,7 +1451,8 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 			return button;
 		}
 
-		public Object getCellEditorValue() {
+		public Object getCellEditorValue() 
+		{
 			if (isPushed) {
 				if(vendaRapida.getQuantidadeProdutos() <= 0)
 				{
@@ -1619,52 +1465,40 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 					boolean continua = true;
 					String pegaLixo = tabela.getValueAt(tabelaPedido.getSelectedRow(), 2).toString();
 					int quantidadeDeletar = Integer.parseInt(pegaLixo);
-
-					String nomeProduto = vendaRapida.getProduto(tabelaPedido.getSelectedRow()).getNome();
-					String adicionaisProduto = vendaRapida.getProduto(tabelaPedido.getSelectedRow()).getAllAdicionais();
-					int quantidadeProduto = vendaRapida.getProduto(tabelaPedido.getSelectedRow()).getQuantidade();
-					int fazendo = PainelCozinha.getInstance().verificaStatusPedido((mesaID+1), quantidadeProduto, nomeProduto, adicionaisProduto);
+					int fazendo = PainelCozinha.getInstance().verificaStatusPedido((mesaID+1), vendaRapida.getProduto(tabelaPedido.getSelectedRow()));
 
 					if(fazendo > 0)
 					{
-						int opcao = JOptionPane.showConfirmDialog(null, "Esses produtos já estão marcados como Fazendo na cozinha.\n\nVocê tem certeza que quer deletar?\n\n", "Deletar Produto", JOptionPane.YES_NO_OPTION);
-
+						int opcao = JOptionPane.showConfirmDialog(null, "Esses produtos já estão marcados como Fazendo na cozinha."
+								+ "\n\nVocê tem certeza que quer deletar?\n\n", "Deletar Produto", JOptionPane.YES_NO_OPTION);
 						if(opcao != JOptionPane.YES_OPTION)
-						{
 							continua = false;
-						}
 					}
-					
+
 					if(continua)
 					{
 						for(int i = 0; i < painelDropOut.getComponentCount(); i++)
 						{	  
 							DragLabel dragL = (DragLabel)painelDropOut.getComponent(i);
-							if(dragL.getNome().equals(vendaRapida.getProduto(tabelaPedido.getSelectedRow()).getNome()))
+							if(dragL.getProduto().compareTo(vendaRapida.getProduto(tabelaPedido.getSelectedRow())))
 							{
-								if(dragL.getAdicionais().equals(vendaRapida.getProduto(tabelaPedido.getSelectedRow()).getAllAdicionais()))
-								{
-									painelDropOut.remove(i);
-									quantidadeDeletar--;
-									i = 0;
+								painelDropOut.remove(i);
+								quantidadeDeletar--;
+								i = 0;
 
-									if(quantidadeDeletar <= 0)
-										break;		  
-								}
+								if(quantidadeDeletar <= 0)
+									break;		
 							}
 						}
-						
+
 						if(quantidadeDeletar > 0 && painelDropOut.getComponentCount() > 0)
 						{
 							DragLabel dragL = (DragLabel)painelDropOut.getComponent(0);
-							if(dragL.getNome().equals(vendaRapida.getProduto(tabelaPedido.getSelectedRow()).getNome()))
+							if(dragL.getProduto().compareTo(vendaRapida.getProduto(tabelaPedido.getSelectedRow())))
 							{
-								if(dragL.getAdicionais().equals(vendaRapida.getProduto(tabelaPedido.getSelectedRow()).getAllAdicionais()))
-								{
-									painelDropOut.remove(0);
-									quantidadeDeletar--;	  
-								}
-							}		    		  
+								painelDropOut.remove(0);
+								quantidadeDeletar--;
+							}    		  
 						}
 
 						if(quantidadeDeletar > 0)
@@ -1672,17 +1506,14 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							for(int i = 0; i < painelDropIn.getComponentCount(); i++)
 							{ 
 								DragLabel dragL = (DragLabel)painelDropIn.getComponent(i);
-								if(dragL.getNome().equals(vendaRapida.getProduto(tabelaPedido.getSelectedRow()).getNome()))
+								if(dragL.getProduto().compareTo(vendaRapida.getProduto(tabelaPedido.getSelectedRow())))
 								{
-									if(dragL.getAdicionais().equals(vendaRapida.getProduto(tabelaPedido.getSelectedRow()).getAllAdicionais()))
-									{
-										painelDropIn.remove(i);
-										quantidadeDeletar--;
-										i = 0;
+									painelDropIn.remove(i);
+									quantidadeDeletar--;
+									i = 0;
 
-										if(quantidadeDeletar <= 0)
-											break;		  
-									}
+									if(quantidadeDeletar <= 0)
+										break;		
 								}
 							}		    		  
 						}
@@ -1690,26 +1521,16 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 						if(quantidadeDeletar > 0 && painelDropIn.getComponentCount() > 0)
 						{
 							DragLabel dragL = (DragLabel)painelDropIn.getComponent(0);
-							if(dragL.getNome().equals(vendaRapida.getProduto(tabelaPedido.getSelectedRow()).getNome()))
+							if(dragL.getProduto().compareTo(vendaRapida.getProduto(tabelaPedido.getSelectedRow())))
 							{
-								if(dragL.getAdicionais().equals(vendaRapida.getProduto(tabelaPedido.getSelectedRow()).getAllAdicionais()))
-								{
-									painelDropIn.remove(0);
-									quantidadeDeletar--;	  
-								}
-							}		    		  
-						}		    	  
-
-						painelDropOut.revalidate();
-						painelDropOut.repaint();
-						painelDropIn.revalidate();
-						painelDropIn.repaint();
-
-						Produto prod = new Produto();
-
+								painelDropIn.remove(0);
+								quantidadeDeletar--;
+							} 	    		  
+						}
+						
 						if(tabelaPedido.getSelectedRow() >= 0 && tabelaPedido.getSelectedRowCount() == 1) 
 						{
-							prod = vendaRapida.getProduto(tabelaPedido.getSelectedRow());
+							ProdutoVenda prod = UtilCoffe.cloneProdutoVenda(vendaRapida.getProduto(tabelaPedido.getSelectedRow()));
 							vendaRapida.removerProdutoIndex(tabelaPedido.getSelectedRow());
 							vendaRapida.calculaTotal();
 							PainelMesas.getInstance().atualizaMesa(mesaID, vendaRapida);
@@ -1722,28 +1543,20 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 						for(int i = 0; i < painelDropOut.getComponentCount(); i++)
 						{
 							DragLabel dragL = (DragLabel)painelDropOut.getComponent(i);
-							total += dragL.getPreco();
+							total += dragL.getProduto().getTotalProduto();
 						}
 
-						String pegaPreco;
-						
 						if(Configuracao.INSTANCE.getDezPorcento())
 						{
 							taxaOpcional = total * 0.10;
 							adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
 						}
-						
-						if(adicionarDezPorcento.isSelected())
-						{
-							pegaPreco = String.format("%.2f", (total + (total * 0.10)));
-						}
-						else
-						{
-							pegaPreco = String.format("%.2f", total);
-						}
 
-						pegaPreco.replaceAll(".", ",");
-						campoTotal.setText(pegaPreco);
+						if(adicionarDezPorcento.isSelected())
+							campoTotal.setText(UtilCoffe.doubleToPreco((total + (total * 0.10))));
+						else
+							campoTotal.setText(UtilCoffe.doubleToPreco(total));
+
 						atualizarCampoRecibo();
 
 						if(tabela.getRowCount() == 1)
@@ -1751,6 +1564,10 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							SwingUtilities.invokeLater(new Runnable() {  
 								public void run() {  
 									tabela.setNumRows(0);
+									painelDropOut.revalidate();
+									painelDropOut.repaint();
+									painelDropIn.revalidate();
+									painelDropIn.repaint();
 								}  
 							});   
 						}
@@ -1759,6 +1576,10 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							SwingUtilities.invokeLater(new Runnable() {  
 								public void run() {  
 									tabela.removeRow(tabelaPedido.getSelectedRow());
+									painelDropOut.revalidate();
+									painelDropOut.repaint();
+									painelDropIn.revalidate();
+									painelDropIn.repaint();
 								}  
 							});
 						}	
@@ -1793,7 +1614,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				campoRecebido.setText("");
 				campoTroco.setText("0,00");
 				campoForma.setSelectedIndex(0);
-				addProduto.zeraString();
+				//addProduto.zeraString();
 				addAdicional.clear();
 				addRemover.clear();			
 				adicionaisPainel.removeAll();
@@ -1808,28 +1629,23 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				painelDropIn.revalidate();
 				painelDropIn.repaint();    		
 				campoRecibo.setText("### Nenhum produto marcado ###");
-				addProduto.setFocus();
+				addProduto.requestFocus();
 				taxaOpcional = 0.0;
 				adicionarDezPorcento.setText("+ 10% Opcional");
-				
+
 				divisaoPainel.setTitleAt(0, "Mesa " + (mesaID+1));
 				tabela.setNumRows(0);
 
 				for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
 				{
-					for(int x = 0; x < (vendaRapida.getProduto(i).getQuantidade()-vendaRapida.getProduto(i).getPagos()) ; x++)
-					{
-						dragAdicionaProduto(vendaRapida.getProduto(i), i);
-					}
+					dragAdicionaProduto(vendaRapida.getProduto(i));
 
 					Vector<Serializable> linha = new Vector<Serializable>();
 					linha.add("");
 					linha.add(vendaRapida.getProduto(i).getNome());
 					linha.add(vendaRapida.getProduto(i).getQuantidade());
 					linha.add(vendaRapida.getProduto(i).getPagos());
-					String pegaPreco = String.format("%.2f", (vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade()));
-					pegaPreco.replaceAll(",", ".");
-					linha.add(pegaPreco);
+					linha.add(UtilCoffe.doubleToPreco((vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade())));
 					linha.add(vendaRapida.getProduto(i).getAllAdicionais());
 					linha.add("Deletar");
 					tabela.addRow(linha);							
@@ -1840,8 +1656,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 
 	@Override
 	public void focusGained(FocusEvent e) {
-		if(e.getSource() == campoRecebido)
-		{
+		if(e.getSource() == campoRecebido) {
 			campoRecebido.setText("");
 		}
 	}
@@ -1899,317 +1714,6 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		}
 	}
 
-	class VendaMesaProdutoCampo extends JPanel implements ActionListener
-	{
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		private JComboBox<String> combo;
-		private JTextField tf;
-		private Vector<String> v;
-
-		public VendaMesaProdutoCampo(CacheTodosProdutos produtos)
-		{
-			super(new BorderLayout());
-			combo = new JComboBox<String>();
-			tf = (JTextField) combo.getEditor().getEditorComponent();
-			v = new Vector<String>();
-			combo.setEditable(true);
-			combo.addActionListener(this);
-			tf.addKeyListener(new KeyAdapter()
-			{
-				public void keyTyped(KeyEvent e)
-				{
-					EventQueue.invokeLater(new Runnable()
-					{
-						public void run()
-						{
-							String text = tf.getText();
-							if(text.length()==0)
-							{
-								combo.hidePopup();
-								setModel(new DefaultComboBoxModel<String>(v), "");
-							}
-							else
-							{
-								DefaultComboBoxModel<String> m = getSuggestedModel(v, text);
-								if(m.getSize()==0 || hide_flag)
-								{
-									combo.hidePopup();
-									hide_flag = false;
-								}
-								else
-								{
-									setModel(m, text);
-									combo.showPopup();
-								}
-							}
-						}
-					});
-				}
-
-				public void keyPressed(KeyEvent e)
-				{
-					String text = tf.getText();
-					int code = e.getKeyCode();
-					if(code==KeyEvent.VK_ENTER)
-					{
-						if(!v.contains(text))
-						{
-							//v.addElement(text);
-							//Collections.sort(v);
-							setModel(getSuggestedModel(v, text), text);
-						}
-
-						hide_flag = true; 
-					}else if(code==KeyEvent.VK_ESCAPE)
-					{
-						hide_flag = true; 
-					}else if(code==KeyEvent.VK_RIGHT)
-					{
-						for(int i=0;i<v.size();i++)
-						{
-							String str = v.elementAt(i);
-							if(str.startsWith(text))
-							{
-								combo.setSelectedIndex(-1);
-								tf.setText(str);
-								return;
-							}
-						}
-					}
-				}
-			});
-
-			v.removeAllElements();
-
-			for(int i = 0; i < produtos.getProdutos().size(); i++)
-			{
-				v.addElement(produtos.getProdutos().get(i).getNome());
-			}
-
-			//setModel(new DefaultComboBoxModel<String>(v), "");
-			JPanel p = new JPanel(new BorderLayout());
-			p.setPreferredSize(new Dimension(300, 50));
-			combo.setPreferredSize(new Dimension(300, 40));
-			p.add(combo, BorderLayout.NORTH);
-			add(p);
-			setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-			setPreferredSize(new Dimension(300, 50));
-		}
-
-		private boolean hide_flag = false;
-		private void setModel(DefaultComboBoxModel<String> mdl, String str)
-		{
-			combo.setModel(mdl);
-			combo.setSelectedIndex(-1);
-			tf.setText(str);   	
-		}
-
-		private DefaultComboBoxModel<String> getSuggestedModel(java.util.List<String> list, String text)
-		{
-			DefaultComboBoxModel<String> m = new DefaultComboBoxModel<String>();
-			for(String s: list)
-			{
-				if(s.toLowerCase().contains(text)) m.addElement(s);
-			}
-
-			return m;
-		}
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			if(e.getSource() == combo)
-			{
-				updateCampo(); 
-			}
-		}
-
-		public void zeraString()
-		{
-			combo.setSelectedIndex(-1);
-			tf.setText("");   
-		}	
-
-		public String getSelecionado()
-		{
-			if(combo.getSelectedIndex() == -1)
-				return null;
-
-			return combo.getSelectedItem().toString();
-		}
-
-		public void setFocus()
-		{
-			combo.requestFocus();
-		}
-
-		public void atualizaProdutosCampo(CacheTodosProdutos produtos)
-		{
-			v.removeAllElements();
-
-			for(int i = 0; i < produtos.getProdutos().size(); i++)
-			{
-				v.addElement(produtos.getProdutos().get(i).getNome());
-			}
-
-			setModel(new DefaultComboBoxModel<String>(v), "");
-		}
-	}
-
-	class VendaMesaAdicionaisCampo extends JPanel implements ActionListener
-	{
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		private JComboBox<String> combo;
-		private JTextField tf;
-		private Vector<String> v;
-
-		public VendaMesaAdicionaisCampo(CacheTodosProdutos produtos)
-		{
-			super(new BorderLayout());
-			combo = new JComboBox<String>();
-			v = new Vector<String>();
-			combo.setEditable(true);
-			combo.addActionListener(this);
-			tf = (JTextField) combo.getEditor().getEditorComponent();
-			tf.addKeyListener(new KeyAdapter()
-			{
-				public void keyTyped(KeyEvent e)
-				{
-					EventQueue.invokeLater(new Runnable()
-					{
-						public void run()
-						{
-							String text = tf.getText();
-							if(text.length()==0)
-							{
-								combo.hidePopup();
-								setModel(new DefaultComboBoxModel<String>(v), "");
-							}
-							else
-							{
-								DefaultComboBoxModel<String> m = getSuggestedModel(v, text);
-								if(m.getSize()==0 || hide_flag)
-								{
-									combo.hidePopup();
-									hide_flag = false;
-								}
-								else
-								{
-									setModel(m, text);
-									combo.showPopup();
-								}
-							}
-						}
-					});
-				}
-
-
-				public void keyPressed(KeyEvent e)
-				{
-					String text = tf.getText();
-					int code = e.getKeyCode();
-					if(code==KeyEvent.VK_ENTER)
-					{
-						if(!v.contains(text))
-						{
-							//v.addElement(text);
-							//Collections.sort(v);
-							setModel(getSuggestedModel(v, text), text);
-						}
-
-						hide_flag = true; 
-					}else if(code==KeyEvent.VK_ESCAPE)
-					{
-						hide_flag = true; 
-					}else if(code==KeyEvent.VK_RIGHT)
-					{
-						for(int i=0;i<v.size();i++)
-						{
-							String str = v.elementAt(i);
-							if(str.startsWith(text))
-							{
-								combo.setSelectedIndex(-1);
-								tf.setText(str);
-								return;
-							}
-						}
-					}
-				}
-			});
-
-			v.removeAllElements();
-
-			for(int i = 0; i < produtos.getAdicionais().size(); i++)
-			{
-				v.addElement(produtos.getAdicionais().get(i).getNome());
-			}
-
-			setModel(new DefaultComboBoxModel<String>(v), "");
-			JPanel p = new JPanel(new BorderLayout());
-			p.setPreferredSize(new Dimension(220, 45));
-			combo.setPreferredSize(new Dimension(220, 35));
-			p.add(combo, BorderLayout.NORTH);
-			add(p);
-			setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-			setPreferredSize(new Dimension(220, 45));
-		}
-
-		private boolean hide_flag = false;
-		private void setModel(DefaultComboBoxModel<String> mdl, String str)
-		{
-			combo.setModel(mdl);
-			combo.setSelectedIndex(-1);
-			tf.setText(str);   	
-		}
-
-		private DefaultComboBoxModel<String> getSuggestedModel(java.util.List<String> list, String text)
-		{
-			DefaultComboBoxModel<String> m = new DefaultComboBoxModel<String>();
-			for(String s: list)
-			{
-				if(s.toLowerCase().contains(text)) m.addElement(s);
-			}
-
-			return m;
-		}
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			if(e.getSource() == combo)
-			{
-				updateCampo();
-			}
-		}
-
-		public String getSelecionado()
-		{
-			if(combo.getSelectedIndex() == -1)
-				return null;		
-
-			return combo.getSelectedItem().toString();
-		}
-
-		public void setFocus()
-		{
-			combo.requestFocus();
-		}
-
-		public void atualizaProdutosCampo(CacheTodosProdutos produtos)
-		{
-			v.removeAllElements();
-
-			for(int i = 0; i < produtos.getAdicionais().size(); i++)
-			{
-				v.addElement(produtos.getAdicionais().get(i).getNome());
-			}
-
-			setModel(new DefaultComboBoxModel<String>(v), "");
-		}
-	}
-	
 	class OpcoesCellComponent extends JPanel
 	{
 		/**
@@ -2218,11 +1722,11 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		private static final long serialVersionUID = 1L;
 		private WebButton maisProduto, menosProduto;
 		private int linha;
-		
+
 		public OpcoesCellComponent()
 		{
 			setLayout(new FlowLayout(FlowLayout.CENTER, 5, 2));
-			
+
 			ActionListener al = new ActionListener()
 			{
 				@Override
@@ -2232,8 +1736,12 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 						vendaRapida.getProduto(linha).setQuantidade(1, 1);
 						double total = vendaRapida.getProduto(linha).getTotalProduto()*vendaRapida.getProduto(linha).getQuantidade();
 						tabela.setValueAt(UtilCoffe.doubleToPreco(total), linha, 4);
-						tabela.setValueAt(vendaRapida.getProduto(linha).getQuantidade(), linha, 2);						
-						dragAdicionaProduto(vendaRapida.getProduto(linha), linha);
+						tabela.setValueAt(vendaRapida.getProduto(linha).getQuantidade(), linha, 2);
+						
+						ProdutoVenda maisUm = UtilCoffe.cloneProdutoVenda(vendaRapida.getProduto(linha));
+						maisUm.setQuantidade(1, 0);
+						dragAdicionaProduto(maisUm);
+						
 						PainelMesas.getInstance().atualizaMesa(mesaID, vendaRapida);
 						CacheMesaHeader mh = new CacheMesaHeader(mesaID, vendaRapida.getProduto(linha), vendaRapida, UtilCoffe.MESA_ATUALIZAR, 1);
 						Bartender.INSTANCE.enviarMesa(mh, 0);
@@ -2241,21 +1749,16 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 					else
 					{
 						boolean continua = true;
-						String nomeProduto = vendaRapida.getProduto(linha).getNome();
-						String adicionaisProduto = vendaRapida.getProduto(linha).getAllAdicionais();
-						int quantidadeProduto = vendaRapida.getProduto(linha).getQuantidade();
-						int fazendo = PainelCozinha.getInstance().verificaStatusPedido((mesaID+1), quantidadeProduto, nomeProduto, adicionaisProduto);
+						int fazendo = PainelCozinha.getInstance().verificaStatusPedido((mesaID+1), vendaRapida.getProduto(linha));
 
-						if(fazendo >= quantidadeProduto)
+						if(fazendo >= vendaRapida.getProduto(linha).getQuantidade())
 						{
-							int opcao = JOptionPane.showConfirmDialog(null, "Esse produto já está marcado como Fazendo na cozinha.\n\nVocê tem certeza que quer deletar?\n\n", "Deletar Produto", JOptionPane.YES_NO_OPTION);
-
+							int opcao = JOptionPane.showConfirmDialog(null, "Esse produto já está marcado como Fazendo na cozinha."
+									+ "\n\nVocê tem certeza que quer deletar?\n\n", "Deletar Produto", JOptionPane.YES_NO_OPTION);
 							if(opcao != JOptionPane.YES_OPTION)
-							{
 								continua = false;
-							}
 						}
-						
+
 						if(continua)
 						{
 							boolean deletar_all = true;
@@ -2268,28 +1771,22 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							for(int i = 0; i < painelDropOut.getComponentCount(); i++)
 							{	  
 								DragLabel dragL = (DragLabel)painelDropOut.getComponent(i);
-								if(dragL.getNome().equals(vendaRapida.getProduto(linha).getNome()))
+								if(dragL.getProduto().compareTo(vendaRapida.getProduto(linha)))
 								{
-									if(dragL.getAdicionais().equals(vendaRapida.getProduto(linha).getAllAdicionais()))
-									{
-										painelDropOut.remove(i);
-										quantidadeDeletar = 0;
-										break;
-									}
+									painelDropOut.remove(i);
+									quantidadeDeletar = 0;
+									break;
 								}
 							}
 
 							if(quantidadeDeletar > 0 && painelDropOut.getComponentCount() > 0)
 							{
 								DragLabel dragL = (DragLabel)painelDropOut.getComponent(0);
-								if(dragL.getNome().equals(vendaRapida.getProduto(linha).getNome()))
+								if(dragL.getProduto().compareTo(vendaRapida.getProduto(linha)))
 								{
-									if(dragL.getAdicionais().equals(vendaRapida.getProduto(linha).getAllAdicionais()))
-									{
-										painelDropOut.remove(0);
-										quantidadeDeletar = 0;	  
-									}
-								}		    		  
+									painelDropOut.remove(0);
+									quantidadeDeletar = 0;
+								}	    		  
 							}
 
 							if(quantidadeDeletar > 0)
@@ -2297,14 +1794,11 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 								for(int i = 0; i < painelDropIn.getComponentCount(); i++)
 								{ 
 									DragLabel dragL = (DragLabel)painelDropIn.getComponent(i);
-									if(dragL.getNome().equals(vendaRapida.getProduto(linha).getNome()))
+									if(dragL.getProduto().compareTo(vendaRapida.getProduto(linha)))
 									{
-										if(dragL.getAdicionais().equals(vendaRapida.getProduto(linha).getAllAdicionais()))
-										{
-											painelDropIn.remove(i);
-											quantidadeDeletar = 0;
-											break;
-										}
+										painelDropIn.remove(i);
+										quantidadeDeletar = 0;
+										break;
 									}
 								}		    		  
 							}
@@ -2312,31 +1806,30 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							if(quantidadeDeletar > 0 && painelDropIn.getComponentCount() > 0)
 							{
 								DragLabel dragL = (DragLabel)painelDropIn.getComponent(0);
-								if(dragL.getNome().equals(vendaRapida.getProduto(linha).getNome()))
+								if(dragL.getProduto().compareTo(vendaRapida.getProduto(linha)))
 								{
-									if(dragL.getAdicionais().equals(vendaRapida.getProduto(linha).getAllAdicionais()))
-									{
-										painelDropIn.remove(0);
-										quantidadeDeletar = 0;	  
-									}
-								}		    		  
-							}		    	  
-
-							painelDropOut.revalidate();
-							painelDropOut.repaint();
-							painelDropIn.revalidate();
-							painelDropIn.repaint();
+									painelDropIn.remove(0);
+									quantidadeDeletar = 0;
+								}	    		  
+							}
+							
+							SwingUtilities.invokeLater(new Runnable() {  
+								public void run() {  
+									painelDropOut.revalidate();
+									painelDropOut.repaint();
+									painelDropIn.revalidate();
+									painelDropIn.repaint();
+								}  
+							});  
 
 							if(deletar_all)
 							{
-								Produto prod = new Produto();
-								prod = vendaRapida.getProduto(linha);
-
+								ProdutoVenda pv = UtilCoffe.cloneProdutoVenda(vendaRapida.getProduto(linha));
 								vendaRapida.removerProdutoIndex(linha);
 								vendaRapida.calculaTotal();
 								PainelMesas.getInstance().atualizaMesa(mesaID, vendaRapida);
-								
-								CacheMesaHeader mh = new CacheMesaHeader(mesaID, prod, vendaRapida, UtilCoffe.MESA_DELETAR, 1);
+
+								CacheMesaHeader mh = new CacheMesaHeader(mesaID, pv, vendaRapida, UtilCoffe.MESA_DELETAR, 1);
 								Bartender.INSTANCE.enviarMesa(mh, 0);
 
 								if(tabela.getRowCount() == 1)
@@ -2358,15 +1851,15 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							}
 							else
 							{
+								ProdutoVenda prod = UtilCoffe.cloneProdutoVenda(vendaRapida.getProduto(linha));
+								prod.setQuantidade(1, 0);
+								
 								vendaRapida.getProduto(linha).setQuantidade(1, 2);
 								double total = vendaRapida.getProduto(linha).getTotalProduto()*vendaRapida.getProduto(linha).getQuantidade();
 								tabela.setValueAt(UtilCoffe.doubleToPreco(total), linha, 4);
 								tabela.setValueAt(vendaRapida.getProduto(linha).getQuantidade(), linha, 2);
 								vendaRapida.calculaTotal();
 								PainelMesas.getInstance().atualizaMesa(mesaID, vendaRapida);
-								
-								Produto prod = new Produto();
-								prod = vendaRapida.getProduto(linha);
 
 								CacheMesaHeader mh = new CacheMesaHeader(mesaID, prod, vendaRapida, UtilCoffe.MESA_ATUALIZAR, -1);
 								Bartender.INSTANCE.enviarMesa(mh, 0);
@@ -2376,67 +1869,57 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							for(int i = 0; i < painelDropOut.getComponentCount(); i++)
 							{
 								DragLabel dragL = (DragLabel)painelDropOut.getComponent(i);
-								total += dragL.getPreco();
+								total += dragL.getProduto().getTotalProduto();
 							}
-
-							String pegaPreco;
 							
 							if(Configuracao.INSTANCE.getDezPorcento())
 							{
 								taxaOpcional = total * 0.10;
 								adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
 							}
-							
-							if(adicionarDezPorcento.isSelected())
-							{
-								pegaPreco = String.format("%.2f", (total + (total * 0.10)));
-							}
-							else
-							{
-								pegaPreco = String.format("%.2f", total);
-							}
 
-							pegaPreco.replaceAll(".", ",");
-							campoTotal.setText(pegaPreco);
+							if(adicionarDezPorcento.isSelected())
+								campoTotal.setText(UtilCoffe.doubleToPreco((total + (total * 0.10))));
+							else
+								campoTotal.setText(UtilCoffe.doubleToPreco(total));
+
 							atualizarCampoRecibo();							
 						}
 					}
 
 				}
 			};
-			
+
 			maisProduto = new WebButton(new ImageIcon(getClass().getClassLoader().getResource("imgs/plus2.png")));
 			maisProduto.setUndecorated(true);
 			maisProduto.setPreferredSize(new Dimension(28, 24));
 			maisProduto.addActionListener(al);
-			
+
 			menosProduto = new WebButton(new ImageIcon(getClass().getClassLoader().getResource("imgs/remove.png")));
 			menosProduto.setUndecorated(true);
 			menosProduto.setPreferredSize(new Dimension(28, 24));
 			menosProduto.addActionListener(al);
-			
+
 			add(maisProduto);
 			add(menosProduto);
 		}
-		
+
 		public void setLinha(int li)
 		{
 			linha = li;
 		}
 	}
-	
+
 	class OpcoesCell extends AbstractCellEditor implements TableCellEditor, TableCellRenderer
 	{
 		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
-		
 		OpcoesCellComponent cellOpcoes;
 		Color alternate = new Color(206, 220, 249);
-		
-		public OpcoesCell()
-		{
+
+		public OpcoesCell() {
 			cellOpcoes = new OpcoesCellComponent();
 		}	
 
@@ -2456,14 +1939,14 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 			atualizaPainel(row);
 			return cellOpcoes;
 		}
-		
+
 		public void atualizaPainel(int row)
 		{
 			if(row % 2 == 0)
 				cellOpcoes.setBackground(alternate);
 			else
 				cellOpcoes.setBackground(Color.WHITE);
-			
+
 			cellOpcoes.setLinha(row);
 		}
 	}

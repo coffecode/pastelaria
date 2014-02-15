@@ -3,6 +3,10 @@ import java.io.Serializable;
 
 public class CacheAviso implements Serializable 
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private int tipo, classe;
 	private String mensagem, titulo;
 	

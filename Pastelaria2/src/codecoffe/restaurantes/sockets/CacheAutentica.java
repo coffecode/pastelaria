@@ -3,6 +3,10 @@ import java.io.Serializable;
 
 public class CacheAutentica implements Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public String username, password, nome;
 	public int header, level;
 	

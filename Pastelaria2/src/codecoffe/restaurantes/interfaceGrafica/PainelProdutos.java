@@ -40,6 +40,8 @@ import codecoffe.restaurantes.primitivas.Produto;
 import codecoffe.restaurantes.produtos.AbaCategorias;
 import codecoffe.restaurantes.produtos.AbaProdutos;
 import codecoffe.restaurantes.produtos.ProdutosTreeModel;
+import codecoffe.restaurantes.sockets.CacheTodosProdutos;
+import codecoffe.restaurantes.sockets.Server;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
 import com.alee.laf.StyleConstants;
@@ -85,6 +87,7 @@ public class PainelProdutos extends JPanel implements ActionListener{
 		arvoreProdutos.setDragEnabled(true);
 		arvoreProdutos.setDropMode(DropMode.ON_OR_INSERT);
 		arvoreProdutos.setTransferHandler(new TreeTransferHandler());
+		arvoreProdutos.setToggleClickCount(1);
 		
 		WebScrollPane scrollArvore = new WebScrollPane(arvoreProdutos);
 		scrollArvore.setViewportView(arvoreProdutos);
@@ -156,6 +159,11 @@ public class PainelProdutos extends JPanel implements ActionListener{
 
 	public static PainelProdutos getInstance() {
 		return ProdutosSingletonHolder.INSTANCE;
+	}
+	
+	public List<Categoria> getTodosProdutosArvore()
+	{
+		return getModel().getTodosProdutos();
 	}
 
 	public ProdutosTreeModel getModel()
@@ -377,6 +385,12 @@ public class PainelProdutos extends JPanel implements ActionListener{
 						envia.executaUpdate("UPDATE produtos_new SET categoria = " 
 						+ parent.getIdCategoria() + " WHERE id = " + nodes.getIdUnico());
 						envia.fechaConexao();
+						
+						CacheTodosProdutos todosP = new CacheTodosProdutos(getModel().getTodosProdutos());
+						PainelVendaMesa.getInstance().atualizaProdutos(todosP);
+						PainelVendaRapida.getInstance().atualizaProdutos(todosP);
+						Server.getInstance().enviaTodos(todosP);
+						
 					} catch (ClassNotFoundException | SQLException e) {
 						e.printStackTrace();
 						new PainelErro(e);

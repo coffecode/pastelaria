@@ -3,6 +3,10 @@ import java.io.Serializable;
 
 public class CacheConfiguracoes implements Serializable 
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private double taxaEntrega;
 	private String nomeRest;
 	private boolean dezPorcento, reciboFim;	

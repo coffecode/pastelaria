@@ -6,6 +6,10 @@ import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
 public class Clientes implements Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private int idUnico;
 	private String nome, apelido, telefone, endereco, 
 	bairro, complemento, cpf, cep, numero;

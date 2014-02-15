@@ -1,13 +1,10 @@
 package codecoffe.restaurantes.licenca;
  
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -20,7 +17,6 @@ import java.security.spec.X509EncodedKeySpec;
 import javax.crypto.Cipher;
 
 import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
 
 /**
  * @author JavaDigest

@@ -1,5 +1,10 @@
 package codecoffe.restaurantes.utilitarios;
 
+import java.text.Normalizer;
+
+import codecoffe.restaurantes.primitivas.Produto;
+import codecoffe.restaurantes.primitivas.ProdutoVenda;
+
 public abstract class UtilCoffe
 {
 	public static final String VERSAO = "v2.00";
@@ -77,6 +82,38 @@ public abstract class UtilCoffe
 		String pegaPreco = String.format("%.2f", doub);
 		pegaPreco.replaceAll(",", ".");
 		return pegaPreco;
+	}
+	
+	public static String removeAcentos(String str) 
+	{
+		str = Normalizer.normalize(str, Normalizer.Form.NFD);
+		str = str.replaceAll("[^\\p{ASCII}]", "");
+		return str;
+	}
+	
+	public static boolean isNumeric(String str)
+	{
+	    for (char c : str.toCharArray())
+	    {
+	        if (!Character.isDigit(c)) return false;
+	    }
+	    return true;
+	}
+	
+	public static ProdutoVenda cloneProdutoVenda(ProdutoVenda p)
+	{
+		ProdutoVenda prod = new ProdutoVenda(p.getNome(), p.getReferencia(), p.getPreco(), 
+				p.getIdUnico(), p.getCodigo(), p.getAdicionaisList(), p.getQuantidade(), 
+				p.getPagos(), p.getTotalProduto(), p.getComentario());
+		
+		prod.calcularPreco();
+		return prod;
+	}
+	
+	public static Produto cloneProduto(Produto p)
+	{
+		return new Produto(p.getNome(), p.getReferencia(), p.getPreco(), 
+				p.getIdUnico(), p.getCodigo());
 	}
 	
 	/*public static void printaMemoria()

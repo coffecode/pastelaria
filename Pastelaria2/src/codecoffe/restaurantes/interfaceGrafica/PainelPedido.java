@@ -69,8 +69,8 @@ public class PainelPedido extends WebPanel
 		if(p.getProduto().getTotalAdicionais() > 0)
 			formataNome += " com " + p.getProduto().getAllAdicionais();
 		
-		if(!UtilCoffe.vaziu(p.getObs()))
-			formataNome += " (" + p.getObs() + ")";
+		if(!UtilCoffe.vaziu(p.getProduto().getComentario()))
+			formataNome += " (" + p.getProduto().getComentario() + ")";
 		
 		labelProduto = new JLabel(formataNome + ".");
 		labelProduto.setPreferredSize(new Dimension(400, 30));

@@ -4,28 +4,29 @@ import java.util.Date;
 
 public class Pedido implements Serializable 
 {
-	private Produto p;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private ProdutoVenda p;
 	private Date horario, ultimaEdicao;
-	private String nomeAtendido, observacao;
+	private String nomeAtendido;
 	private int local, header, status, idUnico;
 	
-	public Pedido(Produto prod, String atendimento, String obs, int local)
+	public Pedido(ProdutoVenda prod, String atendimento, int local)
 	{
 		this.p = prod;
 		this.nomeAtendido = atendimento;
-		this.observacao = obs;
 		this.local = local;
 		this.header = 1;
 		this.status = 1;
 		this.idUnico = 0;
 	}
 	
-	public Pedido(Produto p, Date horario, String nomeAtendido,
-			String observacao, int local, int status, int idUnico) {
+	public Pedido(ProdutoVenda p, Date horario, String nomeAtendido, int local, int status, int idUnico) {
 		this.p = p;
 		this.horario = horario;
 		this.nomeAtendido = nomeAtendido;
-		this.observacao = observacao;
 		this.local = local;
 		this.status = status;
 		this.idUnico = idUnico;
@@ -43,7 +44,7 @@ public class Pedido implements Serializable
 		this.idUnico = idUnico;
 	}
 
-	public Produto getProduto()
+	public ProdutoVenda getProduto()
 	{
 		return this.p;
 	}
@@ -56,11 +57,6 @@ public class Pedido implements Serializable
 	public String getAtendido()
 	{
 		return this.nomeAtendido;
-	}
-	
-	public String getObs()
-	{
-		return this.observacao;
 	}
 	
 	public int getLocal()
@@ -103,8 +99,8 @@ public class Pedido implements Serializable
 		this.ultimaEdicao = tempo;
 	}
 	
-	public void setProduto(Produto pp)
+	public void setProduto(ProdutoVenda produto)
 	{
-		this.p = pp;
+		this.p = produto;
 	}
 }

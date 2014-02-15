@@ -6,6 +6,10 @@ import java.util.List;
 
 public class Categoria implements Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private int idCategoria;
 	private String titulo, imagem;
 	private List<Produto> produtos = new ArrayList<Produto>(); 

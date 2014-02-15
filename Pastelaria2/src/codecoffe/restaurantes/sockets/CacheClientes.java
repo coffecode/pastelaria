@@ -6,6 +6,10 @@ import codecoffe.restaurantes.primitivas.Clientes;
 
 public class CacheClientes implements Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private int header;
 	private String atendente;
 	private ArrayList<Clientes> listaClientes;

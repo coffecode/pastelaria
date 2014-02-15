@@ -6,6 +6,10 @@ import codecoffe.restaurantes.primitivas.Pedido;
 
 public class CacheTodosPedidos implements Serializable
 {	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private ArrayList<Pedido> pedidos;
 	
 	public CacheTodosPedidos(ArrayList<Pedido> p)

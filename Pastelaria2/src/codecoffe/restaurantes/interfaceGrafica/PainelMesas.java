@@ -5,8 +5,8 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 
 import codecoffe.restaurantes.mysql.Query;
-import codecoffe.restaurantes.primitivas.Adicionais;
 import codecoffe.restaurantes.primitivas.Produto;
+import codecoffe.restaurantes.primitivas.ProdutoVenda;
 import codecoffe.restaurantes.primitivas.Venda;
 import codecoffe.restaurantes.sockets.CacheTodasMesas;
 import codecoffe.restaurantes.utilitarios.Configuracao;
@@ -86,42 +86,52 @@ public class PainelMesas extends JPanel
 			
 			try {
 				Venda vd = new Venda();
-				Produto p = null;
+				ProdutoVenda p = null;
 				pega.executaQuery("SELECT * FROM mesas WHERE mesas_id = " + i +";");
 				
 				while(pega.next())
 				{
-					p = new Produto();
-					p.setNome(pega.getString("produto"));
+					p = new ProdutoVenda();
+					p.setIdUnico(pega.getInt("produto"));
 					p.setQuantidade(pega.getInt("quantidade"), 0);
 					p.setPagos(pega.getInt("pago"));
-					String[] adcArray = pega.getString("adicionais").split("\\s*,\\s*");
-					
+					p.setComentario(pega.getString("comentario"));
+					String[] adcArray = pega.getString("adicionais").split("\\s+");
 					Query pega1 = new Query();
-					pega1.executaQuery("SELECT preco FROM produtos WHERE nome = '" + p.getNome() +"';");
+					pega1.executaQuery("SELECT * FROM produtos_new WHERE id = " + p.getIdUnico());
+					
 					if(pega1.next())
 					{
-						p.setPreco(Double.parseDouble((pega1.getString("preco").replaceAll(",", "."))));
-					}
-					pega1.fechaConexao();
-					
-					for(int x = 0; x < adcArray.length; x++)
-					{
-						Query pega2 = new Query();
-						pega2.executaQuery("SELECT preco FROM produtos WHERE nome = '" + adcArray[x] +"';");
-						if(pega2.next())
+						p.setNome(pega1.getString("nome"));
+						p.setPreco(UtilCoffe.precoToDouble(pega1.getString("preco")));
+						p.setCodigo(pega1.getInt("codigo"));
+						p.setReferencia(pega1.getString("referencia"));
+						
+						if(adcArray.length > 0)
 						{
-							Adicionais adc = new Adicionais();
-							adc.nomeAdicional = adcArray[x];
-							adc.precoAdicional = Double.parseDouble((pega2.getString("preco").replaceAll(",", ".")));
-							p.adicionrAdc(adc);
+							for(int x = 0; x < adcArray.length; x++)
+							{
+								if(UtilCoffe.isNumeric(adcArray[x]) && !UtilCoffe.vaziu(adcArray[x]))
+								{
+									Query pega2 = new Query();
+									pega2.executaQuery("SELECT * FROM produtos_new WHERE id = " + Integer.parseInt(adcArray[x]));
+									if(pega2.next())
+									{
+										Produto adicional = new Produto(pega2.getString("nome"), pega2.getString("referencia"), 
+												UtilCoffe.precoToDouble(pega2.getString("preco")), pega2.getInt("id"), pega2.getInt("codigo"));
+										
+										p.adicionrAdc(adicional);
+									}
+									pega2.fechaConexao();	
+								}
+							}	
 						}
-						pega2.fechaConexao();
+						
+						p.calcularPreco();
+						vd.adicionarProduto(p);
 					}
 					
-					p.calcularPreco();
-					if(p != null)
-						vd.adicionarProduto(p);				
+					pega1.fechaConexao();			
 				}
 				
 				if(vd.getQuantidadeProdutos() > 0)

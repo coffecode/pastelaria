@@ -21,9 +21,13 @@ import javax.swing.SwingUtilities;
 import codecoffe.restaurantes.interfaceGrafica.MenuPrincipal;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
 import codecoffe.restaurantes.interfaceGrafica.PainelProdutos;
+import codecoffe.restaurantes.interfaceGrafica.PainelVendaMesa;
+import codecoffe.restaurantes.interfaceGrafica.PainelVendaRapida;
 import codecoffe.restaurantes.mysql.Query;
 import codecoffe.restaurantes.primitivas.Categoria;
 import codecoffe.restaurantes.primitivas.Produto;
+import codecoffe.restaurantes.sockets.CacheTodosProdutos;
+import codecoffe.restaurantes.sockets.Server;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
 import com.alee.laf.button.WebButton;
@@ -239,6 +243,11 @@ public class AbaProdutos extends JPanel
 										PainelProdutos.getInstance().salvarProduto(produtoEditando, 
 												modelCategoria.getCategoriaSelecionada().getIdCategoria(), categoriaEditando);
 									}
+									
+									CacheTodosProdutos todosP = new CacheTodosProdutos(PainelProdutos.getInstance().getModel().getTodosProdutos());
+									PainelVendaMesa.getInstance().atualizaProdutos(todosP);
+									PainelVendaRapida.getInstance().atualizaProdutos(todosP);
+									Server.getInstance().enviaTodos(todosP);
 
 									envia.fechaConexao();
 								} catch (ClassNotFoundException | SQLException e1) {
@@ -264,6 +273,11 @@ public class AbaProdutos extends JPanel
 							PainelProdutos.getInstance().removerProduto(produtoEditando, categoriaEditando);
 							NotificationManager.setLocation(2);
 							NotificationManager.showNotification(MenuPrincipal.getInstance().getJanela(), "Produto Deletado!").setDisplayTime(2000);
+							
+							CacheTodosProdutos todosP = new CacheTodosProdutos(PainelProdutos.getInstance().getModel().getTodosProdutos());
+							PainelVendaMesa.getInstance().atualizaProdutos(todosP);
+							PainelVendaRapida.getInstance().atualizaProdutos(todosP);
+							Server.getInstance().enviaTodos(todosP);
 						} catch (ClassNotFoundException | SQLException e1) {
 							e1.printStackTrace();
 							new PainelErro(e1);

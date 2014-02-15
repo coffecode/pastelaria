@@ -18,7 +18,7 @@ import codecoffe.restaurantes.interfaceGrafica.PainelVendaRapida;
 import codecoffe.restaurantes.interfaceGrafica.PainelVendas;
 import codecoffe.restaurantes.mysql.Query;
 import codecoffe.restaurantes.primitivas.Pedido;
-import codecoffe.restaurantes.primitivas.Produto;
+import codecoffe.restaurantes.primitivas.ProdutoVenda;
 import codecoffe.restaurantes.sockets.CacheAviso;
 import codecoffe.restaurantes.sockets.CacheClientes;
 import codecoffe.restaurantes.sockets.CacheMesaHeader;
@@ -147,8 +147,9 @@ public enum Bartender
 				try {
 					String formatacao;
 					Query envia = new Query();
-					formatacao = "INSERT INTO mesas(mesas_id, produto, quantidade, pago, adicionais) VALUES("
-					+ m.getMesaId() + ", '" + m.getProdutoMesa().getNome() + "', " + m.getHeaderExtra() + ", 0, '" + m.getProdutoMesa().getAllAdicionais() + "');";
+					formatacao = "INSERT INTO mesas(mesas_id, produto, quantidade, pago, adicionais, comentario) VALUES("
+					+ m.getMesaId() + ", " + m.getProdutoMesa().getIdUnico() + ", " + m.getHeaderExtra() + ", 0, '" 
+					+ m.getProdutoMesa().getAllAdicionaisId() + "', '" + m.getProdutoMesa().getComentario() + "');";
 					envia.executaUpdate(formatacao);
 					envia.fechaConexao();
 					
@@ -158,7 +159,7 @@ public enum Bartender
 					Server.getInstance().enviaTodos(m, usuario);
 					/* adicionar pedido */
 					m.getProdutoMesa().setQuantidade(m.getHeaderExtra(), 0);
-					Pedido ped = new Pedido(m.getProdutoMesa(), m.getAtendente(), "", (m.getMesaId()+1));
+					Pedido ped = new Pedido(m.getProdutoMesa(), m.getAtendente(), (m.getMesaId()+1));
 					enviarPedido(ped);
 				} catch (ClassNotFoundException | SQLException e) {
 					e.printStackTrace();
@@ -176,7 +177,9 @@ public enum Bartender
 					String formatacao;
 					Query envia = new Query();
 					formatacao = "UPDATE mesas SET `quantidade` = (`quantidade` + " + m.getHeaderExtra() + ") WHERE `mesas_id` = " + m.getMesaId()
-					+ " AND `produto` = '" + m.getProdutoMesa().getNome() + "' AND `adicionais` = '" + m.getProdutoMesa().getAllAdicionais() + "';";						
+					+ " AND `produto` = " + m.getProdutoMesa().getIdUnico() 
+					+ " AND `adicionais` = '" + m.getProdutoMesa().getAllAdicionaisId() 
+					+ "' AND `comentario` = '" + m.getProdutoMesa().getComentario() + "';";						
 					envia.executaUpdate(formatacao);
 					envia.fechaConexao();
 					
@@ -184,24 +187,17 @@ public enum Bartender
 						PainelMesas.getInstance().atualizaMesaCache(m.getMesaId(), m.getMesaVenda());
 					
 					Server.getInstance().enviaTodos(m, usuario);
-					
-					Produto pNovo = new Produto();
-					pNovo.setNome(m.getProdutoMesa().getNome());
-					pNovo.setPagos(m.getProdutoMesa().getPagos());
-					pNovo.setPreco(m.getProdutoMesa().getPreco());
-					pNovo.setQuantidade(m.getHeaderExtra(), 0);
-					pNovo.setAdicionaisList(m.getProdutoMesa().getAdicionaisList());
-					pNovo.calcularPreco();
+					ProdutoVenda pNovo = UtilCoffe.cloneProdutoVenda(m.getProdutoMesa());
 					
 					/* adicionar pedido */
 					if(m.getHeaderExtra() > 0) // se for menor que zero ele ta deletando um pedido..
 					{
-						Pedido ped = new Pedido(pNovo, m.getAtendente(), "", (m.getMesaId()+1));
+						Pedido ped = new Pedido(pNovo, m.getAtendente(), (m.getMesaId()+1));
 						enviarPedido(ped);		
 					}
 					else
 					{
-						Pedido ped = new Pedido(pNovo, m.getAtendente(), "", (m.getMesaId()+1));
+						Pedido ped = new Pedido(pNovo, m.getAtendente(), (m.getMesaId()+1));
 						ped.setHeader(UtilCoffe.PEDIDO_STATUS);
 						enviarPedido(ped);						
 					}
@@ -229,9 +225,9 @@ public enum Bartender
 				try {
 					Query pega = new Query();
 					if(m.getHeader() == UtilCoffe.MESA_DELETAR)
-					      pega.executaUpdate("DELETE FROM mesas WHERE `produto` = '" + m.getProdutoMesa().getNome() 
-					    		  + "' AND `adicionais` = '" 
-					    		  + m.getProdutoMesa().getAllAdicionais() 
+					      pega.executaUpdate("DELETE FROM mesas WHERE `produto` = " + m.getProdutoMesa().getIdUnico() 
+					    		  + " AND `adicionais` = '" + m.getProdutoMesa().getAllAdicionaisId()
+					    		  + "' AND `comentario` = '" + m.getProdutoMesa().getComentario()
 					    		  + "' AND `mesas_id` = " + m.getMesaId() + ";");
 					
 					pega.executaQuery("SELECT * FROM mesas WHERE `quantidade` != `pago` AND `mesas_id` = "+ m.getMesaId() +";");
@@ -247,7 +243,7 @@ public enum Bartender
 					if(m.getHeader() == UtilCoffe.MESA_DELETAR)
 					{
 						m.getProdutoMesa().setQuantidade(m.getHeaderExtra(), 0);
-						Pedido ped = new Pedido(m.getProdutoMesa(), m.getAtendente(), "", (m.getMesaId()+1));
+						Pedido ped = new Pedido(m.getProdutoMesa(), m.getAtendente(), (m.getMesaId()+1));
 						ped.setHeader(UtilCoffe.PEDIDO_STATUS);
 						enviarPedido(ped);		
 					}
@@ -320,11 +316,8 @@ public enum Bartender
 				nomeRecibo += ".txt";
 				
 				File arquivo = new File(nomeRecibo);
-
 				FileWriter arquivoTxt = new FileWriter(arquivo, false);
 				PrintWriter linhasTxt = new PrintWriter(arquivoTxt);
-
-				String pegaPreco = "";
 
 				linhasTxt.println("===========================================");
 				linhasTxt.println(String.format("              %s              ", Configuracao.INSTANCE.getRestaurante()));
@@ -335,34 +328,19 @@ public enum Bartender
 
 				for(int i = 0; i < v.vendaFeita.getQuantidadeProdutos(); i++)
 				{
-					linhasTxt.print(String.format("%-20.20s", v.vendaFeita.getProduto(i).getNome()));
+					linhasTxt.print(String.format("%-20.20s", v.vendaFeita.getProduto(i).getReferencia()));
 					linhasTxt.print(String.format("%3s     ", v.vendaFeita.getProduto(i).getQuantidade()));
-
-					pegaPreco = String.format("%.2f", v.vendaFeita.getProduto(i).getPreco());
-					pegaPreco.replaceAll(",", ".");							
-
-					linhasTxt.print(String.format("%5s    ", pegaPreco));
-
-					pegaPreco = String.format("%.2f", (v.vendaFeita.getProduto(i).getPreco()*v.vendaFeita.getProduto(i).getQuantidade()));
-					pegaPreco.replaceAll(",", ".");							
-
-					linhasTxt.print(String.format("%6s    ", pegaPreco));
+					linhasTxt.print(String.format("%5s    ", UtilCoffe.doubleToPreco(v.vendaFeita.getProduto(i).getPreco())));
+					linhasTxt.print(String.format("%6s    ", UtilCoffe.doubleToPreco((v.vendaFeita.getProduto(i).getPreco()*v.vendaFeita.getProduto(i).getQuantidade()))));
 					linhasTxt.println();
 
 					for(int j = 0; j < v.vendaFeita.getProduto(i).getTotalAdicionais(); j++)
 					{
-						linhasTxt.print(String.format("%-20.20s", "+" + v.vendaFeita.getProduto(i).getAdicional(j).nomeAdicional));
+						linhasTxt.print(String.format("%-20.20s", "+" + v.vendaFeita.getProduto(i).getAdicional(j).getReferencia()));
 						linhasTxt.print(String.format("%3s     ", v.vendaFeita.getProduto(i).getQuantidade()));
-
-						pegaPreco = String.format("%.2f", v.vendaFeita.getProduto(i).getAdicional(j).precoAdicional);
-						pegaPreco.replaceAll(",", ".");							
-
-						linhasTxt.print(String.format("%5s    ", pegaPreco));
-
-						pegaPreco = String.format("%.2f", (v.vendaFeita.getProduto(i).getAdicional(j).precoAdicional*v.vendaFeita.getProduto(i).getQuantidade()));
-						pegaPreco.replaceAll(",", ".");							
-
-						linhasTxt.print(String.format("%6s    ", pegaPreco));
+						linhasTxt.print(String.format("%5s    ", UtilCoffe.doubleToPreco(v.vendaFeita.getProduto(i).getAdicional(j).getPreco())));
+						linhasTxt.print(String.format("%6s    ", 
+						UtilCoffe.doubleToPreco((v.vendaFeita.getProduto(i).getAdicional(j).getPreco()*v.vendaFeita.getProduto(i).getQuantidade()))));
 						linhasTxt.println();
 					}
 				}            
