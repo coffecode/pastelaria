@@ -194,16 +194,12 @@ public class PainelClientes extends JPanel implements ActionListener
 		        {
 		        	label.setForeground(Color.BLACK);
 		        	label.setFont(new Font("Verdana", Font.BOLD, 11));
-		        	//label.setMinimumSize(list.getMinimumSize());
-		        	//label.setMaximumSize(list.getMaximumSize());
 		        	label.setPreferredSize(new Dimension(1900, 30));
 		        }
 		        else
 		        {
 		        	label.setForeground(Color.BLACK);
 		        	label.setFont(new Font("Verdana", Font.PLAIN, 11));
-		        	//label.setMinimumSize(list.getMinimumSize());
-		        	//label.setMaximumSize(list.getMaximumSize());
 		        	label.setPreferredSize(new Dimension(1900, 30));
 		        }
 		        
@@ -233,11 +229,11 @@ public class PainelClientes extends JPanel implements ActionListener
 		});
 		
 		verClientes.add(jlist);
+		verClientes.setFocusable(false);
 		JScrollPane scrollClientes = new JScrollPane(verClientes, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		//scrollClientes.setMinimumSize(new Dimension(310, 320));
-		//scrollClientes.setMaximumSize(new Dimension(600, 400));
-		//scrollClientes.setPreferredSize(new Dimension(310,320));
-		WebPanel verClientes1 = new WebPanel();	
+		WebPanel verClientes1 = new WebPanel();
+		verClientes1.setFocusable(false);
+		scrollClientes.setFocusable(false);
 		
         DashedBorderPainter bp4 = new DashedBorderPainter(new float[]{3f, 3f});
         bp4.setWidth(2);

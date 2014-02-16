@@ -10,6 +10,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
+import net.miginfocom.swing.MigLayout;
 import codecoffe.restaurantes.primitivas.ProdutoVenda;
 import codecoffe.restaurantes.primitivas.Venda;
 import codecoffe.restaurantes.produtos.ProdutosComboBox;
@@ -28,6 +29,9 @@ import com.alee.laf.button.WebButton;
 import com.alee.laf.combobox.WebComboBox;
 import com.alee.laf.panel.WebPanel;
 import com.alee.laf.scroll.WebScrollPane;
+import com.alee.laf.text.WebTextField;
+import com.alee.managers.tooltip.TooltipManager;
+import com.alee.managers.tooltip.TooltipWay;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -53,11 +57,12 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 	 */
 	private static final long serialVersionUID = 1L;
 	private JPanel pedidoPainel, painelProdutos, painelProdutos1, painelPagamento;
-	private JLabel labelQuantidade, labelProduto, labelValor, labelTotal, labelRecebido, labelTroco, labelForma, labelCliente;
+	private JLabel labelQuantidade, labelValor, labelTotal, labelRecebido, labelTroco, labelForma, labelCliente;
 	private JTabbedPane divisaoPainel;
 	private JButton calcular;
 	private DefaultTableModel tabela;
 	private JTable tabelaPedido;
+	private WebTextField campoComentario;
 	private JTextField campoTotal, campoRecebido, campoTroco;
 	private JTextField campoValor;
 	private JTextField campoQuantidade;
@@ -67,7 +72,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 	private Venda vendaRapida;
 	private int fiadorIDSalvo;
 	private WebPanel adicionaisPainel, adicionaisPainel1;
-	private WebButton adicionarADC, adicionarProduto, finalizarVenda, imprimir, flecha1, flecha2, escolherCliente, deletarCliente;
+	private WebButton adicionarProduto, finalizarVenda, imprimir, flecha1, flecha2, escolherCliente, deletarCliente;
 	private JEditorPane campoRecibo;
 	private WebComboBox campoForma;
 	private DragPanel painelDropIn, painelDropOut;
@@ -85,21 +90,17 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		iconeFinalizar = new ImageIcon(getClass().getClassLoader().getResource("imgs/finalizar.png"));
 		divisaoPainel = new JTabbedPane();
 
-		painelProdutos = new JPanel();
-		painelProdutos.setLayout(new GridBagLayout());
-		painelProdutos.setMinimumSize(new Dimension(975, 280));
-		painelProdutos.setMaximumSize(new Dimension(1920, 380)); 
+		painelProdutos = new JPanel(new MigLayout("align center", "[]15[]15[]15[]15[]15[]15[]"));
+		painelProdutos.setMinimumSize(new Dimension(1020, 260));
+		painelProdutos.setMaximumSize(new Dimension(1920, 450));
 
 		GridBagConstraints gbc = new GridBagConstraints();		
 		gbc.insets = new Insets(5,5,5,5);
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 
-		labelProduto = new JLabel("Produto:");
-		labelProduto.setFont(new Font("Helvetica", Font.BOLD, 16));
 		labelValor = new JLabel(" Preço:");
 		labelValor.setFont(new Font("Helvetica", Font.BOLD, 16));
-
 		labelQuantidade = new JLabel("Qntd:");
 		labelQuantidade.setFont(new Font("Helvetica", Font.BOLD, 16));
 
@@ -112,21 +113,13 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		campoValor = new JTextField("");
 		campoValor.setEditable(false);
 		campoValor.setHorizontalAlignment(SwingConstants.CENTER);
-		campoValor.setPreferredSize(new Dimension(80, 35));
+		campoValor.setPreferredSize(new Dimension(85, 35));
 		campoQuantidade = new JTextField("1");
 		campoQuantidade.setHorizontalAlignment(SwingConstants.CENTER);
 		campoQuantidade.setPreferredSize(new Dimension(40, 35));
 		addProduto = new ProdutosComboBox();
+		addProduto.setPreferredSize(new Dimension(350, 110));
 		addProduto.addActionListener(this);
-
-		adicionarADC = new WebButton("Adicionais");
-		adicionarADC.setHorizontalTextPosition(AbstractButton.CENTER);
-		adicionarADC.setVerticalTextPosition(AbstractButton.BOTTOM);
-		adicionarADC.setFont(new Font("Verdana", Font.PLAIN, 10));
-		adicionarADC.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/plus1.png")));
-		adicionarADC.setPreferredSize(new Dimension(50, 50));
-		adicionarADC.setUndecorated(true);
-		adicionarADC.addActionListener(this);
 
 		flecha1 = new WebButton("");
 		flecha1.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/arrow1.png")));
@@ -142,66 +135,127 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		flecha2.setUndecorated(true);
 		flecha2.addActionListener(this);		
 
+		campoComentario = new WebTextField();
+		campoComentario.setMargin(5, 5, 5, 5);
+		campoComentario.setInputPrompt("Comentário p/ Cozinha");
+		campoComentario.setPreferredSize(new Dimension(290, 35));
+
 		adicionarProduto = new WebButton("Adicionar Produto");
-		adicionarProduto.setFont(new Font("Helvetica", Font.PLAIN, 12));
+		adicionarProduto.setFont(new Font("Helvetica", Font.BOLD, 14));
 		adicionarProduto.setRolloverShine(true);
-		adicionarProduto.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/plus2.png")));
-		adicionarProduto.setPreferredSize(new Dimension(120, 50));
-		adicionarProduto.addActionListener(this);		
-
-		gbc.gridx = 1;	// colunas
-		gbc.gridy = 1;	// linhas		
-		painelProdutos.add(labelProduto, gbc);
-
-		gbc.gridx = 2;	// colunas	
-		painelProdutos.add(addProduto, gbc);
+		adicionarProduto.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/produtos_add.png")));
+		adicionarProduto.setHorizontalTextPosition(AbstractButton.CENTER);
+		adicionarProduto.setVerticalTextPosition(AbstractButton.BOTTOM);
+		adicionarProduto.setPreferredSize(new Dimension(150, 90));
+		adicionarProduto.addActionListener(this);
 
 		adicionaisPainel1 = new WebPanel();
 		adicionaisPainel1.setLayout(new GridBagLayout());
 
 		adicionaisPainel = new WebPanel();
 		adicionaisPainel.setLayout(new GridBagLayout());
-
-		DashedBorderPainter bp4 = new DashedBorderPainter ( new float[]{ 3f, 3f } );
-		bp4.setRound ( 12 );
-		bp4.setWidth ( 2 );
-		bp4.setColor ( new Color ( 205, 205, 205 ) );		
+		DashedBorderPainter<JComponent> bp4 = new DashedBorderPainter<>(new float[]{ 6f, 10f });
+		bp4.setRound(2);
+		bp4.setWidth(4);
+		bp4.setColor(new Color( 205, 205, 205 ));
+		
+		painelProdutos.add(addProduto, "cell 1 0, span 4");
+		painelProdutos.add(labelQuantidade, "cell 1 1, gapleft 15px");
+		painelProdutos.add(campoQuantidade, "cell 2 1");		
+		painelProdutos.add(labelValor, "cell 3 1, gapleft 20px");		
+		painelProdutos.add(campoValor, "cell 4 1");
+		painelProdutos.add(campoComentario, "cell 1 2, gapleft 10px, gaptop 10px, span 4");
 
 		WebScrollPane scroll = new WebScrollPane(adicionaisPainel, false);
-		scroll.setMinimumSize(new Dimension(280, 100));
-		scroll.setMaximumSize(new Dimension(280, 100));
-		scroll.setPreferredSize(new Dimension(280, 100));
+		scroll.setMinimumSize(new Dimension(260, 180));
+		scroll.setMaximumSize(new Dimension(260, 180));
+		scroll.setPreferredSize(new Dimension(260, 180));
 		adicionaisPainel1.add(scroll);
+		adicionaisPainel1.setPainter(bp4);
+		
+		TooltipManager.addTooltip(adicionaisPainel, "Adicionais", TooltipWay.up, 500);
+		adicionaisPainel.addMouseListener(new MouseListener(){
+			@Override
+			public void mouseClicked(MouseEvent e) {
+			}
 
-		adicionaisPainel1.setPainter(bp4);		
+			@Override
+			public void mousePressed(MouseEvent e) {
+				JButton botao = new JButton();
+				botao.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/remove.png")));
+				botao.setBorder(BorderFactory.createEmptyBorder());
+				botao.setContentAreaFilled(false);
+				botao.addActionListener(getInstance());
 
-		gbc.gridx = 2;	// colunas
-		gbc.gridy = 2;	// linhas		
-		painelProdutos.add(adicionaisPainel1, gbc);
+				for(int x = 0; x < todosProdutos.getCategorias().size(); x++)
+				{
+					if(todosProdutos.getCategorias().get(x).getIdCategoria() == 1)
+					{
+						ProdutosComboBox adcCombo = new ProdutosComboBox(todosProdutos.getCategorias().get(x));
+						adcCombo.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								updateCampo();
+							}
+						});
+						addAdicional.add(adcCombo);
+						addRemover.add(botao);
+						break;
+					}
+				}
 
-		gbc.gridx = 1;	// colunas	
-		painelProdutos.add(adicionarADC, gbc);
+				GridBagConstraints gbc = new GridBagConstraints();
+				gbc.gridx = 1;	// coluna
+				gbc.gridy = addAdicional.size();	// linha
 
-		gbc.insets = new Insets(5,30,5,5);
-		gbc.gridx = 3;	// colunas
-		gbc.gridy = 1;	// linhas		
-		painelProdutos.add(labelQuantidade, gbc);
+				adicionaisPainel.add(addAdicional.get(addAdicional.size()-1), gbc);
 
-		gbc.insets = new Insets(5,5,5,5);
-		gbc.gridx = 4;	// colunas
-		painelProdutos.add(campoQuantidade, gbc);		
+				gbc.gridx = 2;		// coluna
+				adicionaisPainel.add(addRemover.get(addAdicional.size()-1), gbc);
 
-		gbc.gridx = 5;	// colunas
-		painelProdutos.add(labelValor, gbc);		
+				adicionaisPainel.revalidate();
+				adicionaisPainel.repaint();
+				addAdicional.get(addAdicional.size()-1).requestFocus();
+				updateCampo();
+			}
 
-		gbc.gridx = 6;	// colunas
-		painelProdutos.add(campoValor, gbc);
+			@Override
+			public void mouseReleased(MouseEvent e) {
+			}
 
-		gbc.gridx = 4;	// colunas
-		gbc.gridy = 2;	// linhas
-		gbc.gridwidth = 3;
-		gbc.insets = new Insets(5,5,5,35);
-		painelProdutos.add(adicionarProduto, gbc);
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				SwingUtilities.invokeLater(new Runnable() {  
+					public void run() {
+						DashedBorderPainter<JComponent> bp4 = new DashedBorderPainter<>(new float[]{ 6f, 10f });
+						bp4.setRound(2);
+						bp4.setWidth(4);
+						bp4.setColor(new Color(140, 140, 140));
+						adicionaisPainel1.setPainter(bp4);
+						adicionaisPainel1.revalidate();
+						adicionaisPainel1.repaint();
+					}
+				});
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				SwingUtilities.invokeLater(new Runnable() {  
+					public void run() {
+						DashedBorderPainter<JComponent> bp4 = new DashedBorderPainter<>(new float[]{ 6f, 10f });
+						bp4.setRound(2);
+						bp4.setWidth(4);
+						bp4.setColor(new Color(205, 205, 205));
+						adicionaisPainel1.setPainter(bp4);
+						adicionaisPainel1.revalidate();
+						adicionaisPainel1.repaint();
+					}
+				});
+			}
+		});
+		
+		painelProdutos.add(adicionaisPainel1, "cell 5 0, gaptop 20px, span 1 5");
+		painelProdutos.add(adicionarProduto, "cell 6 0, aligny center, gapleft 40px, span 1 5");
 
 		pedidoPainel = new JPanel(new BorderLayout());
 		pedidoPainel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Pedido"));		
@@ -215,7 +269,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 
 			@Override
 			public boolean isCellEditable(int row, int column) {
-				if(column == 0 || column == 6)
+				if(column == 0 || column == 7)
 					return true;
 
 				return false;
@@ -228,6 +282,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		tabela.addColumn("Pago");
 		tabela.addColumn("Preço");
 		tabela.addColumn("Adicionais");
+		tabela.addColumn("Comentário");
 		tabela.addColumn("Deletar");
 
 		tabelaPedido = new JTable() {
@@ -251,7 +306,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		tabelaPedido.setModel(tabela);
 		tabelaPedido.getColumnModel().getColumn(0).setMinWidth(70);
 		tabelaPedido.getColumnModel().getColumn(0).setMaxWidth(70);
-		tabelaPedido.getColumnModel().getColumn(1).setMinWidth(205);
+		tabelaPedido.getColumnModel().getColumn(1).setMinWidth(180);
 		tabelaPedido.getColumnModel().getColumn(1).setMaxWidth(500);
 		tabelaPedido.getColumnModel().getColumn(2).setMinWidth(45);
 		tabelaPedido.getColumnModel().getColumn(2).setMaxWidth(100);
@@ -259,10 +314,12 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		tabelaPedido.getColumnModel().getColumn(3).setMaxWidth(200);				
 		tabelaPedido.getColumnModel().getColumn(4).setMinWidth(80);
 		tabelaPedido.getColumnModel().getColumn(4).setMaxWidth(200);
-		tabelaPedido.getColumnModel().getColumn(5).setMinWidth(380);
-		tabelaPedido.getColumnModel().getColumn(5).setMaxWidth(1400);
-		tabelaPedido.getColumnModel().getColumn(6).setMinWidth(60);
-		tabelaPedido.getColumnModel().getColumn(6).setMaxWidth(65);
+		tabelaPedido.getColumnModel().getColumn(5).setMinWidth(200);
+		tabelaPedido.getColumnModel().getColumn(5).setMaxWidth(700);
+		tabelaPedido.getColumnModel().getColumn(6).setMinWidth(200);
+		tabelaPedido.getColumnModel().getColumn(6).setMaxWidth(700);
+		tabelaPedido.getColumnModel().getColumn(7).setMinWidth(60);
+		tabelaPedido.getColumnModel().getColumn(7).setMaxWidth(65);
 		tabelaPedido.setRowHeight(30);
 		tabelaPedido.getTableHeader().setReorderingAllowed(false);
 
@@ -273,7 +330,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		tabelaPedido.getColumn("Pago").setCellRenderer(new CustomRenderer());
 		tabelaPedido.getColumn("Nome").setCellRenderer(new CustomRenderer());
 		tabelaPedido.getColumn("Adicionais").setCellRenderer(new CustomRenderer());
-
+		tabelaPedido.getColumn("Comentário").setCellRenderer(new CustomRenderer());
 		tabelaPedido.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
 		tabelaPedido.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));	
 		tabelaPedido.setPreferredScrollableViewportSize(new Dimension(800, 200));
@@ -743,21 +800,13 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 			Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			if(isSelected)
 			{
-				if(column != 5/* && column != 0*/)
-				{
-					setHorizontalAlignment( JLabel.CENTER );
-				}
-
+				setHorizontalAlignment( JLabel.CENTER );
 				c.setForeground(new Color(72, 61, 139));
 				return c;
 			}
 			else
 			{
-				if(column != 5/* && column != 0*/)
-				{
-					setHorizontalAlignment( JLabel.CENTER );
-				}
-
+				setHorizontalAlignment( JLabel.CENTER );
 				c.setForeground(Color.BLACK);
 				return c;
 			}
@@ -782,7 +831,8 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							criarRecibo();
 						}			
 					}		
-
+					
+					campoComentario.setText("");
 					campoValor.setText("");
 					adicionarDezPorcento.setSelected(false);	
 					campoQuantidade.setText("1");
@@ -1229,9 +1279,15 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		}
 		else if(e.getSource() == adicionarProduto)
 		{
+			campoComentario.setText(campoComentario.getText().replaceAll("'", ""));
+			
 			if(addProduto.getProdutoSelecionado() == null)
 			{
 				JOptionPane.showMessageDialog(null, "Você precisa selecionar um produto antes!");
+			}
+			else if(campoComentario.getText().length() > 100)
+			{
+				JOptionPane.showMessageDialog(null, "Campo comentário pode ter no máximo 100 caracteres!");
 			}
 			else
 			{
@@ -1241,6 +1297,9 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 						addProduto.getProdutoSelecionado().getIdUnico(), 
 						addProduto.getProdutoSelecionado().getCodigo());
 
+				if(!UtilCoffe.vaziu(campoComentario.getText()))
+					produto.setComentario(campoComentario.getText());
+				
 				if(addAdicional.size() > 0)
 				{
 					for(int x = 0 ; x < addAdicional.size() ; x++)
@@ -1279,6 +1338,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							newLinha.add("0");						
 							newLinha.add(UtilCoffe.doubleToPreco((produto.getTotalProduto() * Integer.parseInt(limpeza))));
 							newLinha.add(produto.getAllAdicionais());
+							newLinha.add(produto.getComentario());
 							newLinha.add("Deletar");
 							tabela.addRow(newLinha);
 
@@ -1293,50 +1353,17 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 					public void run() {
 						campoValor.setText("");
 						campoQuantidade.setText("1");
-
+						campoComentario.setText("");
 						addAdicional.clear();
 						addRemover.clear();
-
 						adicionaisPainel.removeAll();
 						adicionaisPainel.revalidate();
 						adicionaisPainel.repaint();
 						addProduto.requestFocus();
-
 						PainelMesas.getInstance().atualizaMesa(mesaID, vendaRapida);
 					}
 				});
 			}
-		}
-		else if(e.getSource() == adicionarADC)
-		{
-			JButton botao = new JButton();
-			botao.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/remove.png")));
-			botao.setBorder(BorderFactory.createEmptyBorder());
-			botao.setContentAreaFilled(false);
-			botao.addActionListener(this);
-
-			for(int x = 0; x < todosProdutos.getCategorias().size(); x++)
-			{
-				if(todosProdutos.getCategorias().get(x).getIdCategoria() == 1)
-				{
-					addAdicional.add(new ProdutosComboBox(todosProdutos.getCategorias().get(x)));
-					addRemover.add(botao);
-					break;
-				}
-			}
-
-			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.gridx = 1;	// coluna
-			gbc.gridy = addAdicional.size();	// linha
-
-			adicionaisPainel.add(addAdicional.get(addAdicional.size()-1), gbc);
-
-			gbc.gridx = 2;		// coluna
-			adicionaisPainel.add(addRemover.get(addAdicional.size()-1), gbc);
-
-			adicionaisPainel.revalidate();
-			adicionaisPainel.repaint();
-			addAdicional.get(addAdicional.size()-1).requestFocus();
 		}
 
 		if(addRemover.size() > 0)
@@ -1356,25 +1383,25 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 						if(addProduto.getProdutoSelecionado() != null)
 						{
 							novoValor += addProduto.getProdutoSelecionado().getPreco();
+							
+							for(int x = 0; x < addAdicional.size() ; x++)
+							{
+								if(addAdicional.get(x).getProdutoSelecionado() != null)
+								{
+									novoValor += addAdicional.get(x).getProdutoSelecionado().getPreco();
+								}
+							}
+
+							campoValor.setText(UtilCoffe.doubleToPreco(novoValor));
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									adicionaisPainel.revalidate();
+									adicionaisPainel.repaint();	
+								}
+							});	
 						}
 					}
-
-					for(int x = 0; x < addAdicional.size() ; x++)
-					{
-						if(addAdicional.get(x).getProdutoSelecionado() != null)
-						{
-							novoValor += addAdicional.get(x).getProdutoSelecionado().getPreco();
-						}
-					}
-
-					campoValor.setText(UtilCoffe.doubleToPreco(novoValor));
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							adicionaisPainel.revalidate();
-							adicionaisPainel.repaint();	
-						}
-					});	
 
 					break;
 				}
@@ -1614,7 +1641,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				campoRecebido.setText("");
 				campoTroco.setText("0,00");
 				campoForma.setSelectedIndex(0);
-				//addProduto.zeraString();
+				campoComentario.setText("");
 				addAdicional.clear();
 				addRemover.clear();			
 				adicionaisPainel.removeAll();

@@ -14,7 +14,6 @@ import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -49,7 +48,6 @@ public class Starter implements ActionListener
 	private WebTextField campoIP;
 	private WebButton bTerminal, bPrincipal;
 	private WebProgressBar verificandoBar;
-	private JCheckBox modoTouch;
 	private int portaConnect;
 	
 	public Starter()
@@ -99,13 +97,13 @@ public class Starter implements ActionListener
 		descricaoOperacao.setPreferredSize(new Dimension(250, 50));
 		iniciar.add(descricaoOperacao, "align center");		
 		
-		JPanel configuracoes = new JPanel(new MigLayout());
+		JPanel configuracoes = new JPanel(new MigLayout("alignx center, aligny center"));
 		
-		modoTouch = new JCheckBox("Modo Touch Screen (Terminal)");
-		modoTouch.setEnabled(false);
-		configuracoes.add(modoTouch, "gaptop 10, wrap");
+		//modoTouch = new JCheckBox("Modo Touch Screen (Terminal)");
+		//modoTouch.setEnabled(false);
+		//configuracoes.add(modoTouch, "gaptop 10, wrap");
 		
-		configuracoes.add(new JLabel("<html>IP de Conexão (Terminal)</html>"), "gaptop 20, wrap");
+		configuracoes.add(new JLabel("<html>IP de Conexão (Terminal)</html>"), "gaptop 10, wrap");
 		
 		campoIP = new WebTextField("");
 		campoIP.setInputPrompt("Automático");
@@ -123,13 +121,14 @@ public class Starter implements ActionListener
 		configuracoes.add(help, "wrap");
 		
 		selecionaPanel.addTab("Iniciar", iniciar);
-		selecionaPanel.addTab("Configurações", configuracoes);
+		selecionaPanel.addTab("Conexão", configuracoes);
 		seleciona.add(selecionaPanel);
 		seleciona.setSize(350,300);
 		seleciona.setLocationRelativeTo(null);
 		seleciona.setIconImage(new ImageIcon(getClass().getClassLoader().getResource("imgs/icone_programa.png")).getImage());
 		seleciona.setResizable(false);
 		seleciona.setVisible(true);
+		selecionaPanel.setFocusable(false);
 		
 		try {
 			LerStarterConfig configXML = new LerStarterConfig();
@@ -243,7 +242,6 @@ public class Starter implements ActionListener
 				bTerminal = null;
 				bPrincipal = null;
 				verificandoBar = null;
-				modoTouch = null;
 				
 			} catch (IOException e) {
 				if(e.getMessage().toLowerCase().contains("refused"))
@@ -279,8 +277,6 @@ public class Starter implements ActionListener
 			bTerminal = null;
 			bPrincipal = null;
 			verificandoBar = null;
-			modoTouch = null;
-			
 			Configuracao.INSTANCE.setModo(UtilCoffe.SERVER);
 			new Loading(UtilCoffe.SERVER);
 		}

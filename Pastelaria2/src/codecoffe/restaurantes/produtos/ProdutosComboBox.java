@@ -12,6 +12,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.List;
 
+import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -20,6 +21,7 @@ import javax.swing.JList;
 //import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicComboBoxUI;
 
 import com.alee.laf.panel.WebPanel;
 
@@ -37,6 +39,7 @@ public class ProdutosComboBox extends JComboBox<Object> implements KeyListener
 	private ProdutosComboModel comboModelCompleto;
 	private ProdutosComboEditor comboEditor;
 	private boolean flag_aciona = true;
+	private boolean comboAdicional = false;
 	
 	public ProdutosComboBox(List<Categoria> categorias)
 	{
@@ -46,6 +49,7 @@ public class ProdutosComboBox extends JComboBox<Object> implements KeyListener
 	
 	public ProdutosComboBox(Categoria c)
 	{
+		comboAdicional = true;
 		comboModelCompleto = new ProdutosComboModel(c);
 		makeComboBox();
 	}
@@ -60,8 +64,17 @@ public class ProdutosComboBox extends JComboBox<Object> implements KeyListener
 	{
 		setModel(comboModelCompleto);
 		setEditable(true);
+		setUI(new BasicComboBoxUI());
 		
-		comboEditor = new ProdutosComboEditor();
+		for(int i = 0; i < getComponentCount(); i++) 
+		{
+		    if(getComponent(i) instanceof AbstractButton) {
+		        ((AbstractButton) getComponent(i)).setVisible(false);
+		        break;
+		    }
+		}
+		
+		comboEditor = new ProdutosComboEditor(comboAdicional);
 		setEditor(comboEditor);
 		
 		setMaximumRowCount(6);
@@ -103,22 +116,22 @@ public class ProdutosComboBox extends JComboBox<Object> implements KeyListener
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
 					comboEditor.setProduto((Produto) e.getItem());
-					
-					/*for(ActionListener a: getThis().getActionListeners()) {
-					    a.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null) {
-					    });
-					}*/
 				}
 			}
         });
 		
 		comboEditor.getTextField().addKeyListener(this);
+		
+		if(getModel().getSelectedItem() != null)
+		{
+			comboEditor.setProduto((Produto) getModel().getSelectedItem());
+		}
 	}
 	
-	public void zerarSelecao()
-	{
-		// pensar em algo
-	}
+	@Override
+    public void requestFocus() {
+		comboEditor.getTextField().requestFocus();
+    }
 	
 	public void atualizaProdutosCombo(List<Categoria> categorias)
 	{
@@ -134,11 +147,6 @@ public class ProdutosComboBox extends JComboBox<Object> implements KeyListener
 	{
 		return comboModelCompleto.getListaProdutos();
 	}
-	
-	/*public ProdutosComboBox getThis()
-	{
-		return this;
-	}*/
 	
 	public Produto getProdutoSelecionado()
 	{
@@ -200,14 +208,12 @@ public class ProdutosComboBox extends JComboBox<Object> implements KeyListener
 		int code = e.getKeyCode();
 		if(code==KeyEvent.VK_ENTER)
 		{
-			if(getModel().getSize() == 1)
-			{
+			if(getModel().getSize() == 1) {
 				comboEditor.setProduto((Produto) getModel().getElementAt(0));
 			}
 			
 			comboEditor.getTextField().setText("");
 			setModel(comboModelCompleto);
-			
 			flag_aciona = false;
 		}
 	}
@@ -225,11 +231,16 @@ public class ProdutosComboBox extends JComboBox<Object> implements KeyListener
 		
 		public ProdutoCellPainel()
 		{
-			setUndecorated(false);
+			setBackground(Color.WHITE);
 			setLayout(new MigLayout());
 			setBorder(new EmptyBorder(2, 2, 2, 2));
 			labelNome = new JLabel();
-			labelNome.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/icon_food.png")));
+			
+			if(comboAdicional)
+				labelNome.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/plus2.png")));
+			else
+				labelNome.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/icon_food.png")));
+			
 			labelNome.setFont(new Font("Verdana", Font.BOLD, 12));
 			
 			labelCodigo = new JLabel();

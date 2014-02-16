@@ -169,8 +169,10 @@ public class EncryptionUtil {
         keyGen.initialize(1024);
         KeyPair key = keyGen.generateKeyPair();
         
-        PrivateKey privTeste = key.getPrivate();
-        PublicKey pubTeste = key.getPublic();
+        @SuppressWarnings("unused")
+		PrivateKey privTeste = key.getPrivate();
+        @SuppressWarnings("unused")
+		PublicKey pubTeste = key.getPublic();
       
       final String chaveParticular = "MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAJJA/"
       		+ "KhqqcydeNxeKdnMmvh7y+Aw+NglfTBByFj+Ba8+BTQarWY+9IlBSoBXQk5s94b/"

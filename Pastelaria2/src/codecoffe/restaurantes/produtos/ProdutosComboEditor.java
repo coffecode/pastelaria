@@ -10,6 +10,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import com.alee.laf.StyleConstants;
 import com.alee.laf.text.WebTextField;
 
 import codecoffe.restaurantes.primitivas.Produto;
@@ -20,9 +21,8 @@ public class ProdutosComboEditor implements ComboBoxEditor
 	private EditorPane editorPane;
 	private Produto produtoSelecionado;
 	
-	public ProdutosComboEditor()
-	{
-		editorPane = new EditorPane();
+	public ProdutosComboEditor(boolean comboAdicional) {
+		editorPane = new EditorPane(comboAdicional);
 	}
 
 	@Override
@@ -62,8 +62,7 @@ public class ProdutosComboEditor implements ComboBoxEditor
 		editorPane.removeActionListener(l);
 	}
 	
-	public WebTextField getTextField()
-	{
+	public WebTextField getTextField() {
 		return editorPane.getTextField();
 	}
 	
@@ -77,16 +76,23 @@ public class ProdutosComboEditor implements ComboBoxEditor
 		private JPanel painelProduto;
 		private JLabel labelNome, labelCodigo;
 		
-		public EditorPane()
+		public EditorPane(boolean comboAdicional)
 		{
-			setLayout(new MigLayout());
+			setPreferredSize(getPreferredSize());
+			setLayout(new MigLayout("fill"));
 			campo = new WebTextField();
 			campo.setMargin(5, 5, 5, 5);
+			campo.setInputPrompt("Buscar produto...");
+			campo.setRound(StyleConstants.largeRound);
 			
 			painelProduto = new JPanel(new MigLayout());
 			
 			labelNome = new JLabel("Produto: -");
-			labelNome.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/icon_food.png")));
+			if(comboAdicional)
+				labelNome.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/plus2.png")));
+			else
+				labelNome.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/icon_food.png")));
+			
 			labelNome.setFont(new Font("Verdana", Font.BOLD, 12));
 			
 			labelCodigo = new JLabel("Código: -");
@@ -96,8 +102,8 @@ public class ProdutosComboEditor implements ComboBoxEditor
 			painelProduto.add(labelNome, "span, wrap");
 			painelProduto.add(labelCodigo, "span");
 			
-			add(campo, "grow, w 60%");
-			add(painelProduto, "grow, w 40%");
+			add(painelProduto, "grow, wrap");
+			add(campo, "grow, h 60%");
 		}
 		
 		public WebTextField getTextField() {
