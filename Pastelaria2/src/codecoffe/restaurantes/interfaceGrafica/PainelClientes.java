@@ -413,7 +413,22 @@ public class PainelClientes extends JPanel implements ActionListener
 		divisaoPainel.addTab("Clientes", new ImageIcon(getClass().getClassLoader().getResource("imgs/report_user_mini.png")), painelClientes, "Gerenciar Clientes.");			
 		add(divisaoPainel);
 		setarAtivado(false);
-		callBack = 0;		
+		callBack = 0;
+		
+		ArrayList<Component> ordem = new ArrayList<Component>();
+		ordem.add(campoBusca);
+		ordem.add(campoNome);
+		ordem.add(campoApelido);
+		ordem.add(campoCPF);
+		ordem.add(campoTelefone);
+		ordem.add(campoCEP);
+		ordem.add(campoEndereco);
+		ordem.add(campoNumero);
+		ordem.add(campoBairro);
+		ordem.add(campoComplemento);
+		FocusTraversal ordemFocus = new FocusTraversal(ordem);
+		setFocusCycleRoot(true);
+		setFocusTraversalPolicy(ordemFocus);
 	}
 	
 	private static class ClientesSingletonHolder { 
@@ -634,7 +649,7 @@ public class PainelClientes extends JPanel implements ActionListener
 			campoNumero.setText(cliente.getNumero());
 			campoBairro.setText(cliente.getBairro());
 			campoComplemento.setText(cliente.getComplemento());
-			
+			campoNome.requestFocus();
 			if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
 			{
 				try {

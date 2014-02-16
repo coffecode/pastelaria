@@ -133,6 +133,11 @@ public class ProdutosComboBox extends JComboBox<Object> implements KeyListener
 		comboEditor.getTextField().requestFocus();
     }
 	
+	public Component getEditorTextField()
+	{
+		return comboEditor.getTextField();
+	}
+	
 	public void atualizaProdutosCombo(List<Categoria> categorias)
 	{
 		comboModelCompleto.atualizaProdutosCombo(categorias);

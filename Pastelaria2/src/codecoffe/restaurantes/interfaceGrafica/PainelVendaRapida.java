@@ -70,7 +70,6 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	private CacheTodosProdutos todosProdutos;
 	private String fiadorTelefone, fiadorEndereco, fiadorNumero, fiadorComplemento;
 	private CacheAviso aviso;
-	//private static MyOwnFocusTraversalPolicy newPolicy;
 
 	private PainelVendaRapida()
 	{		
@@ -495,64 +494,16 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		taxaEntrega = 0.0;
 		todosProdutos = new CacheTodosProdutos();
 		
-		/*Vector<Component> order = new Vector<Component>(4);
-		order.add(addProduto);
-		order.add(campoQuantidade);
-		order.add(campoComentario);
-		order.add(adicionarProduto);
-		newPolicy = new MyOwnFocusTraversalPolicy(order);
-		MenuPrincipal.getInstance().getJanela().setFocusCycleRoot(true);
-		MenuPrincipal.getInstance().getJanela().setFocusTraversalPolicy(newPolicy);*/
+		ArrayList<Component> ordem = new ArrayList<Component>();
+		ordem.add(addProduto.getEditorTextField());
+		ordem.add(campoQuantidade);
+		ordem.add(campoComentario);
+		ordem.add(adicionarProduto);
 		
+		FocusTraversal ordemFocus = new FocusTraversal(ordem);
 		setFocusCycleRoot(true);
-		setFocusTraversalPolicy(new LayoutFocusTraversalPolicy() {
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
-
-			public Component getDefaultComponent(Container cont) {
-				return adicionarProduto;
-			}
-		});
+		setFocusTraversalPolicy(ordemFocus);
 	}
-	
-	/*public static class MyOwnFocusTraversalPolicy extends FocusTraversalPolicy
-	{
-		Vector<Component> order;
-
-		public MyOwnFocusTraversalPolicy(Vector<Component> order) {
-			this.order = new Vector<Component>(order.size());
-			this.order.addAll(order);
-		}
-
-		public Component getComponentAfter(Container focusCycleRoot,
-				Component aComponent) {
-			int idx = (order.indexOf(aComponent) + 1) % order.size();
-			return order.get(idx);
-		}
-
-		public Component getComponentBefore(Container focusCycleRoot,
-				Component aComponent) {
-			int idx = order.indexOf(aComponent) - 1;
-			if (idx < 0) {
-				idx = order.size() - 1;
-			}
-			return order.get(idx);
-		}
-
-		public Component getDefaultComponent(Container focusCycleRoot) {
-			return order.get(0);
-		}
-
-		public Component getLastComponent(Container focusCycleRoot) {
-			return order.lastElement();
-		}
-
-		public Component getFirstComponent(Container focusCycleRoot) {
-			return order.get(0);
-		}
-	}*/
 
 	private static class VendaRapidaSingletonHolder { 
 		public static final PainelVendaRapida INSTANCE = new PainelVendaRapida();

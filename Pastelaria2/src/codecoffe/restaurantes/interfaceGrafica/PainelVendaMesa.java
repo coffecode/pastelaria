@@ -598,6 +598,16 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		taxaOpcional = 0.0;
 
 		todosProdutos = new CacheTodosProdutos();
+		
+		ArrayList<Component> ordem = new ArrayList<Component>();
+		ordem.add(addProduto.getEditorTextField());
+		ordem.add(campoQuantidade);
+		ordem.add(campoComentario);
+		ordem.add(adicionarProduto);
+		
+		FocusTraversal ordemFocus = new FocusTraversal(ordem);
+		setFocusCycleRoot(true);
+		setFocusTraversalPolicy(ordemFocus);
 	}
 
 	private static class VendaMesaSingletonHolder { 
