@@ -29,6 +29,7 @@ public class PainelVendas extends JPanel
 	private JTable tabelaFiados;
 	private DefaultTableModel tabela;
 	private UltimasVendas painelUltimas;
+	private GraficoFiados graFiados;
 	
 	private PainelVendas()
 	{
@@ -41,7 +42,7 @@ public class PainelVendas extends JPanel
 		JPanel painelTabela = new JPanel(new BorderLayout());
 		painelTabela.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Dívidas em aberto"));
 		painelTabela.setMinimumSize(new Dimension(975, 200));		// Horizontal , Vertical
-		painelTabela.setMaximumSize(new Dimension(1920, 680));		
+		painelTabela.setMaximumSize(new Dimension(1920, 680));
 		
 		tabela = new DefaultTableModel() {
 
@@ -126,8 +127,8 @@ public class PainelVendas extends JPanel
 		        else
 		            stamp.setBackground(this.getBackground());
 		        return stamp;
-		    }				
-		};		
+		    }
+		};
 		
 		tabelaFiados.setModel(tabela);
 		tabelaFiados.setAutoResizeMode( JTable.AUTO_RESIZE_ALL_COLUMNS );
@@ -157,7 +158,7 @@ public class PainelVendas extends JPanel
 		WebScrollPane scrolltabela = new WebScrollPane(tabelaFiados, true);
 		painelTabela.add(scrolltabela, BorderLayout.CENTER);
 		
-		GraficoFiados graFiados = new GraficoFiados();
+		graFiados = new GraficoFiados();
 		graFiados.setMinimumSize(new Dimension(500, 200));
 		graFiados.setMaximumSize(new Dimension(700, 300));		
 		
@@ -165,7 +166,7 @@ public class PainelVendas extends JPanel
 		visualizarFiado.add(graFiados);
 		
 		painelUltimas = new UltimasVendas();
-		ConsultarVendas painelConsultar = new ConsultarVendas();
+		TabelaVendas painelConsultar = new TabelaVendas();
 		ConsultarDiario painelConsultarDiario = new ConsultarDiario();
 		
 		ImageIcon iconeUltimas = new ImageIcon(getClass().getClassLoader().getResource("imgs/ultimas_vendas_aba_mini.png"));
@@ -217,59 +218,57 @@ public class PainelVendas extends JPanel
 	    }
 	}
 	
-	public void ultimasVendasRefresh()
-	{
+	public void ultimasVendasRefresh() {
 		painelUltimas.refresh();
 	}
 	
-	public void refresh()
-	{
-	      SwingUtilities.invokeLater(new Runnable() {  
-	    	  public void run() {  
-	    			tabela.setNumRows(0);
-	    			
-	    			try {
-						Query pega = new Query();
-						pega.executaQuery("SELECT * FROM fiados ORDER BY nome");
-						
-						while(pega.next())
+	public void refresh() {
+		SwingUtilities.invokeLater(new Runnable() {  
+			public void run() {
+				graFiados.refresh();
+				tabela.setNumRows(0);
+
+				try {
+					Query pega = new Query();
+					pega.executaQuery("SELECT * FROM fiados ORDER BY nome");
+
+					while(pega.next())
+					{
+						Vector<Serializable> linha = new Vector<Serializable>();
+
+						double totalDivida = 0.0;
+						Query pega2 = new Query();
+						pega2.executaQuery("SELECT * FROM vendas WHERE `fiado_id` = " + pega.getInt("fiador_id") + "");
+
+						while(pega2.next())
 						{
-							Vector<Serializable> linha = new Vector<Serializable>();
-							
-							double totalDivida = 0.0;
-							Query pega2 = new Query();
-							pega2.executaQuery("SELECT * FROM vendas WHERE `fiado_id` = " + pega.getInt("fiador_id") + "");
-							
-							while(pega2.next())
-							{
-								totalDivida += (Double.parseDouble(pega2.getString("total").replaceAll(",", ".")) - Double.parseDouble(pega2.getString("valor_pago").replaceAll(",", ".")));
-							}
-							
-							String pegaPreco = String.format("%.2f", totalDivida);
-							pegaPreco.replaceAll(",", ".");
-							
-							linha.add(pegaPreco);
-							
-							linha.add(pega.getString("nome"));
-							linha.add(pega.getString("apelido"));
-							linha.add(pega.getString("telefone"));
-							linha.add(pega.getString("cpf"));
-							linha.add("");
-							linha.add(pega.getInt("fiador_id"));
-							
-							if(totalDivida > 0)
-							{
-								tabela.addRow(linha);
-							}
+							totalDivida += (Double.parseDouble(pega2.getString("total").replaceAll(",", ".")) - Double.parseDouble(pega2.getString("valor_pago").replaceAll(",", ".")));
 						}
-						
-						pega.fechaConexao();
-					} catch (NumberFormatException | ClassNotFoundException | SQLException e) {
-						e.printStackTrace();
-						new PainelErro(e);
+
+						String pegaPreco = String.format("%.2f", totalDivida);
+						pegaPreco.replaceAll(",", ".");
+
+						linha.add(pegaPreco);
+
+						linha.add(pega.getString("nome"));
+						linha.add(pega.getString("apelido"));
+						linha.add(pega.getString("telefone"));
+						linha.add(pega.getString("cpf"));
+						linha.add("");
+						linha.add(pega.getInt("fiador_id"));
+
+						if(totalDivida > 0) {
+							tabela.addRow(linha);
+						}
 					}
-	    	  }  
-	      });		
+
+					pega.fechaConexao();
+				} catch (NumberFormatException | ClassNotFoundException | SQLException e) {
+					e.printStackTrace();
+					new PainelErro(e);
+				}
+			}  
+		});		
 	}
 	
 	class ButtonRenderer extends JButton implements TableCellRenderer {
