@@ -1,6 +1,5 @@
 package codecoffe.restaurantes.interfaceGrafica;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -29,7 +28,7 @@ import codecoffe.restaurantes.utilitarios.DiarioLog;
 import codecoffe.restaurantes.utilitarios.Usuario;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
-import com.alee.extended.painter.DashedBorderPainter;
+import com.alee.laf.StyleConstants;
 import com.alee.laf.button.WebButton;
 import com.alee.laf.panel.WebPanel;
 import com.alee.laf.rootpane.WebDialog;
@@ -46,7 +45,6 @@ public class Login extends WebDialog
 	private JTextField campoUsername, campoPassword;
 	private WebButton bEntrar;
 	
-	@SuppressWarnings("rawtypes")
 	private Login()
 	{
 		setIconImage(new ImageIcon(getClass().getClassLoader().getResource("imgs/icone_programa.png")).getImage());
@@ -72,18 +70,14 @@ public class Login extends WebDialog
 		
 		setResizable(false);
 		setTitle("Login");
-		setPreferredSize(new Dimension(280, 220));
+		setPreferredSize(new Dimension(280, 240));
 		
-		JPanel loginPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-		
+		JPanel loginPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
 		WebPanel login = new WebPanel(new MigLayout());
 		login.setMargin(15, 15, 15, 15);
 		login.setOpaque(false);
-		DashedBorderPainter bp4 = new DashedBorderPainter(new float[]{3f, 3f});
-		bp4.setRound(12);
-		bp4.setWidth(2);
-		bp4.setColor(new Color(187, 161, 124));
-		login.setPainter(bp4);
+		login.setUndecorated(false);
+		login.setRound(StyleConstants.largeRound);
 		
 		labelUsername = new JLabel("Usuário:");
 		labelUsername.setFont(new Font("Verdana", Font.BOLD, 12));
@@ -125,10 +119,28 @@ public class Login extends WebDialog
 			{
 				if(e.getSource() == bEntrar)
 				{
-					if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
-						autentica(campoUsername.getText(), campoPassword.getText());
+					campoUsername.setText(campoUsername.getText().replaceAll("'", ""));
+					campoPassword.setText(campoPassword.getText().replaceAll("'", ""));
+					
+					if(UtilCoffe.vaziu(campoUsername.getText())) {
+						JOptionPane.showMessageDialog(null, "Preencha o usuário!");
+					}
+					else if(UtilCoffe.vaziu(campoPassword.getText())) {
+						JOptionPane.showMessageDialog(null, "Preencha a senha!");
+					}
+					else if(campoUsername.getText().length() > 50) {
+						JOptionPane.showMessageDialog(null, "Máximo de 50 caracteres no usuário!");
+					}
+					else if(campoPassword.getText().length() > 50) {
+						JOptionPane.showMessageDialog(null, "Máximo de 50 caracteres na senha!");
+					}
 					else
-						Client.getInstance().enviarObjeto(new CacheAutentica(campoUsername.getText(), campoPassword.getText()));
+					{
+						if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
+							autentica(campoUsername.getText(), campoPassword.getText());
+						else
+							Client.getInstance().enviarObjeto(new CacheAutentica(campoUsername.getText(), campoPassword.getText()));
+					}
 				}
             }
 		};
@@ -167,7 +179,7 @@ public class Login extends WebDialog
 					DiarioLog.add(Usuario.INSTANCE.getNome(), "Fez login no sistema.", 8);					
 
 					PainelStatus.getInstance().setNome(Usuario.INSTANCE.getNome());
-					MenuPrincipal.getInstance().setarVisible(true);
+					PainelPrincipal.getInstance().setarVisible(true);
 				}
 				else
 				{
@@ -198,7 +210,7 @@ public class Login extends WebDialog
 				Usuario.INSTANCE.setNome(ca.nome);
 				Usuario.INSTANCE.setLevel(ca.level);
 				PainelStatus.getInstance().setNome(Usuario.INSTANCE.getNome());
-				MenuPrincipal.getInstance().setarVisible(true);				
+				PainelPrincipal.getInstance().setarVisible(true);				
 				break;
 			}
 			case 2:

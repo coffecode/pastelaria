@@ -280,8 +280,8 @@ public class VisualizarVenda extends JFrame
 						if(e.getSource() == bCliente)
 						{
 							PainelClientes.getInstance().setCallBack((VisualizarVenda) SwingUtilities.getRoot(bCliente), clienteID);
-							MenuPrincipal.getInstance().AbrirPrincipal(5);
-							MenuPrincipal.getInstance().setarVisible(true);
+							PainelPrincipal.getInstance().AbrirPrincipal(5);
+							PainelPrincipal.getInstance().setarVisible(true);
 						}
 						else if(e.getSource() == bDeletarCliente)
 						{

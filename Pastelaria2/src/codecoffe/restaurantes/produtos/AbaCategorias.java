@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import codecoffe.restaurantes.interfaceGrafica.MenuPrincipal;
+import codecoffe.restaurantes.interfaceGrafica.PainelPrincipal;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
 import codecoffe.restaurantes.interfaceGrafica.PainelProdutos;
 import codecoffe.restaurantes.interfaceGrafica.PainelVendaMesa;
@@ -123,7 +123,7 @@ public class AbaCategorias extends JPanel
 									
 									PainelProdutos.getInstance().novaCategoria(categoriaEditando);
 									NotificationManager.setLocation(2);
-									NotificationManager.showNotification(MenuPrincipal.getInstance().getJanela(), "Categoria Adicionada!").setDisplayTime(2000);
+									NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Categoria Adicionada!").setDisplayTime(2000);
 								}
 								else
 								{
@@ -134,7 +134,7 @@ public class AbaCategorias extends JPanel
 									
 									PainelProdutos.getInstance().salvarCategoria(categoriaEditando);
 									NotificationManager.setLocation(2);
-									NotificationManager.showNotification(MenuPrincipal.getInstance().getJanela(), "Categoria Salva!").setDisplayTime(2000);
+									NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Categoria Salva!").setDisplayTime(2000);
 								}
 								
 								pega.fechaConexao();
@@ -187,7 +187,7 @@ public class AbaCategorias extends JPanel
 								
 								PainelProdutos.getInstance().removerCategoria(categoriaEditando);
 								NotificationManager.setLocation(2);
-								NotificationManager.showNotification(MenuPrincipal.getInstance().getJanela(), "Categoria Deletada!").setDisplayTime(2000);
+								NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Categoria Deletada!").setDisplayTime(2000);
 							} catch (ClassNotFoundException | SQLException e1) {
 								e1.printStackTrace();
 								new PainelErro(e1);

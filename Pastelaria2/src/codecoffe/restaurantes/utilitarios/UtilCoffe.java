@@ -40,6 +40,9 @@ public abstract class UtilCoffe
 	public static final int CLIENTE_REMOVER = 3;
 	public static final int CLIENTE_ATUALIZAR = 4;
 	
+	public static final int TIPO_MESA = 0;
+	public static final int TIPO_COMANDA = 1;
+	
 	public static String limpaNumero(String campo)
 	{
 		String limpeza = campo.replaceAll("[^0-9]+","");

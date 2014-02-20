@@ -89,6 +89,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		iconeFinalizar = new ImageIcon(getClass().getClassLoader().getResource("imgs/finalizar.png"));
 		divisaoPainel = new JTabbedPane();
+		divisaoPainel.setFocusable(false);
 
 		painelProdutos = new JPanel(new MigLayout("align center", "[]15[]15[]15[]15[]15[]15[]"));
 		painelProdutos.setMinimumSize(new Dimension(1020, 260));
@@ -302,7 +303,8 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				return stamp;
 			}				
 		};
-
+		
+		tabelaPedido.setFocusable(false);
 		tabelaPedido.setModel(tabela);
 		tabelaPedido.getColumnModel().getColumn(0).setMinWidth(70);
 		tabelaPedido.getColumnModel().getColumn(0).setMaxWidth(70);
@@ -334,7 +336,9 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		tabelaPedido.getColumn("Deletar").setCellRenderer(new ButtonRenderer());
 		tabelaPedido.getColumn("Deletar").setCellEditor(new ButtonEditor(new JCheckBox()));	
 		tabelaPedido.setPreferredScrollableViewportSize(new Dimension(800, 200));
-		WebScrollPane scrolltabela = new WebScrollPane(tabelaPedido, true);	
+		WebScrollPane scrolltabela = new WebScrollPane(tabelaPedido, true);
+		scrolltabela.setFocusable(false);
+		scrolltabela.getViewport().setBackground(new Color(237, 237, 237));
 		pedidoPainel.add(scrolltabela, BorderLayout.CENTER);
 
 		painelProdutos1 = new JPanel();
@@ -897,7 +901,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		String formataRecibo = "";
 
 		formataRecibo += ("===========================\n");
-		formataRecibo += (String.format("              %s              \n", Configuracao.INSTANCE.getRestaurante()));
+		formataRecibo += Configuracao.INSTANCE.getMensagemSuperior() + "\n";
 		formataRecibo += ("===========================\n");
 		formataRecibo += ("********* NAO TEM VALOR FISCAL ********\n");
 		formataRecibo += ("===========================\n");		                	
@@ -962,8 +966,8 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		}		
 
 		formataRecibo += ("===========================\n");
-		formataRecibo += ("       OBRIGADO E VOLTE SEMPRE!	          \n");
-		formataRecibo += ("       POWERED BY CodeCoffe V2.0    		  \n");
+		formataRecibo += Configuracao.INSTANCE.getMensagemInferior() + "\n";
+		formataRecibo += ("       Sistema CodeCoffe V2.0    		  \n");
 
 		campoRecibo.setText(formataRecibo);		
 	}	
@@ -1069,7 +1073,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		}			
 		else if(e.getSource() == escolherCliente)
 		{
-			MenuPrincipal.getInstance().AbrirPrincipal(5);
+			PainelPrincipal.getInstance().AbrirPrincipal(5);
 			PainelClientes.getInstance().setCallBack(mesaID+1);
 		}		
 		else if(e.getSource() == flecha1)
@@ -1282,7 +1286,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 					campoTroco.setText(resultado);					
 				}
 
-				MenuPrincipal.getInstance().setarEnter(finalizarVenda);
+				PainelPrincipal.getInstance().setarEnter(finalizarVenda);
 			}
 
 			finalizarVenda.requestFocus();
@@ -1720,7 +1724,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 					campoTroco.setText(resultado);					
 				}
 
-				MenuPrincipal.getInstance().setarEnter(finalizarVenda);
+				PainelPrincipal.getInstance().setarEnter(finalizarVenda);
 			}			
 		}
 	}
@@ -1780,7 +1784,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 						dragAdicionaProduto(maisUm);
 						
 						PainelMesas.getInstance().atualizaMesa(mesaID, vendaRapida);
-						CacheMesaHeader mh = new CacheMesaHeader(mesaID, vendaRapida.getProduto(linha), vendaRapida, UtilCoffe.MESA_ATUALIZAR, 1);
+						CacheMesaHeader mh = new CacheMesaHeader(mesaID, maisUm, vendaRapida, UtilCoffe.MESA_ATUALIZAR, 1);
 						Bartender.INSTANCE.enviarMesa(mh, 0);
 					}
 					else

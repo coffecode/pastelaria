@@ -1,17 +1,29 @@
 package codecoffe.restaurantes.interfaceGrafica;
-import java.awt.*;
-
-import javax.swing.border.EtchedBorder;
-
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.io.IOException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EtchedBorder;
 
 import codecoffe.restaurantes.mysql.Query;
 import codecoffe.restaurantes.primitivas.Pedido;
@@ -26,12 +38,6 @@ import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
 import com.alee.laf.scroll.WebScrollPane;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-
 public class PainelCozinha extends JPanel
 {
 	/**
@@ -43,11 +49,13 @@ public class PainelCozinha extends JPanel
 	private Timer timer, timer2;
 	private WebScrollPane scroll;
 	private boolean flag_refresh, flag_musica;
+	private URL musica;
 	
 	private PainelCozinha()
 	{
 		flag_refresh = false;
 		flag_musica = false;
+		musica = getClass().getClassLoader().getResource("imgs/novo_pedido.wav");
 		todosPedidos = new ArrayList<Pedido>();
 		
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Pedidos"));
@@ -135,11 +143,11 @@ public class PainelCozinha extends JPanel
 		            		long duration = System.currentTimeMillis() - todosPedidos.get(i).getHora().getTime();
 		            		long minutes = TimeUnit.MILLISECONDS.toMinutes(duration);  
 		            		
-		            		if(minutes > 120)	// deleta o pedido, nao importa o status
+		            		if(minutes > Configuracao.INSTANCE.getIntervaloPedido())	// deleta o pedido, nao importa o status
 		            		{
 		        				todosPedidos.get(i).setHeader(UtilCoffe.PEDIDO_DELETA);
 		        				Bartender.INSTANCE.enviarPedido(todosPedidos.get(i));          			
-		            		}        			
+		            		}
 		        		}
 		        	}	
 				}
@@ -187,8 +195,17 @@ public class PainelCozinha extends JPanel
 						pedidosCozinha.revalidate();
 						pedidosCozinha.repaint();
 						
-						if(flag_musica)
-							Toolkit.getDefaultToolkit().beep();
+						if(flag_musica && Configuracao.INSTANCE.isSomCozinha() && isVisible())
+						{
+							try {
+								Clip clip = AudioSystem.getClip();
+								AudioInputStream ais = AudioSystem.getAudioInputStream(musica);
+								clip.open(ais);
+								clip.start();
+							} catch (LineUnavailableException | UnsupportedAudioFileException | IOException e) {
+								e.printStackTrace();
+							}
+						}
 						
 						flag_refresh = false;
 						flag_musica = false;

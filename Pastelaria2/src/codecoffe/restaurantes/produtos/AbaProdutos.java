@@ -18,7 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import codecoffe.restaurantes.interfaceGrafica.MenuPrincipal;
+import codecoffe.restaurantes.interfaceGrafica.PainelPrincipal;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
 import codecoffe.restaurantes.interfaceGrafica.PainelProdutos;
 import codecoffe.restaurantes.interfaceGrafica.PainelVendaMesa;
@@ -218,7 +218,7 @@ public class AbaProdutos extends JPanel
 											produtoEditando.setCodigo(Integer.parseInt(campoCodigo.getText()));
 											
 											NotificationManager.setLocation(2);
-											NotificationManager.showNotification(MenuPrincipal.getInstance().getJanela(), "Produto Adicionado!").setDisplayTime(2000);
+											NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Produto Adicionado!").setDisplayTime(2000);
 											
 											PainelProdutos.getInstance().novoProduto(produtoEditando, modelCategoria.getCategoriaSelecionada().getIdCategoria());
 										}
@@ -238,7 +238,7 @@ public class AbaProdutos extends JPanel
 										produtoEditando.setCodigo(Integer.parseInt(campoCodigo.getText()));
 										
 										NotificationManager.setLocation(2);
-										NotificationManager.showNotification(MenuPrincipal.getInstance().getJanela(), "Produto Salvo!").setDisplayTime(2000);
+										NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Produto Salvo!").setDisplayTime(2000);
 										
 										PainelProdutos.getInstance().salvarProduto(produtoEditando, 
 												modelCategoria.getCategoriaSelecionada().getIdCategoria(), categoriaEditando);
@@ -272,7 +272,7 @@ public class AbaProdutos extends JPanel
 							
 							PainelProdutos.getInstance().removerProduto(produtoEditando, categoriaEditando);
 							NotificationManager.setLocation(2);
-							NotificationManager.showNotification(MenuPrincipal.getInstance().getJanela(), "Produto Deletado!").setDisplayTime(2000);
+							NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Produto Deletado!").setDisplayTime(2000);
 							
 							CacheTodosProdutos todosP = new CacheTodosProdutos(PainelProdutos.getInstance().getModel().getTodosProdutos());
 							PainelVendaMesa.getInstance().atualizaProdutos(todosP);

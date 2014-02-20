@@ -13,7 +13,7 @@ import javax.swing.JOptionPane;
 
 import codecoffe.restaurantes.interfaceGrafica.Loading;
 import codecoffe.restaurantes.interfaceGrafica.Login;
-import codecoffe.restaurantes.interfaceGrafica.MenuPrincipal;
+import codecoffe.restaurantes.interfaceGrafica.PainelPrincipal;
 import codecoffe.restaurantes.interfaceGrafica.PainelClientes;
 import codecoffe.restaurantes.interfaceGrafica.PainelCozinha;
 import codecoffe.restaurantes.interfaceGrafica.PainelDisconnect;
@@ -112,7 +112,7 @@ public class Client implements Runnable
 		if(!reLoad)
 		{
 			reLoad = true;
-			MenuPrincipal.getInstance().setEnabled(false);
+			PainelPrincipal.getInstance().setEnabled(false);
 			disconnect();
 			
 			new Thread ( new Runnable ()
@@ -275,7 +275,7 @@ public class Client implements Runnable
 							{
 								System.out.println("Recebendo atualização de todas as mesas do servidor.");
 								CacheTodasMesas tm = (CacheTodasMesas)dataRecebida;
-								MenuPrincipal.getInstance().atualizarTodasMesas(tm);
+								PainelPrincipal.getInstance().atualizarTodasMesas(tm);
 							}
 							else if(dataRecebida instanceof CacheMesaHeader)
 							{								
@@ -286,7 +286,7 @@ public class Client implements Runnable
 								if(mh.getHeader() == UtilCoffe.MESA_ERROR)
 								{
 									NotificationManager.setLocation(2);
-									NotificationManager.showNotification(MenuPrincipal.getInstance().getJanela(), 
+									NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), 
 									"Houve um erro e não foi possível atualizar a mesa.").setDisplayTime(2000);							
 								}
 							}
@@ -362,7 +362,7 @@ public class Client implements Runnable
 							    	System.out.println("Enviando pedido da lista de clientes atualizada.");
 							    	enviarObjeto("UPDATE CLIENTES");
 							    	
-							    	MenuPrincipal.getInstance().setEnabled(true);
+							    	PainelPrincipal.getInstance().setEnabled(true);
 							    	reLoad = false;
 								}
 							}						

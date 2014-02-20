@@ -27,7 +27,7 @@ public class Loading {
 		
 		if(fast_mod)
 		{
-			MenuPrincipal.getInstance();
+			PainelPrincipal.getInstance();
 			
 			if(m == UtilCoffe.CLIENT)
 			{
@@ -52,10 +52,11 @@ public class Loading {
 				PainelVendas.getInstance();
 				PainelVendaMesa.getInstance();
 				PainelClientes.getInstance();
-				PainelCozinha.getInstance();	
+				PainelCozinha.getInstance();
+				PainelConfiguracao.getInstance();
 			}			
 			
-			MenuPrincipal.getInstance().finalizarLoading();
+			PainelPrincipal.getInstance().finalizarLoading();
 		}
 		else
 		{
@@ -185,7 +186,7 @@ public class Loading {
             	            public void run()
             	            {            	            	
             	            	statusProgress.setText("Carregando menu principal...");
-            	            	MenuPrincipal.getInstance();
+            	            	PainelPrincipal.getInstance();
             	            }
             	        }).start();
             		}
@@ -312,11 +313,23 @@ public class Loading {
             	            }
             	        }).start();
             		}
+            		else if(i == 95 && modo == UtilCoffe.SERVER)
+            		{
+            			new Thread(new Runnable()
+            	        {
+            	            @Override
+            	            public void run()
+            	            {
+            	            	statusProgress.setText("Carregando outros paineis...");
+            	            	PainelConfiguracao.getInstance();
+            	            }
+            	        }).start();
+            		}
             		progressBar.setValue(i);
             	}
             	
             	ThreadUtils.sleepSafely(400);
-        		MenuPrincipal.getInstance().finalizarLoading();
+        		PainelPrincipal.getInstance().finalizarLoading();
         		splash.dispose();
         		splash = null;
         		inicio = null;

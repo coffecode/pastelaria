@@ -253,7 +253,7 @@ public class PainelMesas extends JPanel
 		@Override
 		public void mousePressed(MouseEvent e) {
 			BotaoMesa x = (BotaoMesa)e.getSource();
-			MenuPrincipal.getInstance().AbrirMesa(x.idMesa, vendaMesas.get(x.idMesa), true);
+			PainelPrincipal.getInstance().AbrirMesa(x.idMesa, vendaMesas.get(x.idMesa), true);
 		}
 
 		@Override
@@ -331,11 +331,11 @@ public class PainelMesas extends JPanel
 		}
 		
 		if(Usuario.INSTANCE.getOlhando() == mesa)
-			MenuPrincipal.getInstance().AbrirMesa(mesa, vendaMesas.get(mesa), true);
+			PainelPrincipal.getInstance().AbrirMesa(mesa, vendaMesas.get(mesa), true);
 	}
 	
 	public void verMesa(int mesaid)
 	{
-		MenuPrincipal.getInstance().AbrirMesa(mesaid, vendaMesas.get(mesaid), false);
+		PainelPrincipal.getInstance().AbrirMesa(mesaid, vendaMesas.get(mesaid), false);
 	}
 }

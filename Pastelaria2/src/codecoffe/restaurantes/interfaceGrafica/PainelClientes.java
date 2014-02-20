@@ -811,7 +811,7 @@ public class PainelClientes extends JPanel implements ActionListener
 					{
 						PainelVendaRapida.getInstance().setFiado(clienteSelecionado.getNome(), clienteSelecionado.getIdUnico(),
 						campoTelefone.getText(), campoEndereco.getText(), campoNumero.getText(), campoComplemento.getText());
-						MenuPrincipal.getInstance().AbrirPrincipal(0);
+						PainelPrincipal.getInstance().AbrirPrincipal(0);
 					}					
 				}
 			}

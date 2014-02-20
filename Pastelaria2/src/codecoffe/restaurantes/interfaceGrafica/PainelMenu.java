@@ -145,32 +145,32 @@ public class PainelMenu extends JPanel implements MouseListener
 			{
 				case 0:
 				{
-					MenuPrincipal.getInstance().AbrirPrincipal(4);
+					PainelPrincipal.getInstance().AbrirPrincipal(4);
 					break;
 				}
 				case 1:
 				{
-					MenuPrincipal.getInstance().AbrirPrincipal(0);
+					PainelPrincipal.getInstance().AbrirPrincipal(0);
 					break;
 				}
 				case 2:
 				{
-					MenuPrincipal.getInstance().AbrirPrincipal(1);
+					PainelPrincipal.getInstance().AbrirPrincipal(1);
 					break;
 				}
 				case 3:
 				{
-					MenuPrincipal.getInstance().AbrirPrincipal(5);
+					PainelPrincipal.getInstance().AbrirPrincipal(5);
 					break;
 				}
 				case 4:
 				{
-					MenuPrincipal.getInstance().AbrirPrincipal(6);
+					PainelPrincipal.getInstance().AbrirPrincipal(6);
 					break;
 				}
 				case 5:
 				{
-					MenuPrincipal.getInstance().AbrirPrincipal(3);
+					PainelPrincipal.getInstance().AbrirPrincipal(3);
 					break;
 				}
 				default:
@@ -178,7 +178,7 @@ public class PainelMenu extends JPanel implements MouseListener
 					int opcao = JOptionPane.showConfirmDialog(null, "Você tem certeza que deseja sair?", "Logout", JOptionPane.YES_NO_OPTION);
 
 					if(opcao == JOptionPane.YES_OPTION)
-						MenuPrincipal.getInstance().logout();
+						PainelPrincipal.getInstance().logout();
 				}
 			}
 		}
@@ -194,34 +194,34 @@ public class PainelMenu extends JPanel implements MouseListener
 	public void mousePressed(MouseEvent e) {
 		if(e.getSource() == vendaRapida)
 		{
-			MenuPrincipal.getInstance().AbrirPrincipal(0);
+			PainelPrincipal.getInstance().AbrirPrincipal(0);
 		}
 		else if(e.getSource() == produtos)
 		{
 			if(Usuario.INSTANCE.getLevel() > 1)
-				MenuPrincipal.getInstance().AbrirPrincipal(1);
+				PainelPrincipal.getInstance().AbrirPrincipal(1);
 			else
 				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}
 		else if(e.getSource() == consulta)
 		{
 			if(Usuario.INSTANCE.getLevel() > 1)
-				MenuPrincipal.getInstance().AbrirPrincipal(3);
+				PainelPrincipal.getInstance().AbrirPrincipal(3);
 			else
 				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}
 		else if(e.getSource() == inicio)
 		{
-			MenuPrincipal.getInstance().AbrirPrincipal(4);
+			PainelPrincipal.getInstance().AbrirPrincipal(4);
 		}
 		else if(e.getSource() == clientes)
 		{
-			MenuPrincipal.getInstance().AbrirPrincipal(5);
+			PainelPrincipal.getInstance().AbrirPrincipal(5);
 			PainelClientes.getInstance().setCallBack(0);
 		}
 		else if(e.getSource() == cozinha)
 		{
-			MenuPrincipal.getInstance().AbrirPrincipal(6);
+			PainelPrincipal.getInstance().AbrirPrincipal(6);
 		}		
 	}
 

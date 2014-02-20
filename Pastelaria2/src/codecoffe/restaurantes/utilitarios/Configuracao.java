@@ -11,11 +11,11 @@ import codecoffe.restaurantes.sockets.CacheConfiguracoes;
 public enum Configuracao {
 	INSTANCE;
 	
-	private int qntdMesas, modo, backupAutoIntervalo;
+	private int qntdMesas, modo, backupAutoIntervalo, intervaloPedido, tipoPrograma;
 	private double taxaEntrega;
-	private String nomeRest, caminhoBackupAuto;
+	private String nomeRest, caminhoBackupAuto, mensagemSuperior, mensagemInferior;
 	private Date ultimoBackup;
-	private boolean dezPorcento, reciboFim, backupAuto;
+	private boolean dezPorcento, reciboFim, backupAuto, somCozinha;
 	
 	public void atualizarConfiguracao()
 	{		
@@ -28,6 +28,10 @@ public enum Configuracao {
 				
 				nomeRest = pega.getString("restaurante");
 				qntdMesas = pega.getInt("mesas");
+				tipoPrograma = pega.getInt("tipoprograma");
+				intervaloPedido = pega.getInt("intervalopedido");
+				mensagemSuperior = pega.getString("msuperior");
+				mensagemInferior = pega.getString("minferior");
 				
 				try {
 					ultimoBackup = formatter.parse(pega.getString("ultimobackup"));
@@ -55,6 +59,11 @@ public enum Configuracao {
 						reciboFim = true;
 					else
 						reciboFim = false;
+					
+					if(pega.getInt("somcozinha") == 1)
+						somCozinha = true;
+					else
+						somCozinha = false;
 					
 					taxaEntrega = UtilCoffe.precoToDouble(pega.getString("taxaentrega"));
 					
@@ -87,103 +96,123 @@ public enum Configuracao {
 		return cc;
 	}
 	
-	public void setModo(int md)
-	{
+	public void setModo(int md) {
 		modo = md;
 	}
 	
-	public void setBackupAutoCaminho(String caminho)
-	{
+	public void setBackupAutoCaminho(String caminho) {
 		caminhoBackupAuto = caminho;
 	}
 	
-	public void setUltimoBackup(Date quando)
-	{
+	public void setUltimoBackup(Date quando) {
 		ultimoBackup = quando;
 	}
 	
-	public void setBackupAuto(boolean set)
-	{
+	public void setBackupAuto(boolean set) {
 		backupAuto = set;
 	}
 	
-	public void setBackupAutoIntervalo(int intervalo)
-	{
+	public void setBackupAutoIntervalo(int intervalo) {
 		backupAutoIntervalo = intervalo;
 	}
 	
-	public void setRestaurante(String texto)
-	{
+	public void setRestaurante(String texto) {
 		nomeRest = texto;
 	}
 	
-	public void setMesas(int qtd)
-	{
+	public void setMesas(int qtd) {
 		qntdMesas = qtd;
 	}
 	
-	public void setReciboFim(boolean set)
-	{
+	public void setReciboFim(boolean set) {
 		reciboFim = set;
 	}
 	
-	public void setDezPorcento(boolean set)
-	{
+	public void setDezPorcento(boolean set) {
 		dezPorcento = set;
 	}
 	
-	public void setTaxaEntrega(double quantia)
-	{
+	public void setTaxaEntrega(double quantia) {
 		taxaEntrega = quantia;
 	}
 	
-	public String getRestaurante()
-	{
+	public String getRestaurante() {
 		return nomeRest;
 	}
 	
-	public int getMesas()
-	{
+	public int getMesas() {
 		return qntdMesas;
 	}
 	
-	public boolean getReciboFim()
-	{
+	public boolean getReciboFim() {
 		return reciboFim;
 	}
 	
-	public boolean getDezPorcento()
-	{
+	public boolean getDezPorcento() {
 		return dezPorcento;
 	}
 	
-	public double getTaxaEntrega()
-	{
+	public double getTaxaEntrega() {
 		return taxaEntrega;
 	}
 	
-	public int getModo()
-	{
+	public int getModo() {
 		return modo;
 	}
 	
-	public String getBackupAutoCaminho()
-	{
+	public String getBackupAutoCaminho() {
 		return caminhoBackupAuto;
 	}
 	
-	public Date getUltimoBackup()
-	{
+	public Date getUltimoBackup() {
 		return ultimoBackup;
 	}
 	
-	public boolean getBackupAuto()
-	{
+	public boolean getBackupAuto() {
 		return backupAuto;
 	}
 	
-	public int getBackupAutoIntervalo()
-	{
+	public int getBackupAutoIntervalo() {
 		return backupAutoIntervalo;
-	}	
+	}
+
+	public int getIntervaloPedido() {
+		return intervaloPedido;
+	}
+
+	public void setIntervaloPedido(int intervaloPedido) {
+		this.intervaloPedido = intervaloPedido;
+	}
+
+	public int getTipoPrograma() {
+		return tipoPrograma;
+	}
+
+	public void setTipoPrograma(int tipoPrograma) {
+		this.tipoPrograma = tipoPrograma;
+	}
+
+	public boolean isSomCozinha() {
+		return somCozinha;
+	}
+
+	public void setSomCozinha(boolean somCozinha) {
+		this.somCozinha = somCozinha;
+	}
+
+	public String getMensagemSuperior() {
+		return mensagemSuperior;
+	}
+
+	public void setMensagemSuperior(String mensagemSuperior) {
+		this.mensagemSuperior = mensagemSuperior;
+	}
+
+	public String getMensagemInferior() {
+		return mensagemInferior;
+	}
+
+	public void setMensagemInferior(String mensagemInferior) {
+		this.mensagemInferior = mensagemInferior;
+	}
 }

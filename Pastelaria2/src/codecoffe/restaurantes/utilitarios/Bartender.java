@@ -310,6 +310,12 @@ public enum Bartender
 		}
 		else
 		{
+			/* Sempre verificar se a pasta existe antes */
+			File theDir = new File("codecoffe");
+			if (!theDir.exists()) {
+				theDir.mkdir();
+			}
+			
 			try{
 				String nomeRecibo = "codecoffe/recibo_";
 				nomeRecibo += v.caixa;
@@ -320,7 +326,25 @@ public enum Bartender
 				PrintWriter linhasTxt = new PrintWriter(arquivoTxt);
 
 				linhasTxt.println("===========================================");
-				linhasTxt.println(String.format("              %s              ", Configuracao.INSTANCE.getRestaurante()));
+				
+				/////////////////////////////////////////////////////////////////////////////////////
+				String[] mSuperior = Configuracao.INSTANCE.getMensagemSuperior().split("\\s+");
+				int letras = 42;
+				for(int i = 0; i < mSuperior.length; i++)
+				{
+					if((mSuperior[i].length()+1) < letras) {
+						linhasTxt.print(" " + mSuperior[i]);
+						letras -= (mSuperior[i].length()+1);
+					}
+					else {
+						linhasTxt.println();
+						linhasTxt.print(" " + mSuperior[i]);
+						letras = (42 - (mSuperior[i].length()+1));
+					}
+				}
+				linhasTxt.println();
+				/////////////////////////////////////////////////////////////////////////////////////
+				
 				linhasTxt.println("===========================================");
 				linhasTxt.println("*********** NAO TEM VALOR FISCAL **********");
 				linhasTxt.println("===========================================");
@@ -368,9 +392,46 @@ public enum Bartender
 
 						if(pegaCliente.next())
 						{
-							linhasTxt.println(pegaCliente.getString("nome") + " - TEL: " + pegaCliente.getString("telefone"));
-							linhasTxt.println(pegaCliente.getString("endereco") + " - " + pegaCliente.getString("numero"));
-							linhasTxt.println(pegaCliente.getString("complemento"));      				
+							/////////////////////////////////////////////////////////////////////////////////////
+							String dadosCliente = pegaCliente.getString("nome")  + " - TEL: " + pegaCliente.getString("telefone");
+							
+							String[] dados1 = dadosCliente.split("\\s+");
+							letras = 42;
+							for(int i = 0; i < dados1.length; i++)
+							{
+								if((dados1[i].length()+1) < letras) {
+									linhasTxt.print(" " + dados1[i]);
+									letras -= (dados1[i].length()+1);
+								}
+								else {
+									linhasTxt.println();
+									linhasTxt.print(" " + dados1[i]);
+									letras = (42 - (dados1[i].length()+1));
+								}
+							}
+							linhasTxt.println();
+							/////////////////////////////////////////////////////////////////////////////////////
+							
+							/////////////////////////////////////////////////////////////////////////////////////
+							dadosCliente = pegaCliente.getString("endereco") + " - " + pegaCliente.getString("numero") 
+									+ " - " + pegaCliente.getString("complemento");
+							
+							String[] dados2 = dadosCliente.split("\\s+");
+							letras = 42;
+							for(int i = 0; i < dados2.length; i++)
+							{
+								if((dados2[i].length()+1) < letras) {
+									linhasTxt.print(" " + dados2[i]);
+									letras -= (dados2[i].length()+1);
+								}
+								else {
+									linhasTxt.println();
+									linhasTxt.print(" " + dados2[i]);
+									letras = (42 - (dados2[i].length()+1));
+								}
+							}
+							linhasTxt.println();
+							/////////////////////////////////////////////////////////////////////////////////////
 						}
 
 						pegaCliente.fechaConexao();
@@ -395,8 +456,27 @@ public enum Bartender
 				}	              
 
 				linhasTxt.println("===========================================");
-				linhasTxt.println("       OBRIGADO E VOLTE SEMPRE!	          ");
-				linhasTxt.println("       POWERED BY CodeCoffe V2.0    		  ");
+				
+				/////////////////////////////////////////////////////////////////////////////////////
+				String[] mInferior = Configuracao.INSTANCE.getMensagemInferior().split("\\s+");
+				letras = 42;
+				for(int i = 0; i < mInferior.length; i++)
+				{
+					if((mInferior[i].length()+1) < letras) {
+						linhasTxt.print(" " + mInferior[i]);
+						letras -= (mInferior[i].length()+1);
+					}
+					else {
+						linhasTxt.println();
+						linhasTxt.print(" " + mInferior[i]);
+						letras = (42 - (mInferior[i].length()+1));
+					}
+				}
+				linhasTxt.println();
+				/////////////////////////////////////////////////////////////////////////////////////
+				
+				linhasTxt.println("===========================================");
+				linhasTxt.println("       Sistema CodeCoffe V2.0    		  ");
 
 				int i = 0;
 				while(i < 10){

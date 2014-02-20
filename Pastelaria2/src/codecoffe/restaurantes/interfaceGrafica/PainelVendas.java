@@ -35,6 +35,7 @@ public class PainelVendas extends JPanel
 	{
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane.setFocusable(false);
 		JPanel visualizarFiado = new JPanel();
 		visualizarFiado.setLayout(new BoxLayout(visualizarFiado, BoxLayout.Y_AXIS));
 		visualizarFiado.setPreferredSize(new Dimension(700, 200));
@@ -130,6 +131,7 @@ public class PainelVendas extends JPanel
 		    }
 		};
 		
+		tabelaFiados.setFocusable(false);
 		tabelaFiados.setModel(tabela);
 		tabelaFiados.setAutoResizeMode( JTable.AUTO_RESIZE_ALL_COLUMNS );
 		tabelaFiados.getColumnModel().getColumn(0).setMinWidth(120);
@@ -156,6 +158,8 @@ public class PainelVendas extends JPanel
 		tabelaFiados.setPreferredScrollableViewportSize(new Dimension(800, 150));
 		
 		WebScrollPane scrolltabela = new WebScrollPane(tabelaFiados, true);
+		scrolltabela.setFocusable(false);
+		scrolltabela.getViewport().setBackground(new Color(237, 237, 237));
 		painelTabela.add(scrolltabela, BorderLayout.CENTER);
 		
 		graFiados = new GraficoFiados();
@@ -167,7 +171,7 @@ public class PainelVendas extends JPanel
 		
 		painelUltimas = new UltimasVendas();
 		TabelaVendas painelConsultar = new TabelaVendas();
-		ConsultarDiario painelConsultarDiario = new ConsultarDiario();
+		ConsultarDiario2 painelConsultarDiario = new ConsultarDiario2();
 		
 		ImageIcon iconeUltimas = new ImageIcon(getClass().getClassLoader().getResource("imgs/ultimas_vendas_aba_mini.png"));
 		tabbedPane.addTab("Últimas Vendas", iconeUltimas, painelUltimas, "Últimas vendas realizadas.");

@@ -1,13 +1,10 @@
 package codecoffe.restaurantes.interfaceGrafica;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
@@ -22,16 +19,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.border.EtchedBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -63,7 +55,6 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private WebMenu menuConfiguracoes;
 	private WebMenuItem itemUserSair, itemConfGerais, itemBackup, itemFuncionarios;
-	private OpcoesDialog menuOpcoes;
 	private BackupDialog menuBackup;
 	protected JLabel labelUltimo;
 	private Timer timerBackup;
@@ -78,8 +69,7 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 		add(itemUserSair);
 		
 		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
-		{			
-			menuOpcoes = new OpcoesDialog();	
+		{
 			menuBackup = new BackupDialog();
 			
 			menuConfiguracoes = new WebMenu("Configurações", new ImageIcon(getClass().getClassLoader().getResource("imgs/opcoes.png")));
@@ -187,16 +177,14 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 			
 			if(opcao == JOptionPane.YES_OPTION)
 			{
-				MenuPrincipal.getInstance().logout();
+				PainelPrincipal.getInstance().logout();
 			}	
 		}
 		else if(e.getSource() == itemConfGerais)
 		{
 			if(Usuario.INSTANCE.getLevel() > 1)
 			{
-		        menuOpcoes.pack ();
-		        menuOpcoes.setLocationRelativeTo(null);
-		        menuOpcoes.setVisible(true);
+				PainelPrincipal.getInstance().AbrirPrincipal(7);
 			}
 			else
 				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
@@ -215,235 +203,11 @@ public class PainelStatus extends WebMenuBar implements ActionListener {
 		else if(e.getSource() == itemFuncionarios)
 		{
 			if(Usuario.INSTANCE.getLevel() > 1)
-				MenuPrincipal.getInstance().AbrirPrincipal(2);
+				PainelPrincipal.getInstance().AbrirPrincipal(2);
 			else
 				JOptionPane.showMessageDialog(null, "Você não tem permissão para ver isso.");
 		}			
 	}
-	
-	private class OpcoesDialog extends WebDialog
-	{
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		private JLabel labelNumeroMesas, labelRestaurante, labelCreditos, labelEmail, labelImagem, labelEntrega;
-		private JTextField campoNumeroMesas, campoRestaurante, campoEntrega;
-		private JCheckBox checkDez, checkRecibo;
-		
-		public OpcoesDialog()
-		{
-			setTitle("Configurações do Sistema");
-			JPanel opcaoPainel = new JPanel();
-			opcaoPainel.setLayout(null);			
-			
-			setIconImage(new ImageIcon(getClass().getClassLoader().getResource("imgs/icone_programa.png")).getImage());
-			setDefaultCloseOperation(WebDialog.DO_NOTHING_ON_CLOSE);
-			
-			addWindowListener(new WindowAdapter()
-			{
-				public void windowClosing(WindowEvent e)
-				{
-					atualizaCampos();
-					dispose();
-				}
-			});
-			
-			ItemListener listener = new ItemListener ()
-			{
-				@Override
-				public void itemStateChanged(ItemEvent e) {
-					if(e.getItemSelectable() == checkDez)
-					{
-						if(checkDez.isSelected())
-						{
-							try {
-								Query envia = new Query();
-								envia.executaUpdate("UPDATE opcoes SET dezporcento = 1");
-								envia.fechaConexao();
-							} catch (ClassNotFoundException | SQLException e1) {
-								e1.printStackTrace();
-								new PainelErro(e1);
-							}
-							finally{
-								Configuracao.INSTANCE.setDezPorcento(true);
-							}
-						}
-						else
-						{
-							try {
-								Query envia = new Query();
-								envia.executaUpdate("UPDATE opcoes SET dezporcento = 0");
-								envia.fechaConexao();
-							} catch (ClassNotFoundException | SQLException e1) {
-								e1.printStackTrace();
-								new PainelErro(e1);
-							}
-							finally{
-								Configuracao.INSTANCE.setDezPorcento(false);
-							}
-						}
-					}
-					
-					if(e.getItemSelectable() == checkRecibo)
-					{
-						if(checkRecibo.isSelected())
-						{
-							try {
-								Query envia = new Query();
-								envia.executaUpdate("UPDATE opcoes SET recibofim = 1");
-								envia.fechaConexao();
-							} catch (ClassNotFoundException | SQLException e1) {
-								e1.printStackTrace();
-								new PainelErro(e1);
-							}
-							finally{
-								Configuracao.INSTANCE.setReciboFim(true);
-							}
-						}
-						else
-						{
-							try {
-								Query envia = new Query();
-								envia.executaUpdate("UPDATE opcoes SET recibofim = 0");
-								envia.fechaConexao();
-							} catch (ClassNotFoundException | SQLException e1) {
-								e1.printStackTrace();
-								new PainelErro(e1);
-							}
-							finally{
-								Configuracao.INSTANCE.setReciboFim(false);
-							}
-						}
-					}
-				}
-			};
-			
-			labelRestaurante = new JLabel("Restaurante:");
-			labelRestaurante.setFont(new Font("Helvetica", Font.BOLD, 15));
-			labelRestaurante.setBounds(15,20,250,30); // Coluna, Linha, Largura, Altura!
-			opcaoPainel.add(labelRestaurante);
-			
-			campoRestaurante = new JTextField();
-			campoRestaurante.setToolTipText("É necessário reiniciar o programa para fazer efeito.");
-			campoRestaurante.setBounds(164,20,250,30);
-			opcaoPainel.add(campoRestaurante);		
-			
-			labelNumeroMesas = new JLabel("Número de Mesas:");
-			labelNumeroMesas.setFont(new Font("Helvetica", Font.BOLD, 15));
-			labelNumeroMesas.setBounds(15,60,250,30); // Coluna, Linha, Largura, Altura!
-			opcaoPainel.add(labelNumeroMesas);
-			
-			campoNumeroMesas = new JTextField();
-			campoNumeroMesas.setToolTipText("É necessário reiniciar o programa para fazer efeito.");
-			campoNumeroMesas.setHorizontalAlignment(SwingConstants.CENTER);
-			campoNumeroMesas.setBounds(164,60,35,30);
-			opcaoPainel.add(campoNumeroMesas);
-			
-			labelEntrega = new JLabel("Taxa Delivery:");
-			labelEntrega.setFont(new Font("Helvetica", Font.BOLD, 15));
-			labelEntrega.setBounds(15,100,250,30);
-			opcaoPainel.add(labelEntrega);
-			
-			campoEntrega = new JTextField();
-			campoEntrega.setToolTipText("É necessário reiniciar o programa para fazer efeito.");
-			campoEntrega.setHorizontalAlignment(SwingConstants.CENTER);
-			campoEntrega.setBounds(164,100,65,30);
-			opcaoPainel.add(campoEntrega);			
-			
-			checkDez = new JCheckBox("10% opcional nas mesas");
-			checkDez.setFont(new Font("Helvetica", Font.BOLD, 15));
-			checkDez.addItemListener(listener);
-			checkDez.setBounds(10,150,300,30);
-			opcaoPainel.add(checkDez);
-			
-			checkRecibo = new JCheckBox("Imprimir recibo no fim da venda");
-			checkRecibo.setFont(new Font("Helvetica", Font.BOLD, 15));
-			checkRecibo.addItemListener(listener);
-			checkRecibo.setBounds(10,180,300,30);
-			opcaoPainel.add(checkRecibo);
-			
-			labelImagem = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("imgs/opcoes_full.png")));
-			labelImagem.setBounds(310,95,128,128);
-			labelImagem.setEnabled(false);
-			opcaoPainel.add(labelImagem);		
-			
-			JPanel creditosPainel = new JPanel(new FlowLayout(FlowLayout.CENTER, 45, 20));
-			creditosPainel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "CodeCoffe - Restaurantes " + UtilCoffe.VERSAO));
-			creditosPainel.setBounds(5,240,480,130);
-			
-			labelCreditos = new JLabel("Sistema desenvolvido por André Alves & Fernando Ferreira.");
-			labelCreditos.setFont(new Font("Verdana", Font.PLAIN, 12));
-			labelCreditos.setBounds(15,20,400,30); // Coluna, Linha, Largura, Altura!
-			creditosPainel.add(labelCreditos);
-			
-			labelEmail = new JLabel("contato@codecoffe.com.br");
-			labelEmail.setFont(new Font("Verdana", Font.ITALIC, 12));
-			labelEmail.setBounds(15,20,400,30); // Coluna, Linha, Largura, Altura!
-			creditosPainel.add(labelEmail);
-			
-			opcaoPainel.add(creditosPainel);
-			add(opcaoPainel);
-			
-			setPreferredSize(new Dimension(500, 400));
-			
-			campoRestaurante.setText(Configuracao.INSTANCE.getRestaurante());
-			campoNumeroMesas.setText("" + Configuracao.INSTANCE.getMesas());
-			campoEntrega.setText(UtilCoffe.doubleToPreco(Configuracao.INSTANCE.getTaxaEntrega()));
-			
-			if(Configuracao.INSTANCE.getDezPorcento())
-				checkDez.setSelected(true);
-			else
-				checkDez.setSelected(false);
-			
-			if(Configuracao.INSTANCE.getReciboFim())
-				checkRecibo.setSelected(true);
-			else
-				checkRecibo.setSelected(false);			
-			
-			setResizable(false);			
-		}
-
-		public void atualizaCampos()
-		{
-			
-			try {
-				Query envia = new Query();
-				
-				if(!"".equals(campoRestaurante.getText().trim()))
-				{
-					envia.executaUpdate("UPDATE opcoes SET restaurante = '" + campoRestaurante.getText() + "'");
-					Configuracao.INSTANCE.setRestaurante(campoRestaurante.getText());
-				}
-				
-				String limpeza = campoNumeroMesas.getText().replaceAll("[^0-9]+","");
-				
-				if(!"".equals(limpeza.trim()))
-				{
-					envia.executaUpdate("UPDATE opcoes SET mesas = " + limpeza);
-					Configuracao.INSTANCE.setMesas(Integer.parseInt(limpeza));
-				}
-				
-				limpeza = campoEntrega.getText().replaceAll("[^0-9.,]+","");
-				
-				if(!"".equals(limpeza.trim()))
-				{
-					envia.executaUpdate("UPDATE opcoes SET taxaentrega = '" + (limpeza.replaceAll(",", ".")) + "'");
-					Configuracao.INSTANCE.setTaxaEntrega(UtilCoffe.precoToDouble((limpeza.replaceAll(",", "."))));
-				}
-				
-				envia.fechaConexao();
-			} catch (ClassNotFoundException | SQLException e) {
-				e.printStackTrace();
-				new PainelErro(e);
-			}
-			finally
-			{
-				
-			}
-		}		
-	}
-	
 	
 	private class BackupDialog extends WebDialog
 	{

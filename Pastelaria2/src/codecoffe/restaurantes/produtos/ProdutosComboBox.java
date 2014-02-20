@@ -65,6 +65,7 @@ public class ProdutosComboBox extends JComboBox<Object> implements KeyListener
 		setModel(comboModelCompleto);
 		setEditable(true);
 		setUI(new BasicComboBoxUI());
+		setBackground(new Color(237, 237, 237));
 		
 		for(int i = 0; i < getComponentCount(); i++) 
 		{

@@ -2,6 +2,7 @@ package codecoffe.restaurantes.interfaceGrafica;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
 import javax.swing.*;
 
 import codecoffe.restaurantes.primitivas.Venda;
@@ -13,12 +14,12 @@ import codecoffe.restaurantes.utilitarios.DiarioLog;
 import codecoffe.restaurantes.utilitarios.Usuario;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
-public class MenuPrincipal 
+public class PainelPrincipal 
 {
 	private JFrame janela;
 	private JPanel principalPainel1, componentesCentrais;
 	
-	private MenuPrincipal()
+	private PainelPrincipal()
 	{
 		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
 		{
@@ -27,10 +28,10 @@ public class MenuPrincipal
 	}
 	
 	private static class MenuPrincipalSingletonHolder { 
-		public static final MenuPrincipal INSTANCE = new MenuPrincipal();
+		public static final PainelPrincipal INSTANCE = new PainelPrincipal();
 	}
  
-	public static MenuPrincipal getInstance() {
+	public static PainelPrincipal getInstance() {
 		return MenuPrincipalSingletonHolder.INSTANCE;
 	}
 	
@@ -55,6 +56,7 @@ public class MenuPrincipal
 			componentesCentrais.add(PainelVendas.getInstance(), "Menu Vendas");
 			componentesCentrais.add(PainelClientes.getInstance(), "Menu Clientes");
 			componentesCentrais.add(PainelCozinha.getInstance(), "Menu Cozinha");
+			componentesCentrais.add(PainelConfiguracao.getInstance(), "Menu Configuracao");
 			
 			PainelClientes.getInstance().atualizarClientes();
 			
@@ -174,7 +176,7 @@ public class MenuPrincipal
 	public void AbrirPrincipal(int modelo)
 	{
 		Usuario.INSTANCE.setOlhando(-1);
-		
+
 		switch(modelo)
 		{
 			case 0:			// Abre o menu venda rapida
@@ -214,10 +216,16 @@ public class MenuPrincipal
 				cardLayout.show(componentesCentrais, "Menu Clientes");				
 				break;
 			}
-			default:			// Abre o menu de cozinha
+			case 6:			// Abre o menu de cozinha
 			{
 				CardLayout cardLayout = (CardLayout) componentesCentrais.getLayout();
-				cardLayout.show(componentesCentrais, "Menu Cozinha");				
+				cardLayout.show(componentesCentrais, "Menu Cozinha");
+				break;
+			}
+			default:		// Abre o menu de configurações
+			{
+				CardLayout cardLayout = (CardLayout) componentesCentrais.getLayout();
+				cardLayout.show(componentesCentrais, "Menu Configuracao");				
 			}
 		}
 	}

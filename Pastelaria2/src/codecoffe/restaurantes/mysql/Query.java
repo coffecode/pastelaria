@@ -26,8 +26,17 @@ public class Query
 		Class.forName("com.mysql.jdbc.Driver");
 		this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/restaurante", "root", "puc4321");	// URL, user, senha
 		this.st = this.con.prepareStatement(query);
-		this.st.executeUpdate();		
-	}	
+		this.st.executeUpdate();
+	}
+	
+	public int getRowCount() throws SQLException
+	{
+		int qntd = 0;
+		this.resultado.last();
+		qntd = this.resultado.getRow();
+		this.resultado.beforeFirst();
+		return qntd;
+	}
 	
 	public boolean next()
 	{
