@@ -16,6 +16,7 @@ public enum Configuracao {
 	private String nomeRest, caminhoBackupAuto, mensagemSuperior, mensagemInferior;
 	private Date ultimoBackup;
 	private boolean dezPorcento, reciboFim, backupAuto, somCozinha;
+	private String tipoNome = "Mesa";
 	
 	public void atualizarConfiguracao()
 	{		
@@ -32,6 +33,11 @@ public enum Configuracao {
 				intervaloPedido = pega.getInt("intervalopedido");
 				mensagemSuperior = pega.getString("msuperior");
 				mensagemInferior = pega.getString("minferior");
+				
+				if(tipoPrograma == UtilCoffe.TIPO_MESA)
+					tipoNome = "Mesa";
+				else
+					tipoNome = "Comanda";
 				
 				try {
 					ultimoBackup = formatter.parse(pega.getString("ultimobackup"));
@@ -214,5 +220,13 @@ public enum Configuracao {
 
 	public void setMensagemInferior(String mensagemInferior) {
 		this.mensagemInferior = mensagemInferior;
+	}
+
+	public String getTipoNome() {
+		return tipoNome;
+	}
+
+	public void setTipoNome(String tipoNome) {
+		this.tipoNome = tipoNome;
 	}
 }

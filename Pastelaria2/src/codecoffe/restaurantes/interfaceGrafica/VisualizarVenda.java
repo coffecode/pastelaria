@@ -390,7 +390,7 @@ public class VisualizarVenda extends JFrame
 				visualizaPainel.add(new JLabel("Local: "));
 				
 				if(pega.getInt("caixa") > 0)
-					visualizaPainel.add(new JLabel("Mesa " + pega.getInt("caixa")), "wrap");
+					visualizaPainel.add(new JLabel(Configuracao.INSTANCE.getTipoNome() + " " + pega.getInt("caixa")), "wrap");
 				else
 					visualizaPainel.add(new JLabel("Balcão"), "wrap");
 				

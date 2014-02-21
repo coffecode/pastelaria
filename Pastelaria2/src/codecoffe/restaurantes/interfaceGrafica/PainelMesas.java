@@ -29,14 +29,24 @@ public class PainelMesas extends JPanel
 	private JPanel mesasPainel;
 	private ArrayList<Venda> vendaMesas;
 	private TheListener pegaMouse;
+	private ImageIcon mesaOcupada, mesaNormal;
 	
 	private PainelMesas()
 	{
+		if(Configuracao.INSTANCE.getTipoPrograma() == UtilCoffe.TIPO_MESA) {
+			mesaOcupada = new ImageIcon(getClass().getClassLoader().getResource("imgs/mesa_ocupada_mini.png"));
+			mesaNormal = new ImageIcon(getClass().getClassLoader().getResource("imgs/mesa_mini.png"));	
+		}
+		else {
+			mesaOcupada = new ImageIcon(getClass().getClassLoader().getResource("imgs/comanda_ocupada_26.png"));
+			mesaNormal = new ImageIcon(getClass().getClassLoader().getResource("imgs/comanda_26.png"));
+		}
+		
 		pegaMouse = new TheListener();
 		vendaMesas = new ArrayList<>();
 		
 		mesasPainel = new JPanel();
-		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Mesas"));
+		setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), Configuracao.INSTANCE.getTipoNome() + "s"));
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		mesasPainel.setLayout(new GridBagLayout());
 		
@@ -74,7 +84,7 @@ public class PainelMesas extends JPanel
 		
 		for(int i = 0; i < Configuracao.INSTANCE.getMesas(); i++)
 		{
-			String nomeMesa = "Mesa ";
+			String nomeMesa = Configuracao.INSTANCE.getTipoNome() + " ";
 			BotaoMesa mesa = new BotaoMesa(nomeMesa + (i+1));
 			mesa.idMesa = i;
 			mesa.setFont(new Font("Verdana", Font.PLAIN, 12));
@@ -137,14 +147,14 @@ public class PainelMesas extends JPanel
 				if(vd.getQuantidadeProdutos() > 0)
 				{
 					vd.calculaTotal();
-					mesa.setIcon(new ImageIcon(mesa.getClass().getClassLoader().getResource("imgs/mesa_ocupada_mini.png")));
+					mesa.setIcon(mesaOcupada);
 					mesa.setForeground(new Color(191, 93, 12));
-					mesa.legendaBotao = nomeMesa + (i+1) + " - total em mesa: R$" + String.format("%.2f", vd.getTotal());
+					mesa.legendaBotao = nomeMesa + (i+1) + " - total: R$" + String.format("%.2f", vd.getTotal());
 					mesa.setToolTipText("R$" + String.format("%.2f", vd.getTotal()));
 				}
 				else
 				{
-					mesa.setIcon(new ImageIcon(mesa.getClass().getClassLoader().getResource("imgs/mesa_mini.png")));
+					mesa.setIcon(mesaNormal);
 					mesa.setForeground(Color.BLACK);
 					mesa.legendaBotao = nomeMesa + (i+1);
 					mesa.setToolTipText(null);
@@ -199,7 +209,7 @@ public class PainelMesas extends JPanel
 		
 		for(int i = 0; i < vendaMesas.size(); i++)
 		{	
-			BotaoMesa mesa = new BotaoMesa("Mesa " + (i+1));
+			BotaoMesa mesa = new BotaoMesa(Configuracao.INSTANCE.getTipoNome() + " " + (i+1));
 			mesa.idMesa = i;
 			mesa.setFont(new Font("Verdana", Font.PLAIN, 12));
 			mesa.setPreferredSize(new Dimension(100, 60));
@@ -211,16 +221,16 @@ public class PainelMesas extends JPanel
 			if(vendaMesas.get(i).getQuantidadeProdutos() > 0)
 			{
 				vendaMesas.get(i).calculaTotal();
-				mesa.setIcon(new ImageIcon(mesa.getClass().getClassLoader().getResource("imgs/mesa_ocupada_mini.png")));
+				mesa.setIcon(mesaOcupada);
 				mesa.setForeground(new Color(191, 93, 12));
-				mesa.legendaBotao = "Mesa " + (i+1) + " - total em mesa: R$" + String.format("%.2f", vendaMesas.get(i).getTotal());
+				mesa.legendaBotao = "Mesa " + (i+1) + " - total: R$" + String.format("%.2f", vendaMesas.get(i).getTotal());
 				mesa.setToolTipText("R$" + String.format("%.2f", vendaMesas.get(i).getTotal()));				
 			}
 			else
 			{
-				mesa.setIcon(new ImageIcon(mesa.getClass().getClassLoader().getResource("imgs/mesa_mini.png")));
+				mesa.setIcon(mesaNormal);
 				mesa.setForeground(Color.BLACK);
-				mesa.legendaBotao = "Mesa " + (i+1);
+				mesa.legendaBotao = Configuracao.INSTANCE.getTipoNome() + " " + (i+1);
 				mesa.setToolTipText(null);
 			}
 			
@@ -297,16 +307,16 @@ public class PainelMesas extends JPanel
 		if(vendaMesas.get(mesa).getQuantidadeProdutos() > 0)
 		{
 			vendaMesas.get(mesa).calculaTotal();
-			((BotaoMesa) mesasPainel.getComponent(mesa)).setIcon(new ImageIcon(mesasPainel.getComponent(mesa).getClass().getClassLoader().getResource("imgs/mesa_ocupada_mini.png")));
+			((BotaoMesa) mesasPainel.getComponent(mesa)).setIcon(mesaOcupada);
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setForeground(new Color(191, 93, 12));
-			((BotaoMesa) mesasPainel.getComponent(mesa)).legendaBotao = "Mesa " + (mesa+1) + " - total em mesa: R$" + String.format("%.2f", vendaMesas.get(mesa).getTotal());
+			((BotaoMesa) mesasPainel.getComponent(mesa)).legendaBotao = Configuracao.INSTANCE.getTipoNome() + " " + (mesa+1) + " - total em mesa: R$" + String.format("%.2f", vendaMesas.get(mesa).getTotal());
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setToolTipText("R$" + String.format("%.2f", vendaMesas.get(mesa).getTotal()));
 		}
 		else
 		{
-			((BotaoMesa) mesasPainel.getComponent(mesa)).setIcon(new ImageIcon(mesasPainel.getComponent(mesa).getClass().getClassLoader().getResource("imgs/mesa_mini.png")));
+			((BotaoMesa) mesasPainel.getComponent(mesa)).setIcon(mesaNormal);
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setForeground(Color.BLACK);
-			((BotaoMesa) mesasPainel.getComponent(mesa)).legendaBotao = "Mesa " + (mesa+1);
+			((BotaoMesa) mesasPainel.getComponent(mesa)).legendaBotao = Configuracao.INSTANCE.getTipoNome() + " " + (mesa+1);
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setToolTipText(null);
 		}
 	}	
@@ -317,16 +327,16 @@ public class PainelMesas extends JPanel
 		if(vendaMesas.get(mesa).getQuantidadeProdutos() > 0)
 		{
 			vendaMesas.get(mesa).calculaTotal();			
-			((BotaoMesa) mesasPainel.getComponent(mesa)).setIcon(new ImageIcon(mesasPainel.getComponent(mesa).getClass().getClassLoader().getResource("imgs/mesa_ocupada_mini.png")));
+			((BotaoMesa) mesasPainel.getComponent(mesa)).setIcon(mesaOcupada);
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setForeground(new Color(191, 93, 12));
-			((BotaoMesa) mesasPainel.getComponent(mesa)).legendaBotao = "Mesa " + (mesa+1) + " - total em mesa: R$" + String.format("%.2f", vendaMesas.get(mesa).getTotal());
+			((BotaoMesa) mesasPainel.getComponent(mesa)).legendaBotao = Configuracao.INSTANCE.getTipoNome() + " " + (mesa+1) + " - total em mesa: R$" + String.format("%.2f", vendaMesas.get(mesa).getTotal());
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setToolTipText("R$" + String.format("%.2f", vendaMesas.get(mesa).getTotal()));
 		}
 		else
 		{
-			((BotaoMesa) mesasPainel.getComponent(mesa)).setIcon(new ImageIcon(mesasPainel.getComponent(mesa).getClass().getClassLoader().getResource("imgs/mesa_mini.png")));
+			((BotaoMesa) mesasPainel.getComponent(mesa)).setIcon(mesaNormal);
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setForeground(Color.BLACK);
-			((BotaoMesa) mesasPainel.getComponent(mesa)).legendaBotao = "Mesa " + (mesa+1);
+			((BotaoMesa) mesasPainel.getComponent(mesa)).legendaBotao = Configuracao.INSTANCE.getTipoNome() + " " + (mesa+1);
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setToolTipText(null);
 		}
 		
@@ -334,8 +344,7 @@ public class PainelMesas extends JPanel
 			PainelPrincipal.getInstance().AbrirMesa(mesa, vendaMesas.get(mesa), true);
 	}
 	
-	public void verMesa(int mesaid)
-	{
+	public void verMesa(int mesaid) {
 		PainelPrincipal.getInstance().AbrirMesa(mesaid, vendaMesas.get(mesaid), false);
 	}
 }

@@ -9,87 +9,91 @@ import org.jsoup.select.Elements;
 
 public class buscaCEP {
 
-    public String getEndereco(String CEP) throws IOException {
+	public String getEndereco(String CEP) throws IOException {
 
-        //***************************************************
-        try{
+		//***************************************************
+		try{
 
-        Document doc = Jsoup.connect("http://www.qualocep.com/busca-cep/"+CEP)
-                  .timeout(120000)
-                  .get();
-        Elements urlPesquisa = doc.select("span[itemprop=streetAddress]");
-        for (Element urlEndereco : urlPesquisa) {
-                return urlEndereco.text();
-        }
+			Document doc = Jsoup.connect("http://www.qualocep.com/busca-cep/"+CEP)
+					.timeout(120000)
+					.get();
+			Elements urlPesquisa = doc.select("span[itemprop=streetAddress]");
+			for (Element urlEndereco : urlPesquisa) {
+				byte[] iso88591Data = urlEndereco.text().getBytes("ISO-8859-1");
+				return new String(iso88591Data, "UTF-8");
+			}
 
-        } catch (SocketTimeoutException e) {
+		} catch (SocketTimeoutException e) {
 
-        } catch (HttpStatusException w) {
+		} catch (HttpStatusException w) {
 
-        }
-        return CEP;
-    }
+		}
 
-    public String getBairro(String CEP) throws IOException {
+		return CEP;
+	}
 
-        //***************************************************
-        try{
+	public String getBairro(String CEP) throws IOException {
 
-        Document doc = Jsoup.connect("http://www.qualocep.com/busca-cep/"+CEP)
-                  .timeout(120000)
-                  .get();
-        Elements urlPesquisa = doc.select("td:gt(1)");
-        for (Element urlBairro : urlPesquisa) {
-                return urlBairro.text();
-        }
+		//***************************************************
+		try{
 
-        } catch (SocketTimeoutException e) {
+			Document doc = Jsoup.connect("http://www.qualocep.com/busca-cep/"+CEP)
+					.timeout(120000)
+					.get();
+			Elements urlPesquisa = doc.select("td:gt(1)");
+			for (Element urlBairro : urlPesquisa) {
+				byte[] iso88591Data = urlBairro.text().getBytes("ISO-8859-1");
+				return new String(iso88591Data, "UTF-8");
+			}
 
-        } catch (HttpStatusException w) {
+		} catch (SocketTimeoutException e) {
 
-        }
-        return CEP;
-    }
+		} catch (HttpStatusException w) {
 
-    public String getCidade(String CEP) throws IOException {
+		}
+		return CEP;
+	}
 
-        //***************************************************
-        try{
+	public String getCidade(String CEP) throws IOException {
 
-        Document doc = Jsoup.connect("http://www.qualocep.com/busca-cep/"+CEP)
-                  .timeout(120000)
-                  .get();
-        Elements urlPesquisa = doc.select("span[itemprop=addressLocality]");
-        for (Element urlCidade : urlPesquisa) {
-                return urlCidade.text();
-        }
+		//***************************************************
+		try{
 
-        } catch (SocketTimeoutException e) {
+			Document doc = Jsoup.connect("http://www.qualocep.com/busca-cep/"+CEP)
+					.timeout(120000)
+					.get();
+			Elements urlPesquisa = doc.select("span[itemprop=addressLocality]");
+			for (Element urlCidade : urlPesquisa) {
+				byte[] iso88591Data = urlCidade.text().getBytes("ISO-8859-1");
+				return new String(iso88591Data, "UTF-8");
+			}
 
-        } catch (HttpStatusException w) {
+		} catch (SocketTimeoutException e) {
 
-        }
-        return CEP;
-    }
+		} catch (HttpStatusException w) {
 
-    public String getUF(String CEP) throws IOException {
+		}
+		return CEP;
+	}
 
-        //***************************************************
-        try{
+	public String getUF(String CEP) throws IOException {
 
-        Document doc = Jsoup.connect("http://www.qualocep.com/busca-cep/"+CEP)
-                  .timeout(120000)
-                  .get();
-        Elements urlPesquisa = doc.select("span[itemprop=addressRegion]");
-        for (Element urlUF : urlPesquisa) {
-                return urlUF.text();
-        }
+		//***************************************************
+		try{
 
-        } catch (SocketTimeoutException e) {
+			Document doc = Jsoup.connect("http://www.qualocep.com/busca-cep/"+CEP)
+					.timeout(120000)
+					.get();
+			Elements urlPesquisa = doc.select("span[itemprop=addressRegion]");
+			for (Element urlUF : urlPesquisa) {
+				return urlUF.text();
+			}
 
-        } catch (HttpStatusException w) {
+		} catch (SocketTimeoutException e) {
 
-        }
-        return CEP;
-    }
+		} catch (HttpStatusException w) {
+
+		}
+		return CEP;
+	}
 }

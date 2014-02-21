@@ -4,7 +4,6 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
 
 import codecoffe.restaurantes.mysql.Query;
 import codecoffe.restaurantes.primitivas.Clientes;
@@ -29,7 +28,6 @@ import com.alee.managers.tooltip.TooltipWay;
 
 import java.awt.event.*;
 import java.io.IOException;
-import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Vector;
@@ -41,9 +39,6 @@ import net.miginfocom.swing.MigLayout;
 
 public class PainelClientes extends JPanel implements ActionListener
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private JPanel painelClientes,verClientes;
 	private JLabel labelNome, labelApelido, labelTelefone, labelCPF, labelCEP, labelEndereco, labelNumero, labelBairro, labelComplemento, labelDivida, labelLoad;
@@ -132,13 +127,11 @@ public class PainelClientes extends JPanel implements ActionListener
         			if(!UtilCoffe.vaziu(campoCEP.getText()))
         			{
         				labelLoad.setVisible(true);
-        				
         				buscarCEP buscar = new buscarCEP();
         				Thread iniciaBuscaCep = new Thread(buscar);
         				iniciaBuscaCep.start();
         			}
-        			else
-        			{
+        			else {
         				JOptionPane.showMessageDialog(null, "Digite o CEP, exemplo: 13040050");
         			}
         		}
@@ -303,17 +296,10 @@ public class PainelClientes extends JPanel implements ActionListener
 		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
 		{
 			tabela = new DefaultTableModel() {
-
-				/**
-				 * 
-				 */
 				private static final long serialVersionUID = 1L;
 
 				@Override
 			    public boolean isCellEditable(int row, int column) {
-			       if(column == 4)
-			    	   return true;
-			       
 			       return false;
 			    }
 			};
@@ -322,22 +308,10 @@ public class PainelClientes extends JPanel implements ActionListener
 			tabela.addColumn("Data");
 			tabela.addColumn("Total");
 			tabela.addColumn("Status");
+			tabela.addColumn("Atendente");
 			
-			tabelaUltimasVendas = new JTable() {
-				private static final long serialVersionUID = 1L;
-				Color alternate = new Color(206, 220, 249);
-			    
-			    @Override
-			    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-			        Component stamp = super.prepareRenderer(renderer, row, column);
-			        if (row % 2 == 0 && column != 6)
-			            stamp.setBackground(alternate);
-			        else
-			            stamp.setBackground(this.getBackground());
-			        return stamp;
-			    }    
-			};
-			
+			tabelaUltimasVendas = new JTable();
+			tabelaUltimasVendas.setFocusable(false);
 			tabelaUltimasVendas.setModel(tabela);
 			tabelaUltimasVendas.getColumnModel().getColumn(0).setMinWidth(0);
 			tabelaUltimasVendas.getColumnModel().getColumn(0).setMaxWidth(0);
@@ -349,12 +323,12 @@ public class PainelClientes extends JPanel implements ActionListener
 			tabelaUltimasVendas.getColumnModel().getColumn(3).setMaxWidth(600);		
 			tabelaUltimasVendas.setRowHeight(25);
 			tabelaUltimasVendas.getTableHeader().setReorderingAllowed(false);
-			tabelaUltimasVendas.getColumn("Total").setCellRenderer(new JLabelRenderer());
-			tabelaUltimasVendas.getColumn("Data").setCellRenderer(new CustomRenderer());
-			tabelaUltimasVendas.getColumn("Status").setCellRenderer(new CustomRenderer());
 			tabelaUltimasVendas.setPreferredScrollableViewportSize(new Dimension(350, 90));
+			tabelaUltimasVendas.setDefaultRenderer(Object.class, new TabelaVendasRenderer());
 			
 			scrolltabela = new JScrollPane(tabelaUltimasVendas, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			scrolltabela.getViewport().setBackground(new Color(237, 237, 237));
+			scrolltabela.setFocusable(false);
 			painelClientes.add(scrolltabela, "cell 1 6, span 4 1, grow, h 34%, hmax 600px");			
 		}
 		else
@@ -656,13 +630,13 @@ public class PainelClientes extends JPanel implements ActionListener
 					tabela.setNumRows(0);
 					double totalDivida = 0.0;
 					Query pega2 = new Query();
-					pega2.executaQuery("SELECT * FROM vendas WHERE fiado_id = " + cliente.getIdUnico() + " ORDER BY vendas_id DESC limit 0, 10");
+					pega2.executaQuery("SELECT * FROM vendas WHERE fiado_id = " + cliente.getIdUnico() + " ORDER BY vendas_id DESC limit 0, 12");
 					
 					while(pega2.next())
 					{
-						Vector<Serializable> linha = new Vector<Serializable>();		
+						Vector<String> linha = new Vector<String>();		
 						
-						linha.add(pega2.getInt("vendas_id"));
+						linha.add("" + pega2.getInt("vendas_id"));
 						linha.add(pega2.getString("horario"));
 						linha.add(pega2.getString("total"));
 						
@@ -670,19 +644,18 @@ public class PainelClientes extends JPanel implements ActionListener
 						{
 							if(pega2.getString("forma_pagamento").equals("Fiado"))
 							{
-								linha.add("Não Pago");
+								linha.add("0");
 								totalDivida += (Double.parseDouble(pega2.getString("total").replaceAll(",", ".")) - Double.parseDouble(pega2.getString("valor_pago").replaceAll(",", ".")));
 							}
-							else
-							{
-								linha.add("Pago");
+							else {
+								linha.add("1");
 							}
 						}
-						else
-						{
-							linha.add("Pago");
+						else {
+							linha.add("1");
 						}
 						
+						linha.add(pega2.getString("atendente"));
 						tabela.addRow(linha);
 					}
 					
@@ -692,91 +665,6 @@ public class PainelClientes extends JPanel implements ActionListener
 					e.printStackTrace();
 					new PainelErro(e);
 				}			
-			}
-		}
-	}
-	
-	class JLabelRenderer implements TableCellRenderer {
-
-		private JLabel label;
-
-		public JLabelRenderer() {
-			label = new JLabel();
-			label.setForeground(Color.BLACK);
-			label.setOpaque(true);
-		}  
-
-		@SuppressWarnings("finally")
-		public Component getTableCellRendererComponent(JTable table, Object value,
-				boolean isSelected, boolean hasFocus, int row, int column) {	  
-
-			label.setHorizontalTextPosition(AbstractButton.LEFT);
-			label.setHorizontalAlignment( JLabel.CENTER );
-			label.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/documento.png")));
-			label.setForeground(Color.BLACK);
-
-			String formataTip = "<html>";
-			try {
-				formataTip += "<b>Venda #" + table.getValueAt(row,0) + "</b>  (<i>" + table.getValueAt(row,1) +")</i><br>";
-				Query pega = new Query();
-				pega.executaQuery("SELECT * FROM vendas_produtos WHERE `id_link` = " + table.getValueAt(row,0) + "");
-
-				while(pega.next())
-				{
-					formataTip += pega.getInt("quantidade_produto") + "x .......... <b>" + pega.getString("nome_produto") + "</b>";
-
-					if(!"".equals(pega.getString("adicionais_produto").trim()))
-					{
-						formataTip += " com " + pega.getString("adicionais_produto");
-					}
-
-					formataTip += " - R$" +  pega.getString("preco_produto") + "<br>";
-				}
-
-				pega.fechaConexao();
-				formataTip += "</html>";
-			} catch (ClassNotFoundException | SQLException e) {
-				e.printStackTrace();
-				new PainelErro(e);
-				formataTip = "Erro ao receber banco de dados.";
-			} finally {
-				label.setToolTipText(formataTip);
-
-				if (isSelected) {
-					label.setForeground(new Color(72, 61, 139));
-					label.setBackground(table.getSelectionBackground());
-				} else {
-					label.setForeground(Color.BLACK);
-					label.setBackground(table.getSelectionBackground());
-				}
-
-				label.setText((value == null) ? "" : value.toString());
-				return label;					
-			}
-		}
-	}	
-
-	class CustomRenderer extends DefaultTableCellRenderer 
-	{
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-
-		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
-		{
-			Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			if(isSelected)
-			{
-				setHorizontalAlignment( JLabel.CENTER );
-				c.setForeground(new Color(72, 61, 139));
-				return c;
-			}
-			else
-			{
-				setHorizontalAlignment( JLabel.CENTER );
-				c.setForeground(Color.BLACK);
-				return c;
 			}
 		}
 	}
@@ -850,9 +738,50 @@ public class PainelClientes extends JPanel implements ActionListener
 		{
 			if(clienteSelecionado != null)
 			{
+				campoNome.setText((campoNome.getText().replaceAll("'", "")));
+				campoApelido.setText((campoApelido.getText().replaceAll("'", "")));
+				campoTelefone.setText((campoTelefone.getText().replaceAll("'", "")));
+				campoCPF.setText((campoCPF.getText().replaceAll("'", "")));
+				campoCEP.setText((campoCEP.getText().replaceAll("'", "")));
+				campoEndereco.setText((campoEndereco.getText().replaceAll("'", "")));
+				campoNumero.setText((campoNumero.getText().replaceAll("'", "")));
+				campoBairro.setText((campoBairro.getText().replaceAll("'", "")));
+				campoComplemento.setText((campoComplemento.getText().replaceAll("'", "")));
+				
 				if(UtilCoffe.vaziu(campoNome.getText()))
 				{
 					JOptionPane.showMessageDialog(null, "O campo nome é de preenchimento obrigatório!");
+				}
+				else if(!UtilCoffe.vaziu(campoCPF.getText()) && !UtilCoffe.validaCPF(campoCPF.getText()))
+				{
+					JOptionPane.showMessageDialog(null, "CPF inválido!");
+				}
+				else if(campoNome.getText().length() > 100) {
+					JOptionPane.showMessageDialog(null, "Máximo de 100 caracteres no nome!");
+				}
+				else if(campoApelido.getText().length() > 100) {
+					JOptionPane.showMessageDialog(null, "Máximo de 100 caracteres no apelido!");
+				}
+				else if(campoTelefone.getText().length() > 30) {
+					JOptionPane.showMessageDialog(null, "Máximo de 30 caracteres no apelido!");
+				}
+				else if(campoCPF.getText().length() > 40) {
+					JOptionPane.showMessageDialog(null, "Máximo de 40 caracteres no CPF!");
+				}
+				else if(campoCEP.getText().length() > 40) {
+					JOptionPane.showMessageDialog(null, "Máximo de 40 caracteres no CEP!");
+				}
+				else if(campoEndereco.getText().length() > 400) {
+					JOptionPane.showMessageDialog(null, "Máximo de 400 caracteres no Endereço!");
+				}
+				else if(campoComplemento.getText().length() > 300) {
+					JOptionPane.showMessageDialog(null, "Máximo de 300 caracteres no Complemento!");
+				}
+				else if(campoNumero.getText().length() > 50) {
+					JOptionPane.showMessageDialog(null, "Máximo de 50 caracteres no Número!");
+				}
+				else if(campoBairro.getText().length() > 200) {
+					JOptionPane.showMessageDialog(null, "Máximo de 200 caracteres no Bairro!");
 				}
 				else
 				{
@@ -873,7 +802,7 @@ public class PainelClientes extends JPanel implements ActionListener
 						if(Bartender.INSTANCE.enviarCliente(new CacheClientes(clienteUpdate, UtilCoffe.CLIENTE_EDITAR, Usuario.INSTANCE.getNome())))
 						{
 							NotificationManager.setLocation(2);
-							NotificationManager.showNotification(this, "Cliente Salvado!").setDisplayTime(2000);							
+							NotificationManager.showNotification(this, "Cliente Salvo!").setDisplayTime(2000);
 						}
 					}
 					else
@@ -1048,6 +977,77 @@ public class PainelClientes extends JPanel implements ActionListener
 		{
 			NotificationManager.setLocation(2);
 			NotificationManager.showNotification(this, "Cliente Salvado!").setDisplayTime(2000);			
+		}
+	}
+	
+	private class TabelaVendasRenderer extends DefaultTableCellRenderer
+	{
+		private static final long serialVersionUID = 1L;
+		private Color alternate = new Color(206, 220, 249);
+		private ImageIcon iconLabel = new ImageIcon(getClass().getClassLoader().getResource("imgs/documento.png"));
+		private ImageIcon iconOK = new ImageIcon(getClass().getClassLoader().getResource("imgs/pago.png"));
+		private ImageIcon iconNO = new ImageIcon(getClass().getClassLoader().getResource("imgs/npago.png"));
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, 
+				boolean isSelected, boolean hasFocus, int row, int column) {
+			JLabel cellComponent = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			
+			if(column == 3)
+			{
+				if(Integer.parseInt(value.toString()) == 1) {
+					setIcon(iconOK);
+					setText("");
+				}
+				else {
+					setIcon(iconNO);
+					setText("");
+				}
+			}
+			else if(column == 2) {
+				setIcon(iconLabel);
+				if(isSelected) {
+					try {
+						String formataTip = "<html>";
+						formataTip += "<b>Venda #" + table.getValueAt(row,0) + "</b>  (<i>" + table.getValueAt(row,1) +")</i><br>";
+						Query pega = new Query();
+						pega.executaQuery("SELECT * FROM vendas_produtos WHERE `id_link` = " + table.getValueAt(row,0) + "");
+
+						while(pega.next())
+						{
+							formataTip += pega.getInt("quantidade_produto") + "x .......... <b>" + pega.getString("nome_produto") + "</b>";
+							if(!"".equals(pega.getString("adicionais_produto").trim()))
+								formataTip += " com " + pega.getString("adicionais_produto");
+
+							formataTip += " - R$" +  pega.getString("preco_produto") + "<br>";
+						}
+
+						pega.fechaConexao();
+						formataTip += "</html>";
+						setToolTipText(formataTip);
+					} catch (ClassNotFoundException | SQLException e) {
+						e.printStackTrace();
+						setToolTipText("Erro ao receber banco de dados.");
+					}
+				}
+			}
+			else {
+				setIcon(null);
+				setToolTipText(null);
+			}
+			
+			if(isSelected) {
+				cellComponent.setBackground(tabelaUltimasVendas.getSelectionBackground());
+			}
+			else if(row % 2 == 0) {
+				cellComponent.setBackground(alternate);
+			}
+			else {
+				cellComponent.setBackground(Color.WHITE);
+			}
+			
+			setHorizontalAlignment(JLabel.CENTER);
+			return cellComponent;
 		}
 	}
 }

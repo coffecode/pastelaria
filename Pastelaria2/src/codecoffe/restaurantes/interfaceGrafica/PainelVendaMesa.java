@@ -431,7 +431,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		scrollDropIn.setPreferredSize(new Dimension(290,120));
 
 		WebPanel painelDropIn1 = new WebPanel();
-		painelDropIn1.setPainter ( new TitledBorderPainter ( "Mesa" ) );
+		painelDropIn1.setPainter ( new TitledBorderPainter ( Configuracao.INSTANCE.getTipoNome() ) );
 		painelDropIn1.add(scrollDropIn);
 
 		MouseListener handler = new Handler();
@@ -594,13 +594,22 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		gbc.gridx = 6;	// colunas
 		painelPagamento.add(imprimir, gbc);		
 
-		divisaoPainel.addTab("Mesa", new ImageIcon(getClass().getClassLoader().getResource("imgs/mesa_mini.png")), painelProdutos1, "Gerenciar o pedido da mesa.");		
+		if(Configuracao.INSTANCE.getTipoPrograma() == UtilCoffe.TIPO_MESA)
+		{
+			divisaoPainel.addTab(Configuracao.INSTANCE.getTipoNome(), 
+					new ImageIcon(getClass().getClassLoader().getResource("imgs/mesa_mini.png")), painelProdutos1, "Gerenciar o pedido da mesa.");	
+		}
+		else
+		{
+			divisaoPainel.addTab(Configuracao.INSTANCE.getTipoNome(), 
+					new ImageIcon(getClass().getClassLoader().getResource("imgs/comanda_24.png")), painelProdutos1, "Gerenciar o pedido da comanda.");		
+		}
+				
 		divisaoPainel.addTab("Pagamento", new ImageIcon(getClass().getClassLoader().getResource("imgs/recibo_mini.png")), painelPagamento, "Pagamento do Pedido.");		
 		add(divisaoPainel);
 
 		fiadorIDSalvo = 0;		
 		taxaOpcional = 0.0;
-
 		todosProdutos = new CacheTodosProdutos();
 		
 		ArrayList<Component> ordem = new ArrayList<Component>();
@@ -1674,7 +1683,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 				taxaOpcional = 0.0;
 				adicionarDezPorcento.setText("+ 10% Opcional");
 
-				divisaoPainel.setTitleAt(0, "Mesa " + (mesaID+1));
+				divisaoPainel.setTitleAt(0, Configuracao.INSTANCE.getTipoNome() + " " + (mesaID+1));
 				tabela.setNumRows(0);
 
 				for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)

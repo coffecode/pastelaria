@@ -139,7 +139,7 @@ public abstract class UtilCoffe
 	    System.out.println(sb);
 	}*/
 	
-	private boolean validaCPF(String strCpf)
+	public static boolean validaCPF(String strCpf)
 	{
 	    int iDigito1Aux = 0, iDigito2Aux = 0, iDigitoCPF;
 	    int iDigito1 = 0, iDigito2 = 0, iRestoDivisao = 0;

@@ -16,6 +16,7 @@ import javax.swing.border.BevelBorder;
 
 import codecoffe.restaurantes.primitivas.Pedido;
 import codecoffe.restaurantes.utilitarios.Bartender;
+import codecoffe.restaurantes.utilitarios.Configuracao;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
 import com.alee.extended.label.HotkeyPainter;
@@ -48,9 +49,15 @@ public class PainelPedido extends WebPanel
 		
 		if(p.getLocal() > 0)
 		{
-			labelLocal = new JLabel(" Mesa " + p.getLocal());
-			labelLocal.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/mesa_mini_mini.png")));
-			labelLocal.setPreferredSize(new Dimension(70, 30));
+			labelLocal = new JLabel(" " + Configuracao.INSTANCE.getTipoNome() + " " + p.getLocal());
+			if(Configuracao.INSTANCE.getTipoPrograma() == UtilCoffe.TIPO_MESA) {
+				labelLocal.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/mesa_mini_mini.png")));
+				labelLocal.setPreferredSize(new Dimension(70, 30));
+			}
+			else {
+				labelLocal.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/comanda_16.png")));
+				labelLocal.setPreferredSize(new Dimension(110, 30));
+			}
 		}
 		else
 		{
