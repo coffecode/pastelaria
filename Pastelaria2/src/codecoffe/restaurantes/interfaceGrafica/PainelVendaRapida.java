@@ -752,7 +752,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	private void criarRecibo()
 	{
 		CacheVendaFeita criaImpressao		= new CacheVendaFeita(vendaRapida);
-		criaImpressao.total 				= campoTotal.getText();
+		criaImpressao.total 				= UtilCoffe.doubleToPreco(vendaRapida.getTotal());
 		criaImpressao.atendente 			= campoFuncionario.getSelectedItem().toString();
 		criaImpressao.fiado_id 				= fiadorIDSalvo;
 		criaImpressao.caixa 				= 0;
