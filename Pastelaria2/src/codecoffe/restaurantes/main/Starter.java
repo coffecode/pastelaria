@@ -99,10 +99,6 @@ public class Starter implements ActionListener
 		
 		JPanel configuracoes = new JPanel(new MigLayout("alignx center, aligny center"));
 		
-		//modoTouch = new JCheckBox("Modo Touch Screen (Terminal)");
-		//modoTouch.setEnabled(false);
-		//configuracoes.add(modoTouch, "gaptop 10, wrap");
-		
 		configuracoes.add(new JLabel("<html>IP de Conexão (Terminal)</html>"), "gaptop 10, wrap");
 		
 		campoIP = new WebTextField("");

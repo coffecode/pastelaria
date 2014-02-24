@@ -60,9 +60,6 @@ public class VisualizarVenda extends JFrame
 	private WebButton bSalvarVenda, bCliente, bDeletarCliente;
 	private JCheckBox dezPorcento, delivery;
 	private DefaultTableModel tabela;
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	public VisualizarVenda(int vendaid)
@@ -94,10 +91,6 @@ public class VisualizarVenda extends JFrame
 			if(pega.next())
 			{
 				tabela = new DefaultTableModel() {
-
-					/**
-					 * 
-					 */
 					private static final long serialVersionUID = 1L;
 
 					@Override
@@ -143,6 +136,7 @@ public class VisualizarVenda extends JFrame
 				};
 				
 				tabelaVendas.setModel(tabela);
+				tabelaVendas.setFocusable(false);
 				tabelaVendas.getColumnModel().getColumn(0).setMinWidth(100);
 				tabelaVendas.getColumnModel().getColumn(0).setMaxWidth(200);
 				tabelaVendas.getColumnModel().getColumn(1).setMinWidth(200);
@@ -159,6 +153,7 @@ public class VisualizarVenda extends JFrame
 				tabelaVendas.getColumn("Total").setCellRenderer(new CustomRenderer());
 				tabelaVendas.setPreferredScrollableViewportSize(new Dimension(565, 90));
 				JScrollPane scrolltabela = new JScrollPane(tabelaVendas, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+				scrolltabela.setFocusable(false);
 				
 				ItemListener il = new ItemListener() {
 					@Override
@@ -167,6 +162,7 @@ public class VisualizarVenda extends JFrame
 						{
 							if(delivery.isSelected())
 							{
+								dezPorcento.setSelected(false);
 								taxaEntrega = Configuracao.INSTANCE.getTaxaEntrega();
 								delivery.setText("+ Delivery (" + UtilCoffe.doubleToPreco(taxaEntrega) + ")");
 								campoTotal.setText(UtilCoffe.doubleToPreco(totalVenda + taxaEntrega));
@@ -182,6 +178,7 @@ public class VisualizarVenda extends JFrame
 						{
 							if(dezPorcento.isSelected())
 							{
+								delivery.setSelected(false);
 								taxaDezPorcento = (totalVenda*0.10);
 								dezPorcento.setText("+ 10% Opcional (" + UtilCoffe.doubleToPreco(taxaDezPorcento) + ")");
 								campoTotal.setText(UtilCoffe.doubleToPreco(totalVenda + taxaDezPorcento));								
@@ -196,26 +193,22 @@ public class VisualizarVenda extends JFrame
 					}
 				};
 				
-				if(UtilCoffe.precoToDouble(pega.getString("dezporcento")) > 0)
-				{
+				if(UtilCoffe.precoToDouble(pega.getString("dezporcento")) > 0) {
 					dezPorcento = new JCheckBox("+ 10% Opcional (" + pega.getString("dezporcento") + ")");
 					dezPorcento.setSelected(true);
 				}
-				else
-				{
+				else {
 					dezPorcento = new JCheckBox("+ 10% Opcional");
 				}
 				
 				dezPorcento.setPreferredSize(new Dimension(220, 30));
 				dezPorcento.addItemListener(il);
 				
-				if(UtilCoffe.precoToDouble(pega.getString("delivery")) > 0)
-				{
+				if(UtilCoffe.precoToDouble(pega.getString("delivery")) > 0) {
 					delivery = new JCheckBox("+ Delivery (" + pega.getString("delivery") + ")");
 					delivery.setSelected(true);
 				}
-				else
-				{
+				else {
 					delivery = new JCheckBox("+ Delivery");
 				}
 				
@@ -230,8 +223,7 @@ public class VisualizarVenda extends JFrame
 		        	public void keyPressed(KeyEvent e)
 		        	{
 		        		int code = e.getKeyCode();
-		        		if(code==KeyEvent.VK_ENTER)
-		        		{
+		        		if(code==KeyEvent.VK_ENTER) {
 		        			calculaTroco(campoValor.getText(), campoTotal.getText());
 		        		}
 		            }
@@ -263,8 +255,7 @@ public class VisualizarVenda extends JFrame
 				ArrayList<String> listaFunc = new ArrayList<String>();
 				listaFunc.add(pega.getString("atendente"));
 				
-				while(pega3.next())
-				{
+				while(pega3.next()) {
 					listaFunc.add(pega3.getString("nome"));
 				}
 				
@@ -308,8 +299,7 @@ public class VisualizarVenda extends JFrame
 							
 							campoValor.setText(UtilCoffe.limpaNumeroDecimal(campoValor.getText()));
 							
-							if(UtilCoffe.vaziu(campoValor.getText()))
-							{
+							if(UtilCoffe.vaziu(campoValor.getText())) {
 								campoValor.setText("0,00");
 							}
 							
@@ -327,7 +317,8 @@ public class VisualizarVenda extends JFrame
 							}
 							else
 							{
-								if(campoForma.getSelectedItem() == "Fiado" && UtilCoffe.precoToDouble(campoValor.getText()) >= UtilCoffe.precoToDouble(campoTotal.getText()))
+								if(campoForma.getSelectedItem() == "Fiado" && 
+										UtilCoffe.precoToDouble(campoValor.getText()) >= UtilCoffe.precoToDouble(campoTotal.getText()))
 								{
 									JOptionPane.showMessageDialog(null, "Pagamento fiado não pode ter valor recebido maior ou igual ao total!");
 								}
@@ -370,6 +361,7 @@ public class VisualizarVenda extends JFrame
 				bCliente.setHorizontalTextPosition(AbstractButton.LEFT);
 				bCliente.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/report_user_mini.png")));	
 				bCliente.setPreferredSize(new Dimension(150, 35));
+				bCliente.setMaximumSize(new Dimension(150, 35));
 				bCliente.setRolloverShine(true);
 				bCliente.addActionListener(al);
 				
@@ -430,18 +422,17 @@ public class VisualizarVenda extends JFrame
 				
 				visualizaPainel.add(new JLabel("Recebido: "));
 				visualizaPainel.add(campoValor);
-				
-				if(pega.getInt("caixa") > 0)
-				{
-					visualizaPainel.add(dezPorcento, "gapleft 50px, span 3, wrap");
-				}
-				else
-				{
-					visualizaPainel.add(delivery, "gapleft 50px, span 3, wrap");
-				}
+				visualizaPainel.add(dezPorcento, "gapleft 50px, span 3, wrap");
 				
 				visualizaPainel.add(new JLabel("Troco: "));
-				visualizaPainel.add(campoTroco, "wrap");
+				
+				if(pega.getInt("caixa") == 0) {
+					visualizaPainel.add(campoTroco);
+					visualizaPainel.add(delivery, "gapleft 50px, span 3, wrap");
+				}
+				else {
+					visualizaPainel.add(campoTroco, "wrap");
+				}
 				
 				visualizaPainel.add(new JLabel("Atendente: "), "gaptop 30px");
 				visualizaPainel.add(campoAtendente, "wrap");
@@ -474,11 +465,8 @@ public class VisualizarVenda extends JFrame
 		imap.put(KeyStroke.getKeyStroke("ESCAPE"), "botao1");
 	}
 	
-	private class SpaceAction extends AbstractAction {
-		
-		/**
-		 * 
-		 */
+	private class SpaceAction extends AbstractAction 
+	{
 		private static final long serialVersionUID = 1L;
 		
 		public SpaceAction() {
@@ -544,8 +532,7 @@ public class VisualizarVenda extends JFrame
 			double pegaTotal = Double.parseDouble(total.replaceAll(",", "."));
 			double pegaRecebido = Double.parseDouble(limpeza.replaceAll(",", "."));
 
-			if(((pegaTotal - pegaRecebido)*-1) <= 0)
-			{
+			if(((pegaTotal - pegaRecebido)*-1) <= 0) {
 				campoTroco.setText("0,00");
 			}
 			else
@@ -559,9 +546,6 @@ public class VisualizarVenda extends JFrame
 	
 	class CustomRenderer extends DefaultTableCellRenderer 
 	{
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)

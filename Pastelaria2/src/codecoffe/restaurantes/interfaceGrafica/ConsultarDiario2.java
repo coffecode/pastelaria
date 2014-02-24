@@ -248,7 +248,7 @@ public class ConsultarDiario2 extends WebPanel implements ActionListener
 				linha.add("" + pega.getInt("diario_id"));
 				linha.add(pega.getString("horario"));
 				linha.add(pega.getString("atendente"));
-				linha.add(pega.getString("acao"));
+				linha.add(" " + pega.getString("acao"));
 				linha.add("" + pega.getInt("tipo"));
 				tabelaModel.addRow(linha);
 			}

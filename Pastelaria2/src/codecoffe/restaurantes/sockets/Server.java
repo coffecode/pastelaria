@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import codecoffe.restaurantes.interfaceGrafica.PainelClientes;
 import codecoffe.restaurantes.interfaceGrafica.PainelCozinha;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
+import codecoffe.restaurantes.interfaceGrafica.PainelFuncionarios;
 import codecoffe.restaurantes.interfaceGrafica.PainelMesas;
 import codecoffe.restaurantes.mysql.Query;
 import codecoffe.restaurantes.primitivas.Pedido;
@@ -25,17 +26,17 @@ public class Server implements Runnable
 	private boolean procurandoConexoes;
 	private int uniqueId = 1;
 	private ArrayList<ClienteThread> listaClientes;
-	
+
 	private Server() {}
-	
+
 	private static class ServerSingletonHolder { 
 		public static final Server INSTANCE = new Server();
 	}
- 
+
 	public static Server getInstance() {
 		return ServerSingletonHolder.INSTANCE;
 	}
-	
+
 	public void atualizaConexao(int porta)
 	{
 		port = porta;
@@ -43,7 +44,7 @@ public class Server implements Runnable
 		listaClientes = new ArrayList<ClienteThread>();
 		System.out.println("Server TCP iniciado na porta: " + porta);
 	}
-	
+
 	synchronized void remove(int id)
 	{
 		for(int i = 0; i < listaClientes.size(); ++i)
@@ -56,7 +57,7 @@ public class Server implements Runnable
 			}
 		}
 	}
-	
+
 	public void terminate()
 	{
 		enviaTodos("BYE");
@@ -69,7 +70,7 @@ public class Server implements Runnable
 		try {
 			// criando o servidor na porta marcada
 			ServerSocket serverSocket = new ServerSocket(port);
-			
+
 			while(procurandoConexoes)	//fica procurando conexao para aceitar.
 			{
 				try {
@@ -83,7 +84,7 @@ public class Server implements Runnable
 					System.out.println("Erro na conexão, kickando cliente.");
 				}
 			}
-			
+
 			for(int i = 0; i < listaClientes.size(); ++i)
 			{
 				ClienteThread tc = listaClientes.get(i);
@@ -93,9 +94,9 @@ public class Server implements Runnable
 					tc.socket.close();
 				}catch(IOException e) {}	// erro não interessa.
 			}
-			
+
 			serverSocket.close();
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
 			terminate();
@@ -103,7 +104,7 @@ public class Server implements Runnable
 			System.exit(0);
 		}
 	}
-	
+
 	public synchronized void enviaTodos(Object ob) 
 	{
 		for(int i = listaClientes.size(); --i >= 0;) {
@@ -113,7 +114,7 @@ public class Server implements Runnable
 			}
 		}
 	}
-	
+
 	public synchronized void enviaTodos(Object ob, int ex) 
 	{
 		for(int i = listaClientes.size(); --i >= 0;) {
@@ -126,7 +127,7 @@ public class Server implements Runnable
 			}
 		}
 	}
-	
+
 	public void enviaObjeto(Object ob, int cliente)
 	{
 		for(int i = listaClientes.size(); --i >= 0;) {
@@ -140,7 +141,7 @@ public class Server implements Runnable
 			}
 		}		
 	}
-	
+
 	class ClienteThread extends Thread
 	{
 		int id;
@@ -153,12 +154,12 @@ public class Server implements Runnable
 		{
 			this.id = ++uniqueId;
 			this.socket = socket;
-			
+
 			sOutput = new ObjectOutputStream(socket.getOutputStream());
 			sInput  = new ObjectInputStream(socket.getInputStream());
-			
+
 			Object data = sInput.readUnshared();
-			
+
 			if(data instanceof String)
 			{
 				if(!data.toString().equals(UtilCoffe.VERSAO))
@@ -171,14 +172,14 @@ public class Server implements Runnable
 			else
 				this.clienteConectado = false;	// kicka pois não informou versão.
 		}
-		
+
 		public void run()		// fica rodando sempre
 		{			
 			while(this.clienteConectado)
 			{
 				try {
 					Object dataRecebida = sInput.readUnshared();
-					
+
 					if(dataRecebida instanceof String)	// é uma string
 					{
 						String decodifica = (String)dataRecebida;
@@ -193,7 +194,12 @@ public class Server implements Runnable
 						{
 							sOutput.reset();
 							sOutput.writeObject(PainelMesas.getInstance().getTodasMesas());
-						}						
+						}
+						else if(decodifica.equals("UPDATE FUNCIONARIOS"))
+						{
+							sOutput.reset();
+							sOutput.writeObject(PainelFuncionarios.getInstance().getTodosFuncionarios());
+						}	
 						else if(decodifica.equals("UPDATE PEDIDOS"))
 						{
 							sOutput.reset();
@@ -203,14 +209,14 @@ public class Server implements Runnable
 						{
 							CacheClientes cc = PainelClientes.getInstance().getTodosClientes();
 							cc.setHeader(UtilCoffe.CLIENTE_ATUALIZAR);
-							
+
 							sOutput.reset();
 							sOutput.writeObject(cc);
 						}
 						else if(decodifica.equals("UPDATE CONFIGURACAO"))
 						{
 							System.out.println("Enviando configuracao");
-							
+
 							sOutput.reset();
 							sOutput.writeObject(Configuracao.INSTANCE.gerarCache());
 						}						
@@ -221,15 +227,15 @@ public class Server implements Runnable
 						else if(decodifica.contains(";QUIT"))
 						{
 							String nome = "";
-							
+
 							for(int i = 0; i < decodifica.length(); i++)
 							{
 								if(decodifica.charAt(i) == ';')
 									break;
-								
+
 								nome += decodifica.charAt(i);
 							}
-							
+
 							if(!UtilCoffe.vaziu(nome))
 								DiarioLog.add(nome, "Saiu do sistema.", 9);
 						}							
@@ -256,7 +262,7 @@ public class Server implements Runnable
 					else if(dataRecebida instanceof CacheVendaFeita)	// é uma venda realizada
 					{
 						CacheVendaFeita vendaFeita = (CacheVendaFeita)dataRecebida;
-						
+
 						if(vendaFeita.imprimir)
 						{
 							Bartender.INSTANCE.criarImpressao(vendaFeita);
@@ -279,14 +285,14 @@ public class Server implements Runnable
 					else if(dataRecebida instanceof CacheAutentica)
 					{
 						CacheAutentica autentica = (CacheAutentica)dataRecebida;
-						
+
 						Query teste = new Query();
-						
+
 						try {
 							String formatacao;
 							formatacao = "SELECT password, level, nome FROM funcionarios WHERE username = '" + autentica.username + "';";							
 							teste.executaQuery(formatacao);
-							
+
 							if(teste.next())
 							{
 								if(teste.getString("password").equals(autentica.password))
@@ -303,11 +309,11 @@ public class Server implements Runnable
 										autentica.nome = teste.getString("nome");
 										autentica.level = teste.getInt("level");
 										DiarioLog.add(teste.getString("nome"), "Fez login no sistema.", 8);
-										
+
 										sOutput.reset();
 										sOutput.writeObject(autentica);
 									}
-									
+
 									teste.fechaConexao();
 								}
 								else
@@ -333,7 +339,7 @@ public class Server implements Runnable
 							teste.fechaConexao();
 						}
 					}
-					
+
 				} catch (ClassNotFoundException | IOException e) {
 					if(e.getMessage().contains("Connection reset") || e.getMessage().toLowerCase().contains("socket closed"))
 					{
@@ -349,17 +355,17 @@ public class Server implements Runnable
 					}
 				}
 			}
-			
+
 			remove(id);
 			close();
 		}
-		
+
 		private boolean enviarObjeto(Object ob) {
 			if(!socket.isConnected()) {
 				close();
 				return false;
 			}
-			
+
 			try {
 				sOutput.reset();
 				sOutput.writeObject(ob);
@@ -371,29 +377,23 @@ public class Server implements Runnable
 				return false;
 			}
 		}		
-		
+
 		private void close()
 		{
 			if(sOutput != null)
 				try {
 					sOutput.close();
-				} catch (IOException e) {
-					//e.printStackTrace();
-				}
-			
+				} catch (IOException e) {}
+
 			if(sInput != null)
 				try {
 					sInput.close();
-				} catch (IOException e) {
-					//e.printStackTrace();
-				}
-			
+				} catch (IOException e) {}
+
 			if(socket != null)
 				try {
 					socket.close();
-				} catch (IOException e) {
-					//e.printStackTrace();
-				}
+				} catch (IOException e) {}
 		}
 	}
 }

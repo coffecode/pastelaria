@@ -84,7 +84,12 @@ public class PainelMesas extends JPanel
 		
 		for(int i = 0; i < Configuracao.INSTANCE.getMesas(); i++)
 		{
-			String nomeMesa = Configuracao.INSTANCE.getTipoNome() + " ";
+			String nomeMesa;
+			if(Configuracao.INSTANCE.getTipoPrograma() == UtilCoffe.TIPO_COMANDA)
+				nomeMesa = "Com ";
+			else 
+				nomeMesa = Configuracao.INSTANCE.getTipoNome() + " ";
+			
 			BotaoMesa mesa = new BotaoMesa(nomeMesa + (i+1));
 			mesa.idMesa = i;
 			mesa.setFont(new Font("Verdana", Font.PLAIN, 12));
@@ -149,14 +154,14 @@ public class PainelMesas extends JPanel
 					vd.calculaTotal();
 					mesa.setIcon(mesaOcupada);
 					mesa.setForeground(new Color(191, 93, 12));
-					mesa.legendaBotao = nomeMesa + (i+1) + " - total: R$" + String.format("%.2f", vd.getTotal());
+					mesa.legendaBotao = Configuracao.INSTANCE.getTipoNome() + " " + (i+1) + " - total: R$" + String.format("%.2f", vd.getTotal());
 					mesa.setToolTipText("R$" + String.format("%.2f", vd.getTotal()));
 				}
 				else
 				{
 					mesa.setIcon(mesaNormal);
 					mesa.setForeground(Color.BLACK);
-					mesa.legendaBotao = nomeMesa + (i+1);
+					mesa.legendaBotao = Configuracao.INSTANCE.getTipoNome() + " " + (i+1);
 					mesa.setToolTipText(null);
 				}
 				
@@ -223,7 +228,7 @@ public class PainelMesas extends JPanel
 				vendaMesas.get(i).calculaTotal();
 				mesa.setIcon(mesaOcupada);
 				mesa.setForeground(new Color(191, 93, 12));
-				mesa.legendaBotao = "Mesa " + (i+1) + " - total: R$" + String.format("%.2f", vendaMesas.get(i).getTotal());
+				mesa.legendaBotao = Configuracao.INSTANCE.getTipoNome() + " " + (i+1) + " - total: R$" + String.format("%.2f", vendaMesas.get(i).getTotal());
 				mesa.setToolTipText("R$" + String.format("%.2f", vendaMesas.get(i).getTotal()));				
 			}
 			else
@@ -309,7 +314,8 @@ public class PainelMesas extends JPanel
 			vendaMesas.get(mesa).calculaTotal();
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setIcon(mesaOcupada);
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setForeground(new Color(191, 93, 12));
-			((BotaoMesa) mesasPainel.getComponent(mesa)).legendaBotao = Configuracao.INSTANCE.getTipoNome() + " " + (mesa+1) + " - total em mesa: R$" + String.format("%.2f", vendaMesas.get(mesa).getTotal());
+			((BotaoMesa) mesasPainel.getComponent(mesa)).legendaBotao = Configuracao.INSTANCE.getTipoNome() + " " + (mesa+1) 
+							+ " - total: R$" + String.format("%.2f", vendaMesas.get(mesa).getTotal());
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setToolTipText("R$" + String.format("%.2f", vendaMesas.get(mesa).getTotal()));
 		}
 		else
@@ -329,7 +335,8 @@ public class PainelMesas extends JPanel
 			vendaMesas.get(mesa).calculaTotal();			
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setIcon(mesaOcupada);
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setForeground(new Color(191, 93, 12));
-			((BotaoMesa) mesasPainel.getComponent(mesa)).legendaBotao = Configuracao.INSTANCE.getTipoNome() + " " + (mesa+1) + " - total em mesa: R$" + String.format("%.2f", vendaMesas.get(mesa).getTotal());
+			((BotaoMesa) mesasPainel.getComponent(mesa)).legendaBotao = Configuracao.INSTANCE.getTipoNome() + " " + (mesa+1) 
+						+ " - total: R$" + String.format("%.2f", vendaMesas.get(mesa).getTotal());
 			((BotaoMesa) mesasPainel.getComponent(mesa)).setToolTipText("R$" + String.format("%.2f", vendaMesas.get(mesa).getTotal()));
 		}
 		else

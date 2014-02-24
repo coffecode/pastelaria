@@ -15,6 +15,7 @@ import codecoffe.restaurantes.primitivas.ProdutoVenda;
 import codecoffe.restaurantes.primitivas.Venda;
 import codecoffe.restaurantes.produtos.ProdutosComboBox;
 import codecoffe.restaurantes.sockets.CacheAviso;
+import codecoffe.restaurantes.sockets.CacheTodosFuncionarios;
 import codecoffe.restaurantes.sockets.CacheTodosProdutos;
 import codecoffe.restaurantes.sockets.CacheVendaFeita;
 import codecoffe.restaurantes.utilitarios.Bartender;
@@ -42,16 +43,13 @@ import java.util.Vector;
 
 public class PainelVendaRapida extends JPanel implements ActionListener, FocusListener, ItemListener
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private JPanel pedidoPainel, painelProdutos, painelProdutos1, painelPagamento;
-	private JLabel labelQuantidade, labelValor, labelTotal, labelRecebido, labelTroco, labelForma, labelCliente;
+	private JLabel labelQuantidade, labelValor, labelTotal, labelRecebido, labelTroco, labelForma, labelCliente, labelFuncionario;
 	private JTabbedPane divisaoPainel;
 	private DefaultTableModel tabela;
 	private JTable tabelaPedido;
-	private JCheckBox campoEntrega;
+	private JCheckBox campoEntrega, adicionarDezPorcento;
 	private WebTextField campoComentario;
 	private JTextField campoTotal, campoRecebido, campoTroco;
 	private JTextField campoValor;
@@ -65,8 +63,10 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	private WebButton adicionarProduto, finalizarVenda, imprimir, escolherCliente, deletarCliente, calcular;
 	private JEditorPane campoRecibo;
 	private WebComboBox campoForma;
+	private JComboBox<String> campoFuncionario;
+	private DefaultComboBoxModel<String> funcionarioModel;
 	private ImageIcon iconeFinalizar;
-	private double taxaEntrega;
+	private double taxaEntrega, taxaOpcional;
 	private CacheTodosProdutos todosProdutos;
 	private String fiadorTelefone, fiadorEndereco, fiadorNumero, fiadorComplemento;
 	private CacheAviso aviso;
@@ -81,16 +81,14 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		painelProdutos = new JPanel(new MigLayout("align center", "[]15[]15[]15[]15[]15[]15[]"));
 		painelProdutos.setMinimumSize(new Dimension(1020, 340));
 		painelProdutos.setMaximumSize(new Dimension(1920, 450));
-		
-		GridBagConstraints gbc = new GridBagConstraints();		
-		gbc.insets = new Insets(5,5,5,5);
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
 
-		labelValor = new JLabel(" Preço:");
+		labelValor = new JLabel("Preço:");
 		labelValor.setFont(new Font("Helvetica", Font.BOLD, 16));
 		labelQuantidade = new JLabel("Qntd:");
 		labelQuantidade.setFont(new Font("Helvetica", Font.BOLD, 16));
+		
+		labelFuncionario = new JLabel("Atendente:");
+		labelFuncionario.setFont(new Font("Helvetica", Font.BOLD, 16));
 
 		campoValor = new JTextField(6);
 		campoQuantidade = new JTextField("1", 2);
@@ -234,10 +232,6 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		pedidoPainel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Pedido"));		
 
 		tabela = new DefaultTableModel() {
-
-			/**
-			 * 
-			 */
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -258,9 +252,6 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		tabela.addColumn("Deletar");
 
 		tabelaPedido = new JTable() {
-			/**
-			 * 
-			 */
 			private static final long serialVersionUID = 1L;
 			Color alternate = new Color(206, 220, 249);
 
@@ -311,16 +302,28 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		pedidoPainel.add(scrolltabela, BorderLayout.CENTER);
 
 		painelProdutos1 = new JPanel();
-		painelProdutos1.setLayout(new BoxLayout(painelProdutos1, BoxLayout.Y_AXIS));	
+		painelProdutos1.setLayout(new BoxLayout(painelProdutos1, BoxLayout.Y_AXIS));
+		
+		campoFuncionario = new JComboBox<String>();
+		funcionarioModel = new DefaultComboBoxModel<String>();
+		campoFuncionario.setModel(funcionarioModel);
+		campoFuncionario.setPreferredSize(new Dimension(170, 35));
+		campoFuncionario.setMinimumSize(new Dimension(170, 35));
 
 		painelProdutos1.add(painelProdutos);
 		painelProdutos1.add(pedidoPainel);
 
-		painelPagamento = new JPanel();
-		painelPagamento.setLayout(new GridBagLayout());
+		painelPagamento = new JPanel(new MigLayout("aligny center, alignx center", "[]15[]75", "10[]"));
+		
+		adicionarDezPorcento = new JCheckBox("+ 10% Opcional (R$0,00)");
+		adicionarDezPorcento.setPreferredSize(new Dimension(200, 30));
+		adicionarDezPorcento.setFont(new Font("Helvetica", Font.BOLD, 14));
+		adicionarDezPorcento.addItemListener(this);
+		adicionarDezPorcento.setSelected(false);
 
 		labelCliente = new JLabel("Cliente:");
 		labelCliente.setFont(new Font("Helvetica", Font.BOLD, 16));
+		labelCliente.setMaximumSize(new Dimension(120, 30));
 
 		escolherCliente = new WebButton("Escolher");
 		escolherCliente.setRolloverShine(true);
@@ -336,17 +339,21 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		deletarCliente.addActionListener(this);		
 
 		labelTotal = new JLabel("Total:");
+		labelTotal.setMaximumSize(new Dimension(120, 30));
 		labelTotal.setFont(new Font("Helvetica", Font.BOLD, 16));
 		campoTotal = new JTextField("0,00");
 		campoTotal.setHorizontalAlignment(SwingConstants.CENTER);
-		campoTotal.setPreferredSize(new Dimension(90, 35));
+		campoTotal.setPreferredSize(new Dimension(105, 33));
+		campoTotal.setMinimumSize(new Dimension(105, 33));
 		campoTotal.setEnabled(false);
 
 		labelRecebido = new JLabel("Recebido:");
+		labelRecebido.setMaximumSize(new Dimension(120, 30));
 		labelRecebido.setFont(new Font("Helvetica", Font.BOLD, 16));
 		campoRecebido = new JTextField("");
 		campoRecebido.setHorizontalAlignment(SwingConstants.CENTER);
-		campoRecebido.setPreferredSize(new Dimension(110, 35));
+		campoRecebido.setPreferredSize(new Dimension(105, 33));
+		campoRecebido.setMinimumSize(new Dimension(105, 33));
 		campoRecebido.setEditable(true);
 		campoRecebido.addFocusListener(this);
 
@@ -358,10 +365,12 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		calcular.setContentAreaFilled(false);
 
 		labelTroco = new JLabel("Troco:");
+		labelTroco.setMaximumSize(new Dimension(120, 30));
 		labelTroco.setFont(new Font("Helvetica", Font.BOLD, 16));
 		campoTroco = new JTextField("0,00");
 		campoTroco.setHorizontalAlignment(SwingConstants.CENTER);
-		campoTroco.setPreferredSize(new Dimension(90, 35));
+		campoTroco.setPreferredSize(new Dimension(105, 33));
+		campoTroco.setMinimumSize(new Dimension(105, 33));
 		campoTroco.setEnabled(false);
 
 		labelForma = new JLabel("Pagamento:");
@@ -369,126 +378,68 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 
 		campoEntrega = new JCheckBox("Delivery (+ " + UtilCoffe.doubleToPreco( Configuracao.INSTANCE.getTaxaEntrega()) + ")");
 		campoEntrega.setPreferredSize(new Dimension(140, 30));
-		campoEntrega.setFont(new Font("Helvetica", Font.BOLD, 16));
+		campoEntrega.setFont(new Font("Helvetica", Font.BOLD, 14));
 		campoEntrega.addItemListener(this);
 		campoEntrega.setSelected(false);
 
 		String[] tiposPagamento = {"Dinheiro", "Ticket Refeição", "Cartão de Crédito", "Fiado" };
 		campoForma = new WebComboBox(tiposPagamento);
 		campoForma.setSelectedIndex(0);
-		campoForma.setPreferredSize(new Dimension(170, 40));
+		campoForma.setPreferredSize(new Dimension(170, 35));
+		campoForma.setMinimumSize(new Dimension(170, 35));
 
 		finalizarVenda = new WebButton("Concluir Venda");
 		finalizarVenda.setRolloverShine(true);
 		finalizarVenda.setFont(new Font("Helvetica", Font.BOLD, 16));
-		finalizarVenda.setPreferredSize(new Dimension(150, 60));
+		finalizarVenda.setPreferredSize(new Dimension(250, 55));
+		finalizarVenda.setMinimumSize(new Dimension(250, 46));
 		finalizarVenda.setIcon(iconeFinalizar);	
 		finalizarVenda.addActionListener(this);
 
-		gbc.insets = new Insets(5,5,5,5);  //top padding
-		gbc.gridwidth = 2;
-		gbc.gridx = 1;	// colunas
-		gbc.gridy = 1;	// linhas			
-		painelPagamento.add(campoEntrega, gbc);
+		painelPagamento.add(campoEntrega, "cell 0 0, span 2");
+		painelPagamento.add(adicionarDezPorcento, "cell 0 1, span 2");
+		painelPagamento.add(labelFuncionario, "cell 0 2");
+		painelPagamento.add(campoFuncionario, "cell 1 2");
+		painelPagamento.add(labelForma, "cell 0 3");
+		painelPagamento.add(campoForma, "cell 1 3");
+		painelPagamento.add(labelCliente, "cell 0 4");		
+		painelPagamento.add(escolherCliente, "cell 1 4, split 2");
+		painelPagamento.add(deletarCliente, "cell 1 4, gapleft 10px");
+		painelPagamento.add(labelTotal, "cell 0 5");	
+		painelPagamento.add(campoTotal, "cell 1 5");
+		painelPagamento.add(labelRecebido, "cell 0 6");
+		painelPagamento.add(campoRecebido, "cell 1 6");
+		painelPagamento.add(labelTroco, "cell 0 7");
+		painelPagamento.add(campoTroco, "cell 1 7");		
+		painelPagamento.add(finalizarVenda, "cell 0 8, span 2, align center");
 
-		gbc.insets = new Insets(5,5,5,5);  //top padding
-		gbc.gridwidth = 1;
-		gbc.gridx = 1;	// colunas
-		gbc.gridy = 2;	// linhas			
-		painelPagamento.add(labelForma, gbc);
-
-		gbc.gridx = 1;	// colunas
-		gbc.gridy = 3;	// linhas		
-		painelPagamento.add(labelCliente, gbc);		
-
-		gbc.gridwidth = 2;
-		gbc.insets = new Insets(5,30,5,5);  //top padding
-		gbc.gridx = 2;	// colunas
-		gbc.gridy = 2;	// linhas			
-		painelPagamento.add(campoForma, gbc);
-
-		gbc.insets = new Insets(5,30,5,5);  //top padding
-		gbc.gridx = 2;	// colunas
-		gbc.gridy = 3;	// linhas			
-		painelPagamento.add(escolherCliente, gbc);
-
-		gbc.insets = new Insets(5,5,5,5);  //top padding
-		gbc.gridwidth = 1;
-		gbc.gridx = 4;	// colunas
-		gbc.gridy = 3;	// linhas			
-		painelPagamento.add(deletarCliente, gbc);
-
-		gbc.insets = new Insets(5,5,5,5);  //top padding
-		gbc.gridx = 1;	// colunas
-		gbc.gridy = 4;	// linhas			
-		painelPagamento.add(labelTotal, gbc);	
-
-		gbc.insets = new Insets(5,30,5,5);  //top padding
-		gbc.gridx = 2;	// colunas
-		painelPagamento.add(campoTotal, gbc);
-
-		gbc.insets = new Insets(5,5,5,5);  //top padding
-		gbc.gridx = 1;	// colunas
-		gbc.gridy = 5;	// linhas			
-		painelPagamento.add(labelRecebido, gbc);
-
-		gbc.insets = new Insets(5,30,5,5);  //top padding
-		gbc.gridx = 2;	// colunas
-		painelPagamento.add(campoRecebido, gbc);
-
-		gbc.insets = new Insets(5,5,5,5);  //top padding
-		gbc.gridx = 3;	// colunas
-		painelPagamento.add(calcular, gbc);
-
-		gbc.gridx = 1;	// colunas
-		gbc.gridy = 6;	// linhas			
-		painelPagamento.add(labelTroco, gbc);
-
-		gbc.insets = new Insets(5,30,5,5);  //top padding
-		gbc.gridx = 2;	// colunas
-		painelPagamento.add(campoTroco, gbc);		
-
-		gbc.insets = new Insets(5,5,5,5);  //top padding
-		gbc.gridwidth = 2;
-		gbc.gridx = 1;	// colunas
-		gbc.gridy = 8;	// linhas			
-		painelPagamento.add(finalizarVenda, gbc);
-
-		JPanel reciboPainel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
+		WebPanel reciboPainel = new WebPanel(new MigLayout("fill"));
+		reciboPainel.setMargin(5, 5, 5, 5);
 		reciboPainel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Recibo"));
-		reciboPainel.setPreferredSize(new Dimension(240, 320));
+		//reciboPainel.setPreferredSize(new Dimension(240, 350));
 
 		campoRecibo = new JEditorPane();
-		campoRecibo.setPreferredSize(new Dimension(230, 280));
+		//campoRecibo.setPreferredSize(new Dimension(230, 310));
 		campoRecibo.setFont(new Font("Verdana", Font.PLAIN, 8));
 		campoRecibo.setEditable(false);
 		campoRecibo.setText("### Nenhum produto marcado ###");
 
 		JScrollPane scrollrecibo = new JScrollPane(campoRecibo);
 		scrollrecibo.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		scrollrecibo.setPreferredSize(new Dimension(230, 280));
-		reciboPainel.add(scrollrecibo);
+		//scrollrecibo.setPreferredSize(new Dimension(230, 280));
+		reciboPainel.add(scrollrecibo, "grow");
 
-		gbc.insets = new Insets(0,50,0,15);  //top padding
-		gbc.gridheight = 7;
-		gbc.gridwidth = 2;
-		gbc.gridy = 1;	// linhas			
-		gbc.gridx = 6;	// colunas
-		painelPagamento.add(reciboPainel, gbc);
+		painelPagamento.add(reciboPainel, "cell 3 0, grow, span 1 8");
 
 		imprimir = new WebButton("Imprimir");
-		imprimir.setPreferredSize(new Dimension(170, 60));
+		imprimir.setPreferredSize(new Dimension(250, 55));
+		imprimir.setMinimumSize(new Dimension(250, 46));
 		imprimir.setRolloverShine(true);
 		imprimir.setFont(new Font("Helvetica", Font.BOLD, 16));
 		imprimir.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/imprimir.png")));
 		imprimir.addActionListener(this);
 
-		gbc.insets = new Insets(10,50,0,15);  //top padding
-		gbc.gridheight = 1;
-		gbc.gridwidth = 2;
-		gbc.gridy = 8;	// linhas			
-		gbc.gridx = 6;	// colunas
-		painelPagamento.add(imprimir, gbc);
+		painelPagamento.add(imprimir, "cell 3 8, span, align center");
 
 		divisaoPainel.addTab("Venda Rápida", new ImageIcon(getClass().getClassLoader().getResource("imgs/vrapida_mini.png")), painelProdutos1, "Gerenciar o Pedido.");		
 		divisaoPainel.addTab("Pagamento", new ImageIcon(getClass().getClassLoader().getResource("imgs/recibo_mini.png")), painelPagamento, "Pagamento do Pedido.");		
@@ -496,6 +447,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 
 		fiadorIDSalvo = 0;
 		taxaEntrega = 0.0;
+		taxaOpcional = 0.0;
 		todosProdutos = new CacheTodosProdutos();
 		
 		ArrayList<Component> ordem = new ArrayList<Component>();
@@ -536,9 +488,6 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 
 	class OpcoesCellComponent extends JPanel
 	{
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 		private WebButton maisProduto, menosProduto;
 		private int linha;
@@ -558,7 +507,19 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 						tabela.setValueAt(UtilCoffe.doubleToPreco(total), linha, 3);
 						tabela.setValueAt(vendaRapida.getProduto(linha).getQuantidade(), linha, 2);
 						vendaRapida.calculaTotal();
-						campoTotal.setText(UtilCoffe.doubleToPreco((vendaRapida.getTotal() + taxaEntrega)));						
+						
+						if(Configuracao.INSTANCE.isDezPorcentoRapida()) {
+							taxaOpcional = (vendaRapida.getTotal()*0.10);
+							adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
+						}
+							
+						if(adicionarDezPorcento.isSelected()) {
+							campoTotal.setText(UtilCoffe.doubleToPreco((vendaRapida.getTotal() + taxaEntrega + taxaOpcional)));	
+						}
+						else {
+							campoTotal.setText(UtilCoffe.doubleToPreco((vendaRapida.getTotal() + taxaEntrega)));	
+						}
+												
 						atualizarCampoRecibo();
 					}
 					else
@@ -570,7 +531,19 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 							tabela.setValueAt(UtilCoffe.doubleToPreco(total), linha, 3);
 							tabela.setValueAt(vendaRapida.getProduto(linha).getQuantidade(), linha, 2);
 							vendaRapida.calculaTotal();
-							campoTotal.setText(UtilCoffe.doubleToPreco((vendaRapida.getTotal() + taxaEntrega)));						
+							
+							if(Configuracao.INSTANCE.isDezPorcentoRapida()) {
+								taxaOpcional = (vendaRapida.getTotal()*0.10);
+								adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
+							}
+								
+							if(adicionarDezPorcento.isSelected()) {
+								campoTotal.setText(UtilCoffe.doubleToPreco((vendaRapida.getTotal() + taxaOpcional)));	
+							}
+							else {
+								campoTotal.setText(UtilCoffe.doubleToPreco(vendaRapida.getTotal()));	
+							}				
+							
 							atualizarCampoRecibo();							
 						}
 						else
@@ -582,7 +555,19 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 										vendaRapida.removerProdutoIndex(linha);
 										vendaRapida.calculaTotal();
 										atualizarCampoRecibo();
-										campoTotal.setText(UtilCoffe.doubleToPreco((vendaRapida.getTotal() + taxaEntrega)));									
+										
+										if(Configuracao.INSTANCE.isDezPorcentoRapida()) {
+											taxaOpcional = (vendaRapida.getTotal()*0.10);
+											adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
+										}
+											
+										if(adicionarDezPorcento.isSelected()) {
+											campoTotal.setText(UtilCoffe.doubleToPreco((vendaRapida.getTotal() + taxaOpcional)));	
+										}
+										else {
+											campoTotal.setText(UtilCoffe.doubleToPreco(vendaRapida.getTotal()));	
+										}
+										
 										tabela.removeRow(linha);
 									}
 								}  
@@ -606,17 +591,13 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			add(menosProduto);
 		}
 
-		public void setLinha(int li)
-		{
+		public void setLinha(int li) {
 			linha = li;
 		}
 	}
 
 	class OpcoesCell extends AbstractCellEditor implements TableCellEditor, TableCellRenderer
 	{
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 
 		OpcoesCellComponent cellOpcoes;
@@ -657,9 +638,6 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 
 	class CustomRenderer extends DefaultTableCellRenderer 
 	{
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
@@ -734,7 +712,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		formataRecibo += ("===========================\n");
 
 		formataRecibo += (String.format("%-18.18s", "Atendido por: "));
-		formataRecibo += (Usuario.INSTANCE.getNome() + "\n");
+		formataRecibo += (campoFuncionario.getSelectedItem().toString() + "\n");
 
 		Locale locale = new Locale("pt","BR"); 
 		GregorianCalendar calendar = new GregorianCalendar(); 
@@ -756,7 +734,14 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			formataRecibo += ("Taxa de Entrega                  R$" + UtilCoffe.doubleToPreco(taxaEntrega) + "\n");
 
 		formataRecibo += ("                     -------------------\n");
-		formataRecibo += ("Total                            R$" + campoTotal.getText() + "\n");
+		formataRecibo += ("Total                            R$" + UtilCoffe.doubleToPreco(vendaRapida.getTotal() + taxaEntrega) + "\n");
+		
+		if(Configuracao.INSTANCE.isDezPorcentoRapida() && adicionarDezPorcento.isSelected())
+		{
+			formataRecibo += ("                     ----------------------\n");
+			formataRecibo += ("10% Opcional                     R$" + UtilCoffe.doubleToPreco(vendaRapida.getTotal() + taxaOpcional) + "\n");            	  
+		}
+		
 		formataRecibo += ("===========================\n");
 		formataRecibo += Configuracao.INSTANCE.getMensagemInferior() + "\n";
 		formataRecibo += ("       Sistema CodeCoffe V2.0    		  \n");
@@ -768,11 +753,11 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	{
 		CacheVendaFeita criaImpressao		= new CacheVendaFeita(vendaRapida);
 		criaImpressao.total 				= campoTotal.getText();
-		criaImpressao.atendente 			= Usuario.INSTANCE.getNome();
+		criaImpressao.atendente 			= campoFuncionario.getSelectedItem().toString();
 		criaImpressao.fiado_id 				= fiadorIDSalvo;
 		criaImpressao.caixa 				= 0;
 		criaImpressao.delivery 				= UtilCoffe.doubleToPreco(taxaEntrega);
-		criaImpressao.dezporcento			= "0,00";
+		criaImpressao.dezporcento			= UtilCoffe.doubleToPreco(vendaRapida.getTotal() + taxaOpcional);
 		criaImpressao.classe				= 2;
 		criaImpressao.imprimir 				= true;
 
@@ -801,12 +786,13 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 
 					for(int i = 0; i < vendaRapida.getQuantidadeProdutos(); i++)
 					{
-						Pedido ped = new Pedido(vendaRapida.getProduto(i), Usuario.INSTANCE.getNome(), 0);
+						Pedido ped = new Pedido(vendaRapida.getProduto(i), campoFuncionario.getSelectedItem().toString(), 0);
 						Bartender.INSTANCE.enviarPedido(ped);
 					}			
 
 					vendaRapida.clear();
 					campoEntrega.setSelected(false);
+					adicionarDezPorcento.setSelected(false);
 					campoValor.setText("");
 					campoQuantidade.setText("1");
 					campoTotal.setText("0,00");
@@ -821,6 +807,8 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 					adicionaisPainel.repaint();
 					tabela.setNumRows(0);
 					fiadorIDSalvo = 0;
+					taxaOpcional = 0.0;
+					adicionarDezPorcento.setText("+ 10% Opcional (R$0,00)");
 					escolherCliente.setText("Escolher");
 					campoRecibo.setText("### Nenhum produto marcado ###");			
 				}
@@ -908,7 +896,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 
 							CacheVendaFeita vendaRapidaFeita= new CacheVendaFeita(vendaRapida);
 							vendaRapidaFeita.total 				= campoTotal.getText();
-							vendaRapidaFeita.atendente 			= Usuario.INSTANCE.getNome();
+							vendaRapidaFeita.atendente 			= campoFuncionario.getSelectedItem().toString();
 							vendaRapidaFeita.ano 				= c.get(Calendar.YEAR);
 							vendaRapidaFeita.mes 				= c.get(Calendar.MONTH);
 							vendaRapidaFeita.dia_mes 			= c.get(Calendar.DAY_OF_MONTH);
@@ -920,10 +908,14 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 							vendaRapidaFeita.fiado_id 			= fiadorIDSalvo;
 							vendaRapidaFeita.caixa 				= 0;
 							vendaRapidaFeita.delivery 			= UtilCoffe.doubleToPreco(taxaEntrega);
-							vendaRapidaFeita.dezporcento		= "0,00";
 							vendaRapidaFeita.classe				= UtilCoffe.CLASSE_VENDA_RAPIDA;
+							
+							if(adicionarDezPorcento.isSelected())
+								vendaRapidaFeita.dezporcento	= UtilCoffe.doubleToPreco(taxaOpcional);
+							else
+								vendaRapidaFeita.dezporcento	= UtilCoffe.doubleToPreco(0.0);
 
-							Bartender.INSTANCE.enviarVenda(vendaRapidaFeita, 0);	// agora aguarda a resposta.
+							Bartender.INSTANCE.enviarVenda(vendaRapidaFeita, -1);	// agora aguarda a resposta.
 						}
 					}
 					else
@@ -1026,7 +1018,19 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 					@Override
 					public void run() {
 						vendaRapida.calculaTotal();
-						campoTotal.setText(UtilCoffe.doubleToPreco((vendaRapida.getTotal() + taxaEntrega)));
+						
+						if(Configuracao.INSTANCE.isDezPorcentoRapida()) {
+							taxaOpcional = vendaRapida.getTotal() * 0.10;
+							adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
+						}
+						
+						if(adicionarDezPorcento.isSelected()) {
+							campoTotal.setText(UtilCoffe.doubleToPreco((vendaRapida.getTotal() + taxaEntrega + taxaOpcional)));
+						}
+						else {
+							campoTotal.setText(UtilCoffe.doubleToPreco((vendaRapida.getTotal() + taxaEntrega)));
+						}
+						
 						campoValor.setText("");
 						campoQuantidade.setText("1");
 						campoComentario.setText("");
@@ -1087,10 +1091,6 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	}
 
 	class ButtonRenderer extends JButton implements TableCellRenderer {
-
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 
 		public ButtonRenderer() {
@@ -1113,14 +1113,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		}
 	}
 
-	/**
-	 * @version 1.0 11/09/98
-	 */
-
 	class ButtonEditor extends DefaultCellEditor {
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 		protected JButton button;
 		private String label;
@@ -1165,11 +1158,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 					vendaRapida.calculaTotal();
 					atualizarCampoRecibo();
 
-					String pegaPreco;
-					pegaPreco = String.format("%.2f", (vendaRapida.getTotal() + taxaEntrega));		    	
-
-					pegaPreco.replaceAll(".", ",");	
-					campoTotal.setText(pegaPreco);
+					campoTotal.setText(UtilCoffe.doubleToPreco((vendaRapida.getTotal() + taxaEntrega)));
 
 					SwingUtilities.invokeLater(new Runnable() {  
 						public void run() {  
@@ -1209,15 +1198,11 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 				double pegaTotal = Double.parseDouble(campoTotal.getText().replaceAll(",", "."));
 				double pegaRecebido = Double.parseDouble(limpeza.replaceAll(",", "."));
 
-				if(((pegaTotal - pegaRecebido)*-1) <= 0)
-				{
+				if(((pegaTotal - pegaRecebido)*-1) <= 0) {
 					campoTroco.setText("0,00");
 				}
-				else
-				{
-					String resultado = String.format("%.2f", (pegaTotal - pegaRecebido)*-1);
-					resultado.replaceAll(",", ".");
-					campoTroco.setText(resultado);					
+				else {
+					campoTroco.setText(UtilCoffe.doubleToPreco((pegaTotal - pegaRecebido)*-1));					
 				}
 
 				PainelPrincipal.getInstance().setarEnter(finalizarVenda);
@@ -1239,13 +1224,15 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 	}
 
 	@Override
-	public void itemStateChanged(ItemEvent e) {
+	public void itemStateChanged(ItemEvent e) 
+	{
 		if(e.getItemSelectable() == campoEntrega)
 		{
 			if(campoEntrega.isSelected())
 			{
 				taxaEntrega = Configuracao.INSTANCE.getTaxaEntrega();
 				campoTotal.setText(UtilCoffe.doubleToPreco((UtilCoffe.precoToDouble(campoTotal.getText()) + taxaEntrega)));
+				adicionarDezPorcento.setSelected(false);
 				atualizarCampoRecibo();
 			}
 			else
@@ -1255,5 +1242,35 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 				atualizarCampoRecibo();
 			}
 		}
-	}	
+		else if(e.getItemSelectable() == adicionarDezPorcento)
+		{
+			if(adicionarDezPorcento.isSelected())
+			{
+				taxaOpcional = UtilCoffe.precoToDouble(campoTotal.getText()) * 0.10;
+				campoTotal.setText(UtilCoffe.doubleToPreco((UtilCoffe.precoToDouble(campoTotal.getText()) + taxaOpcional)));
+				adicionarDezPorcento.setText("+ 10% Opcional (R$" + UtilCoffe.doubleToPreco(taxaOpcional) + ")");
+				campoEntrega.setSelected(false);
+				atualizarCampoRecibo();
+			}
+			else
+			{
+				campoTotal.setText(UtilCoffe.doubleToPreco((UtilCoffe.precoToDouble(campoTotal.getText()) - taxaOpcional)));
+				taxaOpcional = 0.0;
+				atualizarCampoRecibo();
+			}
+		}
+	}
+	
+	public void atualizaFuncionarios(CacheTodosFuncionarios todosFuncionarios)
+	{
+		funcionarioModel.removeAllElements();
+		
+		for(int i = 0; i < todosFuncionarios.getFuncionarios().size(); i++) {
+			funcionarioModel.addElement(todosFuncionarios.getFuncionarios().get(i).getNome());
+		}
+		
+		funcionarioModel.setSelectedItem(Usuario.INSTANCE.getNome());
+		if(campoFuncionario.getSelectedIndex() == -1)
+			campoFuncionario.setSelectedIndex(0);
+	}
 }

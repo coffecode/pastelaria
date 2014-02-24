@@ -86,7 +86,10 @@ public class PainelPrincipal
 	    	Client.getInstance().enviarObjeto("UPDATE PEDIDOS");
 	    	
 	    	System.out.println("Enviando pedido da lista de clientes atualizada.");
-	    	Client.getInstance().enviarObjeto("UPDATE CLIENTES");    	
+	    	Client.getInstance().enviarObjeto("UPDATE CLIENTES");
+	    	
+	    	System.out.println("Enviando pedido da lista de funcionários atualizada.");
+	    	Client.getInstance().enviarObjeto("UPDATE FUNCIONARIOS");    
 		}
 		
 		janela.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -94,7 +97,7 @@ public class PainelPrincipal
 		{
 			public void windowClosing(WindowEvent e)
 			{
-				int opcao = JOptionPane.showConfirmDialog(null, "Você tem certeza que deseja sair?", "Logout",JOptionPane.YES_NO_OPTION);
+				int opcao = JOptionPane.showConfirmDialog(null, "Você tem certeza que deseja sair?", "Logout", JOptionPane.YES_NO_OPTION);
 		
 				if(opcao == JOptionPane.YES_OPTION)
 					logout();

@@ -63,6 +63,9 @@ public class PainelConfiguracao extends JTabbedPane
 		final JCheckBox campoOpcional = new JCheckBox("10% Opcional (mesas/comanda)");
 		campoOpcional.setPreferredSize(new Dimension(150, 35));
 		
+		final JCheckBox campoOpcionalRapida = new JCheckBox("10% Opcional (venda rápida)");
+		campoOpcionalRapida.setPreferredSize(new Dimension(160, 35));
+		
 		final JCheckBox campoRecibo = new JCheckBox("Imprimir recibo automaticamente");
 		campoRecibo.setPreferredSize(new Dimension(150, 35));
 		
@@ -79,6 +82,7 @@ public class PainelConfiguracao extends JTabbedPane
 		String[] tipos = {"Mesa", "Comanda"};
 		final JComboBox<String> campoTipo = new JComboBox<String>(tipos);
 		campoTipo.setPreferredSize(new Dimension(75, 35));
+		campoTipo.setMinimumSize(new Dimension(75, 35));
 		
 		configPrincipal.add(new JLabel("Restaurante:"));
 		configPrincipal.add(campoRestaurante, "gapleft 15px, wrap");
@@ -90,6 +94,7 @@ public class PainelConfiguracao extends JTabbedPane
 		configPrincipal.add(campoTipo, "gapleft 15px, wrap");
 		
 		configPrincipal.add(campoOpcional, "span 2, wrap");
+		configPrincipal.add(campoOpcionalRapida, "span 2, wrap");
 		configPrincipal.add(campoRecibo, "span 2, wrap");
 		
 		configPrincipal.add(new JLabel("<html><b>Mensagens do Recibo</b><html>"), "gaptop 15px, span 2, wrap");
@@ -134,6 +139,7 @@ public class PainelConfiguracao extends JTabbedPane
 		campoMensagemInferior.setText(Configuracao.INSTANCE.getMensagemInferior());
 		
 		campoOpcional.setSelected(Configuracao.INSTANCE.getDezPorcento());
+		campoOpcionalRapida.setSelected(Configuracao.INSTANCE.isDezPorcentoRapida());
 		campoRecibo.setSelected(Configuracao.INSTANCE.getReciboFim());
 		campoSom.setSelected(Configuracao.INSTANCE.isSomCozinha());
 		campoTempo.setValue(Configuracao.INSTANCE.getIntervaloPedido());
@@ -178,6 +184,33 @@ public class PainelConfiguracao extends JTabbedPane
 							envia.executaUpdate("UPDATE opcoes SET dezporcento = 0");
 							envia.fechaConexao();
 							Configuracao.INSTANCE.setDezPorcento(false);
+						} catch (ClassNotFoundException | SQLException e1) {
+							e1.printStackTrace();
+							new PainelErro(e1);
+						}
+					}
+				}
+				else if(e.getItemSelectable() == campoOpcionalRapida)
+				{
+					if(campoOpcionalRapida.isSelected())
+					{
+						try {
+							Query envia = new Query();
+							envia.executaUpdate("UPDATE opcoes SET dezporcentorapida = 1");
+							envia.fechaConexao();
+							Configuracao.INSTANCE.setDezPorcentoRapida(true);
+						} catch (ClassNotFoundException | SQLException e1) {
+							e1.printStackTrace();
+							new PainelErro(e1);
+						}
+					}
+					else
+					{
+						try {
+							Query envia = new Query();
+							envia.executaUpdate("UPDATE opcoes SET dezporcentorapida = 0");
+							envia.fechaConexao();
+							Configuracao.INSTANCE.setDezPorcentoRapida(false);
 						} catch (ClassNotFoundException | SQLException e1) {
 							e1.printStackTrace();
 							new PainelErro(e1);
@@ -348,6 +381,7 @@ public class PainelConfiguracao extends JTabbedPane
 		imagemConfig.addMouseListener(ml);
 		
 		campoOpcional.addItemListener(il);
+		campoOpcionalRapida.addItemListener(il);
 		campoTipo.addItemListener(il);
 		campoRecibo.addItemListener(il);
 		campoSom.addItemListener(il);

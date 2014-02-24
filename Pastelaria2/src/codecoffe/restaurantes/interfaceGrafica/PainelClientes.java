@@ -126,10 +126,16 @@ public class PainelClientes extends JPanel implements ActionListener
         		{
         			if(!UtilCoffe.vaziu(campoCEP.getText()))
         			{
-        				labelLoad.setVisible(true);
+        				SwingUtilities.invokeLater(new Runnable() {
+        					@Override
+        					public void run() {
+                				labelLoad.setVisible(true);
+        					}
+        				});
+        				
         				buscarCEP buscar = new buscarCEP();
         				Thread iniciaBuscaCep = new Thread(buscar);
-        				iniciaBuscaCep.start();
+        				iniciaBuscaCep.start();	
         			}
         			else {
         				JOptionPane.showMessageDialog(null, "Digite o CEP, exemplo: 13040050");
@@ -249,8 +255,7 @@ public class PainelClientes extends JPanel implements ActionListener
 			painelClientes.add(labelCEP, "cell 1 2");
 			painelClientes.add(campoCEP, "cell 2 2, grow, h 2%, hmax 40px");
 			
-			labelLoad = new JLabel();
-			labelLoad.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/loadcep.gif")));
+			labelLoad = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("imgs/loadcep.gif")));
 			labelLoad.setVisible(false);
 			
 			painelClientes.add(labelLoad, "cell 3 2, align left");
@@ -278,8 +283,7 @@ public class PainelClientes extends JPanel implements ActionListener
 			painelClientes.add(labelCEP, "cell 1 3");
 			painelClientes.add(campoCEP, "cell 2 3, grow, h 2%, hmax 40px");
 			
-			labelLoad = new JLabel();
-			labelLoad.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/loadcep.gif")));
+			labelLoad = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("imgs/loadcep.gif")));
 			labelLoad.setVisible(false);
 			
 			painelClientes.add(labelLoad, "cell 3 3, align left");
@@ -502,28 +506,24 @@ public class PainelClientes extends JPanel implements ActionListener
 	
 	class buscarCEP implements Runnable {
 		public void run () {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					buscaCEP pegaDados = new buscaCEP();
+			buscaCEP pegaDados = new buscaCEP();
 
-					try {
-						String resultadoEnd = pegaDados.getEndereco(campoCEP.getText());
-						String resultadoBairro = pegaDados.getBairro(campoCEP.getText());
+			try {
+				String resultadoEnd = pegaDados.getEndereco(campoCEP.getText());
+				String resultadoBairro = pegaDados.getBairro(campoCEP.getText());
 
-						if(!resultadoEnd.equals(campoCEP.getText()))
-						{
-							campoEndereco.setText(resultadoEnd);
-							campoBairro.setText(resultadoBairro);
-						}
-
-					} catch (IOException e1) {
-						new PainelErro(e1);
-					} finally {
-						labelLoad.setVisible(false);
-					}	
+				if(!resultadoEnd.equals(campoCEP.getText()))
+				{
+					campoEndereco.setText(resultadoEnd);
+					campoBairro.setText(resultadoBairro);
 				}
-			});
+
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				new PainelErro(e1);
+			} finally {
+				labelLoad.setVisible(false);
+			}	
 		}
 	}
 	

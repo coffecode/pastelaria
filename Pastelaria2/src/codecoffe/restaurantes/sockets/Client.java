@@ -211,29 +211,22 @@ public class Client implements Runnable
 		if(sInput != null)
 		{
 			try {
-				
-				if(sInput != null)
-					sInput.close();
-				
-			} catch (IOException e) {
-				//e.printStackTrace();
-			} finally {
-				try {
-					if(sOutput != null)
-						sOutput.close();
-					
-				} catch (IOException e) {
-					//e.printStackTrace();
-				} finally {
-					try {
-						if(socket != null)
-							socket.close();
-						
-					} catch (IOException e) {
-						//e.printStackTrace();
-					}					
-				}
-			}
+				sInput.close();
+			} catch (IOException e) {}
+		}
+		
+		if(sOutput != null)
+		{
+			try {
+				sOutput.close();
+			} catch (IOException e) {}
+		}
+		
+		if(socket != null)
+		{
+			try {
+				socket.close();
+			} catch (IOException e) {}
 		}
 	}
 	
@@ -295,7 +288,14 @@ public class Client implements Runnable
 								System.out.println("Recebendo todos os pedidos do servidor.");
 								CacheTodosPedidos tp = (CacheTodosPedidos)dataRecebida;
 								PainelCozinha.getInstance().atualizaTodosPedidos(tp);
-							}						
+							}
+							else if(dataRecebida instanceof CacheTodosFuncionarios)
+							{
+								System.out.println("Recebendo todos os funcionários do servidor.");
+								CacheTodosFuncionarios cf = (CacheTodosFuncionarios)dataRecebida;
+								PainelVendaRapida.getInstance().atualizaFuncionarios(cf);
+								PainelVendaMesa.getInstance().atualizaFuncionarios(cf);
+							}	
 							else if(dataRecebida instanceof Pedido)
 							{
 								System.out.println("Recebendo pedido do servidor.");
@@ -343,7 +343,7 @@ public class Client implements Runnable
 							else if(dataRecebida instanceof CacheConfiguracoes)
 							{
 								System.out.println("Recebendo configurações atualizadas.");
-								CacheConfiguracoes configAtualizada = (CacheConfiguracoes)dataRecebida;
+								CacheConfiguracoes configAtualizada = (CacheConfiguracoes)dataRecebida;								
 								Configuracao.INSTANCE.atualizarConfiguracao(configAtualizada);
 								
 								if(!reLoad)
@@ -361,6 +361,9 @@ public class Client implements Runnable
 							    	
 							    	System.out.println("Enviando pedido da lista de clientes atualizada.");
 							    	enviarObjeto("UPDATE CLIENTES");
+							    	
+							    	System.out.println("Enviando pedido da lista de funcionários atualizada.");
+							    	enviarObjeto("UPDATE FUNCIONARIOS");
 							    	
 							    	PainelPrincipal.getInstance().setEnabled(true);
 							    	reLoad = false;

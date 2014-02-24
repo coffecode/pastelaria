@@ -22,6 +22,7 @@ import codecoffe.restaurantes.primitivas.ProdutoVenda;
 import codecoffe.restaurantes.sockets.CacheAviso;
 import codecoffe.restaurantes.sockets.CacheClientes;
 import codecoffe.restaurantes.sockets.CacheMesaHeader;
+import codecoffe.restaurantes.sockets.CacheTodosFuncionarios;
 import codecoffe.restaurantes.sockets.CacheVendaFeita;
 import codecoffe.restaurantes.sockets.Client;
 import codecoffe.restaurantes.sockets.Server;
@@ -38,6 +39,12 @@ import codecoffe.restaurantes.sockets.Server;
 public enum Bartender
 {
 	INSTANCE;
+	
+	public void enviarFuncionarios(CacheTodosFuncionarios cf)
+	{
+		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
+			Server.getInstance().enviaTodos(cf);
+	}
 	
 	public boolean enviarCliente(CacheClientes cc)
 	{
@@ -449,7 +456,7 @@ public enum Bartender
 				linhasTxt.println("                     ----------------------");
 				linhasTxt.println("Total                            R$" + v.total);
 
-				if(Configuracao.INSTANCE.getDezPorcento() && v.classe == 1)
+				if(UtilCoffe.precoToDouble(v.dezporcento) > 0)
 				{
 					linhasTxt.println("                     ----------------------");
 					linhasTxt.println("10% Opcional                     R$" + v.dezporcento);            	  
@@ -553,7 +560,7 @@ public enum Bartender
 					
 					if(venda_id > 0)
 					{
-						if(v.atendente.equals(Usuario.INSTANCE.getNome()))
+						if(usuario == -1)
 						{
 							CacheAviso aviso = new CacheAviso(1, v.classe, "A venda foi concluída com sucesso!", "Venda #" + venda_id);
 							PainelVendaRapida.getInstance().receberAviso(aviso);			
@@ -585,7 +592,7 @@ public enum Bartender
 					Query envia = new Query();
 					formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id, caixa, delivery, dezporcento, data) VALUES('"
 					+ v.total +
-					"', '" + Usuario.INSTANCE.getNome() +
+					"', '" + v.atendente +
 					"', " + v.ano + ", "
 					+ v.mes + ", "
 					+ v.dia_mes + ", "
@@ -605,7 +612,7 @@ public enum Bartender
 						for(int i = 0; i < v.vendaFeita.getQuantidadeProdutos(); i++)
 						{
 							formatacao = "UPDATE mesas SET `pago` = (`pago` + " + v.vendaFeita.getProduto(i).getQuantidade() + ") WHERE `mesas_id` = " + v.vendaMesa.getMesaId()
-							+ " AND `produto` = '" + v.vendaFeita.getProduto(i).getNome() + "' AND `adicionais` = '" + v.vendaFeita.getProduto(i).getAllAdicionais() + "';";
+							+ " AND `produto` = " + v.vendaFeita.getProduto(i).getIdUnico() + " AND `adicionais` = '" + v.vendaFeita.getProduto(i).getAllAdicionaisId() + "';";
 							envia.executaUpdate(formatacao);
 							
 							pegaPreco = String.format("%.2f", (v.vendaFeita.getProduto(i).getPreco() * v.vendaFeita.getProduto(i).getQuantidade()));
@@ -625,7 +632,7 @@ public enum Bartender
 					
 					if(venda_id > 0)
 					{
-						if(v.atendente.equals(Usuario.INSTANCE.getNome()))
+						if(usuario == -1)
 						{
 							CacheAviso aviso = new CacheAviso(1, v.classe, "A venda foi concluída com sucesso!", "Venda #" + venda_id);
 							PainelVendaMesa.getInstance().receberAviso(aviso);			

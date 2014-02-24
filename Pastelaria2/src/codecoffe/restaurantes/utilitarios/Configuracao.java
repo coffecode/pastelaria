@@ -15,7 +15,7 @@ public enum Configuracao {
 	private double taxaEntrega;
 	private String nomeRest, caminhoBackupAuto, mensagemSuperior, mensagemInferior;
 	private Date ultimoBackup;
-	private boolean dezPorcento, reciboFim, backupAuto, somCozinha;
+	private boolean dezPorcento, dezPorcentoRapida, reciboFim, backupAuto, somCozinha;
 	private String tipoNome = "Mesa";
 	
 	public void atualizarConfiguracao()
@@ -61,6 +61,11 @@ public enum Configuracao {
 					else
 						dezPorcento = false;
 					
+					if(pega.getInt("dezporcentorapida") == 1)
+						dezPorcentoRapida = true;
+					else
+						dezPorcentoRapida = false;
+					
 					if(pega.getInt("recibofim") == 1)
 						reciboFim = true;
 					else
@@ -90,16 +95,26 @@ public enum Configuracao {
 	
 	public void atualizarConfiguracao(CacheConfiguracoes cc)
 	{
-		nomeRest = cc.getNome();
-		dezPorcento = cc.getDezPorcento();
-		reciboFim = cc.getReciboFim();
-		taxaEntrega = cc.getTaxa();		
+		nomeRest = cc.getNomeRest();
+		dezPorcento = cc.isDezPorcento();
+		dezPorcentoRapida = cc.isDezPorcentoRapida();
+		reciboFim = cc.isReciboFim();
+		taxaEntrega = cc.getTaxaEntrega();
+		mensagemSuperior = cc.getMensagemSuperior();
+		mensagemInferior = cc.getMensagemInferior();
+		tipoPrograma = cc.getTipoPrograma();
+		somCozinha = cc.isSomCozinha();
+		
+		if(tipoPrograma == UtilCoffe.TIPO_MESA)
+			tipoNome = "Mesa";
+		else
+			tipoNome = "Comanda";
 	}
 	
 	public CacheConfiguracoes gerarCache()
 	{
-		CacheConfiguracoes cc = new CacheConfiguracoes(nomeRest, dezPorcento, reciboFim, taxaEntrega);
-		return cc;
+		return new CacheConfiguracoes(nomeRest, dezPorcento, dezPorcentoRapida, reciboFim, taxaEntrega,
+				tipoPrograma, mensagemSuperior, mensagemInferior, somCozinha);
 	}
 	
 	public void setModo(int md) {
@@ -228,5 +243,13 @@ public enum Configuracao {
 
 	public void setTipoNome(String tipoNome) {
 		this.tipoNome = tipoNome;
+	}
+
+	public boolean isDezPorcentoRapida() {
+		return dezPorcentoRapida;
+	}
+
+	public void setDezPorcentoRapida(boolean dezPorcentoRapida) {
+		this.dezPorcentoRapida = dezPorcentoRapida;
 	}
 }

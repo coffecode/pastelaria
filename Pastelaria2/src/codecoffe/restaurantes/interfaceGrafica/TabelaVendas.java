@@ -81,9 +81,6 @@ public class TabelaVendas extends WebPanel implements ActionListener
 		
 		tabela = new JTable();
 		tabelaModel = new DefaultTableModel() {
-			/**
-			 * 
-			 */
 			private static final long serialVersionUID = 1L;
 			@Override
 			public boolean isCellEditable(int row, int column) {
