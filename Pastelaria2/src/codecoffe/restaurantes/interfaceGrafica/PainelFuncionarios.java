@@ -214,7 +214,8 @@ public class PainelFuncionarios extends JPanel implements TableModelListener
 						envia.fechaConexao();
 
 						NotificationManager.setLocation(2);
-						NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Funcionário Adicionado!").setDisplayTime(2000);
+						NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Funcionário Adicionado!",
+								new ImageIcon(getClass().getClassLoader().getResource("imgs/notifications_ok.png"))).setDisplayTime(2000);
 
 						funcionarios.add(new Funcionario(novo_id, campoUser.getText(), campoSenha.getText(), campoNome.getText()));						
 						Object[] linha = {novo_id, campoNome.getText(), campoUser.getText(), 
@@ -376,7 +377,8 @@ public class PainelFuncionarios extends JPanel implements TableModelListener
 								tabelaFuncionarios.getValueAt(tabelaFuncionarios.getSelectedRow(), 1).toString() + ".", 4);
 
 						NotificationManager.setLocation(2);
-						NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Funcionário Deletado!").setDisplayTime(2000);
+						NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Funcionário Deletado!",
+								new ImageIcon(getClass().getClassLoader().getResource("imgs/notifications_ok.png"))).setDisplayTime(2000);
 
 						funcionarios.remove(tabelaFuncionarios.getSelectedRow());
 						Bartender.INSTANCE.enviarFuncionarios(getTodosFuncionarios());

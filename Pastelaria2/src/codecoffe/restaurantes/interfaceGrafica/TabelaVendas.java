@@ -51,9 +51,6 @@ import com.alee.laf.scroll.WebScrollPane;
 
 public class TabelaVendas extends WebPanel implements ActionListener
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private static final int vendasPagina = 80;
 	private WebPopOver popOver;
@@ -66,13 +63,13 @@ public class TabelaVendas extends WebPanel implements ActionListener
 	private boolean configDelivery, configDez;
 	private String pesquisaFormat;
 	
-	private JComboBox<String> filtroCampoPagamento, filtroCampoStatus;
+	private JComboBox<String> filtroCampoPagamento, filtroCampoStatus, filtroLocal;
 	private JComboBox<String> filtroCampoDelivery, filtroCampoDezPorcento;
 	private WebComboBox filtroCampoFuncionario;
 	
 	public TabelaVendas()
 	{
-		configDez = Configuracao.INSTANCE.getDezPorcento();
+		configDez = (Configuracao.INSTANCE.getDezPorcento() || Configuracao.INSTANCE.isDezPorcentoRapida());
 		if(Configuracao.INSTANCE.getTaxaEntrega() > 0)	configDelivery = true;
 		else
 			configDelivery = false;
@@ -247,6 +244,21 @@ public class TabelaVendas extends WebPanel implements ActionListener
 		popOver.setMovable(false);
 		popOver.setLayout(new MigLayout());
 		
+		List<String> locais = new ArrayList<String>();
+		locais.add("Todos");
+		locais.add("Balcão");
+		
+		if(Configuracao.INSTANCE.getMesas() > 0)
+			for(int i = 0; i < Configuracao.INSTANCE.getMesas(); i++)
+				locais.add(Configuracao.INSTANCE.getTipoNome() + " " + (i+1));
+		
+		filtroLocal = new JComboBox<String>();
+		filtroLocal.setModel(new DefaultComboBoxModel<String>());
+		filtroLocal.setPreferredSize(new Dimension(120, 30));
+		
+		for(int i = 0; i < locais.size(); i++)
+			filtroLocal.addItem(locais.get(i));
+		
 		String[] opcoesDelivery = {"Todos", "Apenas Delivery", "Sem Delivery"};
 		filtroCampoDelivery = new JComboBox<String>(opcoesDelivery);
 		filtroCampoDelivery.setPreferredSize(new Dimension(120, 30));
@@ -290,6 +302,8 @@ public class TabelaVendas extends WebPanel implements ActionListener
 		popOver.add(filtroCampoStatus, "gapleft 15px, wrap");
 		popOver.add(new JLabel("Atendido por:"));
 		popOver.add(filtroCampoFuncionario, "gapleft 15px, wrap");
+		popOver.add(new JLabel("Local:"));
+		popOver.add(filtroLocal, "gapleft 15px, wrap");
 		
 		if(configDelivery) {
 			popOver.add(new JLabel("Delivery:"));
@@ -377,6 +391,18 @@ public class TabelaVendas extends WebPanel implements ActionListener
 			}
 			else {
 				formatacao += "AND dezporcento == '0,00' ";
+			}
+		}
+		
+		if(filtroLocal.getSelectedIndex() > 0)
+		{
+			if(filtroLocal.getSelectedIndex() == 1) {
+				formatacao += "AND caixa = 0 ";
+			}
+			else
+			{
+				formatacao += "AND caixa = " + 
+						Integer.parseInt(UtilCoffe.limpaNumero(filtroLocal.getSelectedItem().toString())) + " ";
 			}
 		}
 		
@@ -482,9 +508,6 @@ public class TabelaVendas extends WebPanel implements ActionListener
 	
 	private class TabelaVendasRenderer extends DefaultTableCellRenderer
 	{
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 		private Color alternate = new Color(206, 220, 249);
 		private ImageIcon iconLabel = new ImageIcon(getClass().getClassLoader().getResource("imgs/documento.png"));
@@ -582,9 +605,6 @@ public class TabelaVendas extends WebPanel implements ActionListener
 	}
 
 	private class ButtonEditor extends DefaultCellEditor {
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 		protected JButton button;
 		private boolean isPushed;

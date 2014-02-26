@@ -579,15 +579,9 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		}
 	}
 	class LabelTransferHandler extends TransferHandler {
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 		private final DataFlavor localObjectFlavor;
 		private final DragLabel label = new DragLabel() {
-			/**
-			 * 
-			 */
 			private static final long serialVersionUID = 1L;
 
 			@Override public boolean contains(int x, int y) {
@@ -721,9 +715,6 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 
 	class CustomRenderer extends DefaultTableCellRenderer 
 	{
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
@@ -1267,7 +1258,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							newLinha.add(UtilCoffe.doubleToPreco((produto.getTotalProduto() * Integer.parseInt(limpeza))));
 							newLinha.add(produto.getAllAdicionais());
 							newLinha.add(produto.getComentario());
-							newLinha.add("Deletar");
+							newLinha.add("");
 							tabela.addRow(newLinha);
 
 							CacheMesaHeader mh = new CacheMesaHeader(mesaID, produto, vendaRapida, UtilCoffe.MESA_ADICIONAR, Integer.parseInt(limpeza), campoFuncionario.getSelectedItem().toString());
@@ -1337,11 +1328,8 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		}
 	}
 
-	class ButtonRenderer extends JButton implements TableCellRenderer {
-
-		/**
-		 * 
-		 */
+	class ButtonRenderer extends JButton implements TableCellRenderer 
+	{
 		private static final long serialVersionUID = 1L;
 
 		public ButtonRenderer() {
@@ -1364,20 +1352,10 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		}
 	}
 
-	/**
-	 * @version 1.0 11/09/98
-	 */
-
 	class ButtonEditor extends DefaultCellEditor {
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
-
 		protected JButton button;
-
 		private String label;
-
 		private boolean isPushed;
 
 		public ButtonEditor(JCheckBox checkBox) {
@@ -1489,8 +1467,9 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							vendaRapida.removerProdutoIndex(tabelaPedido.getSelectedRow());
 							vendaRapida.calculaTotal();
 							PainelMesas.getInstance().atualizaMesa(mesaID, vendaRapida);
-
-							CacheMesaHeader mh = new CacheMesaHeader(mesaID, prod, vendaRapida, UtilCoffe.MESA_DELETAR, prod.getQuantidade());
+							
+							CacheMesaHeader mh = new CacheMesaHeader(mesaID, prod, vendaRapida, 
+									UtilCoffe.MESA_DELETAR, prod.getQuantidade(), campoFuncionario.getSelectedItem().toString());
 							Bartender.INSTANCE.enviarMesa(mh, 0);
 						}
 
@@ -1602,7 +1581,8 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 					linha.add(vendaRapida.getProduto(i).getPagos());
 					linha.add(UtilCoffe.doubleToPreco((vendaRapida.getProduto(i).getTotalProduto() * vendaRapida.getProduto(i).getQuantidade())));
 					linha.add(vendaRapida.getProduto(i).getAllAdicionais());
-					linha.add("Deletar");
+					linha.add(vendaRapida.getProduto(i).getComentario());
+					linha.add("");
 					tabela.addRow(linha);							
 				}		    		  
 			}  
@@ -1698,7 +1678,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 						dragAdicionaProduto(maisUm);
 						
 						PainelMesas.getInstance().atualizaMesa(mesaID, vendaRapida);
-						CacheMesaHeader mh = new CacheMesaHeader(mesaID, maisUm, vendaRapida, UtilCoffe.MESA_ATUALIZAR, 1);
+						CacheMesaHeader mh = new CacheMesaHeader(mesaID, maisUm, vendaRapida, UtilCoffe.MESA_ATUALIZAR, 1, campoFuncionario.getSelectedItem().toString());
 						Bartender.INSTANCE.enviarMesa(mh, 0);
 					}
 					else

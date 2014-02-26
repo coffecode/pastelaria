@@ -5,6 +5,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.SQLException;
 
 import javax.swing.ImageIcon;
@@ -13,6 +15,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
@@ -20,7 +23,9 @@ import codecoffe.restaurantes.mysql.Query;
 import codecoffe.restaurantes.utilitarios.Configuracao;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
+import com.alee.extended.label.WebLinkLabel;
 import com.alee.laf.panel.WebPanel;
+import com.alee.laf.scroll.WebScrollPane;
 import com.alee.laf.slider.WebSlider;
 import com.alee.laf.text.WebTextField;
 import com.alee.managers.notification.NotificationManager;
@@ -342,8 +347,8 @@ public class PainelConfiguracao extends JTabbedPane
 								Configuracao.INSTANCE.setIntervaloPedido(campoTempo.getValue());
 								
 								NotificationManager.setLocation(2);
-								NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), 
-										"Configurações Salvas!").setDisplayTime(2000);
+								NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Configurações Salvas!",
+										new ImageIcon(getClass().getClassLoader().getResource("imgs/notifications_ok.png"))).setDisplayTime(2000);
 								
 							} catch (ClassNotFoundException | SQLException e1) {
 								e1.printStackTrace();
@@ -379,7 +384,6 @@ public class PainelConfiguracao extends JTabbedPane
 		};
 		
 		imagemConfig.addMouseListener(ml);
-		
 		campoOpcional.addItemListener(il);
 		campoOpcionalRapida.addItemListener(il);
 		campoTipo.addItemListener(il);
@@ -387,6 +391,49 @@ public class PainelConfiguracao extends JTabbedPane
 		campoSom.addItemListener(il);
 		
 		addTab("Configurações Gerais", new ImageIcon(getClass().getClassLoader().getResource("imgs/opcoes_med.png")), configPrincipal, "Configurações principais.");
+		
+		WebPanel configCreditos = new WebPanel(new MigLayout(/*"aligny center, alignx center"*/));
+		configCreditos.setMargin(10, 10, 10, 10);
+		
+		configCreditos.add(new JLabel("<html><i>CodeCoffe Restaurantes " + UtilCoffe.VERSAO + " </i></html>"), "span, wrap");
+		configCreditos.add(new JLabel("<html><b>Desenvolvido por:</b></html>"), "gaptop 20px, span, wrap");
+		
+		WebLinkLabel andre = new WebLinkLabel();
+		andre.setEmailLink("andreva65@hotmail.com");
+		
+		WebLinkLabel fernando = new WebLinkLabel();
+		fernando.setEmailLink("fernando01ferreira@gmail.com");
+		
+		configCreditos.add(new JLabel("André Alves"), "gaptop 10px");
+		configCreditos.add(andre, "gapleft 20px, wrap");
+		configCreditos.add(new JLabel("Fernando Ferreira"));
+		configCreditos.add(fernando, "gapleft 20px, wrap");
+		
+		configCreditos.add(new JLabel("Agradecemos pela preferência em utilizar esse software."), "gaptop 20px, span, wrap");
+		configCreditos.add(new JLabel("Também fazemos programas sob encomenda. Entre em contato conosco para um orçamento."), "span, wrap");
+		configCreditos.add(new JLabel("<html><b>Ao utilizar esse programa você concorda com os nossos termos de uso:</b></html>"), "gaptop 15px, span, wrap");
+		
+		JTextArea termos = new JTextArea("Termos de Uso");
+		termos.setFocusable(false);
+		termos.setEditable(false);
+		termos.setLineWrap(true);
+		termos.setWrapStyleWord(true);
+		
+		WebScrollPane areaScroll = new WebScrollPane(termos);
+        areaScroll.setPreferredSize (new Dimension(550, 200));
+        areaScroll.getViewport().setFocusable(false);
+        areaScroll.setFocusable(false);
+        
+        configCreditos.add(areaScroll, "gaptop 20px, span");
+		
+		try {
+			FileReader reader = new FileReader("licenca.txt");
+			termos.read(reader,"licenca.txt");
+		} catch (IOException e1) {
+			termos.setText("licenca.txt não encontrada.");
+		}
+		
+		addTab(" CodeCoffe " + UtilCoffe.VERSAO, configCreditos);
 	}
 	
 	private static class ConfiguracaoSingletonHolder { 

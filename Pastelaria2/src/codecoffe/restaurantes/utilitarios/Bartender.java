@@ -199,6 +199,7 @@ public enum Bartender
 					/* adicionar pedido */
 					if(m.getHeaderExtra() > 0) // se for menor que zero ele ta deletando um pedido..
 					{
+						System.out.println("chegou " + m.getAtendente());
 						Pedido ped = new Pedido(pNovo, m.getAtendente(), (m.getMesaId()+1));
 						enviarPedido(ped);		
 					}

@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.border.BevelBorder;
 
@@ -22,6 +23,8 @@ import codecoffe.restaurantes.utilitarios.UtilCoffe;
 import com.alee.extended.label.HotkeyPainter;
 import com.alee.laf.StyleConstants;
 import com.alee.laf.panel.WebPanel;
+import com.alee.managers.tooltip.TooltipManager;
+import com.alee.managers.tooltip.TooltipWay;
 
 public class PainelPedido extends WebPanel
 {	
@@ -44,6 +47,7 @@ public class PainelPedido extends WebPanel
 		setRound(StyleConstants.largeRound);
 		HotkeyPainter pintura = new HotkeyPainter();
 		setPainter(pintura);
+		TooltipManager.addTooltip(this, "Feito por: " + pedidoAtt.getAtendido(), TooltipWay.up, 200);
 		statusBar = new JStatusBar();
 		refreshStatus();
 		
@@ -52,18 +56,18 @@ public class PainelPedido extends WebPanel
 			labelLocal = new JLabel(" " + Configuracao.INSTANCE.getTipoNome() + " " + p.getLocal());
 			if(Configuracao.INSTANCE.getTipoPrograma() == UtilCoffe.TIPO_MESA) {
 				labelLocal.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/mesa_mini_mini.png")));
-				labelLocal.setPreferredSize(new Dimension(70, 30));
+				labelLocal.setPreferredSize(new Dimension(95, 30));
 			}
 			else {
 				labelLocal.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/comanda_16.png")));
-				labelLocal.setPreferredSize(new Dimension(110, 30));
+				labelLocal.setPreferredSize(new Dimension(95, 30));
 			}
 		}
 		else
 		{
 			labelLocal = new JLabel(" Balcão");
-			labelLocal.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/mesa_mini_mini.png")));
-			labelLocal.setPreferredSize(new Dimension(70, 30));			
+			labelLocal.setIcon(new ImageIcon(getClass().getClassLoader().getResource("imgs/balcao_mini.png")));
+			labelLocal.setPreferredSize(new Dimension(95, 30));			
 		}
 		
 		labelQuantidade = new JLabel(" " + p.getProduto().getQuantidade());
@@ -96,39 +100,45 @@ public class PainelPedido extends WebPanel
 		{
 			public void actionPerformed(ActionEvent event) {
 				
-				if(event.getActionCommand().equals("Status: Normal"))
+				if(pedidoAtt.getStatus() != UtilCoffe.PEDIDO_DELETADO) 
 				{
-					pedidoAtt.setStatus(UtilCoffe.PEDIDO_NORMAL);
-					pedidoAtt.setHeader(UtilCoffe.PEDIDO_STATUS);
-					Bartender.INSTANCE.enviarPedido(pedidoAtt);
+					if(event.getActionCommand().equals("Status: Normal"))
+					{
+						pedidoAtt.setStatus(UtilCoffe.PEDIDO_NORMAL);
+						pedidoAtt.setHeader(UtilCoffe.PEDIDO_STATUS);
+						Bartender.INSTANCE.enviarPedido(pedidoAtt);
+					}
+					else if(event.getActionCommand().equals("Status: Fazendo"))
+					{
+						pedidoAtt.setStatus(UtilCoffe.PEDIDO_FAZENDO);
+						pedidoAtt.setHeader(UtilCoffe.PEDIDO_STATUS);
+						Bartender.INSTANCE.enviarPedido(pedidoAtt);					
+					}
+					else
+					{
+						pedidoAtt.setStatus(UtilCoffe.PEDIDO_REMOVER);
+						pedidoAtt.setHeader(UtilCoffe.PEDIDO_STATUS);
+						Bartender.INSTANCE.enviarPedido(pedidoAtt);					
+					}
 				}
-				else if(event.getActionCommand().equals("Status: Fazendo"))
-				{
-					pedidoAtt.setStatus(UtilCoffe.PEDIDO_FAZENDO);
-					pedidoAtt.setHeader(UtilCoffe.PEDIDO_STATUS);
-					Bartender.INSTANCE.enviarPedido(pedidoAtt);					
-				}
-				else
-				{
-					pedidoAtt.setStatus(UtilCoffe.PEDIDO_REMOVER);
-					pedidoAtt.setHeader(UtilCoffe.PEDIDO_STATUS);
-					Bartender.INSTANCE.enviarPedido(pedidoAtt);					
+				else {
+					JOptionPane.showMessageDialog(null, "Esse pedido foi deletado, não é mais possível alterá-lo!");
 				}
 			}
 		 };
 		 
 		 JMenuItem item;
-		 popup.add(item = new JMenuItem("Status: Normal", new ImageIcon("1.gif")));
+		 popup.add(item = new JMenuItem("Status: Normal", new ImageIcon(getClass().getClassLoader().getResource("imgs/pedido_normal.png"))));
 		 item.setHorizontalTextPosition(JMenuItem.RIGHT);
 		 item.addActionListener(menuListener);
 		 popup.addSeparator();
 		 
-		 popup.add(item = new JMenuItem("Status: Fazendo", new ImageIcon("1.gif")));
+		 popup.add(item = new JMenuItem("Status: Fazendo", new ImageIcon(getClass().getClassLoader().getResource("imgs/pedido_fazendo.png"))));
 		 item.setHorizontalTextPosition(JMenuItem.RIGHT);
 		 item.addActionListener(menuListener);
 		 popup.addSeparator();		 
 		 
-		 popup.add(item = new JMenuItem("Status: Remover", new ImageIcon("2.gif")));
+		 popup.add(item = new JMenuItem("Status: Remover", new ImageIcon(getClass().getClassLoader().getResource("imgs/pedido_remover.png"))));
 		 item.setHorizontalTextPosition(JMenuItem.RIGHT);
 		 item.addActionListener(menuListener);
 

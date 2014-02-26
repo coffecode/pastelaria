@@ -802,7 +802,8 @@ public class PainelClientes extends JPanel implements ActionListener
 						if(Bartender.INSTANCE.enviarCliente(new CacheClientes(clienteUpdate, UtilCoffe.CLIENTE_EDITAR, Usuario.INSTANCE.getNome())))
 						{
 							NotificationManager.setLocation(2);
-							NotificationManager.showNotification(this, "Cliente Salvo!").setDisplayTime(2000);
+							NotificationManager.showNotification(this, "Cliente Salvo!", 
+									new ImageIcon(getClass().getClassLoader().getResource("imgs/notifications_ok.png"))).setDisplayTime(2000);
 						}
 					}
 					else
@@ -957,7 +958,8 @@ public class PainelClientes extends JPanel implements ActionListener
 				buscarCliente("allclients");
 				campoBusca.requestFocus();
 				NotificationManager.setLocation(2);
-				NotificationManager.showNotification(this, "Cliente Deletado!").setDisplayTime(2000);
+				NotificationManager.showNotification(this, "Cliente Deletado!", 
+						new ImageIcon(getClass().getClassLoader().getResource("imgs/notifications_ok.png"))).setDisplayTime(2000);
 			}	
 		}
 	}
@@ -976,7 +978,8 @@ public class PainelClientes extends JPanel implements ActionListener
 		else if(aviso.getTipo() == UtilCoffe.CLIENTE_EDITAR)
 		{
 			NotificationManager.setLocation(2);
-			NotificationManager.showNotification(this, "Cliente Salvado!").setDisplayTime(2000);			
+			NotificationManager.showNotification(this, "Cliente Salvo!", 
+					new ImageIcon(getClass().getClassLoader().getResource("imgs/notifications_ok.png"))).setDisplayTime(2000);		
 		}
 	}
 	

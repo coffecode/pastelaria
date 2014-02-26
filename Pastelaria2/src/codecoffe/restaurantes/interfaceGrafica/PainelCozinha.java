@@ -21,6 +21,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
@@ -37,6 +38,7 @@ import codecoffe.restaurantes.utilitarios.Configuracao;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
 import com.alee.laf.scroll.WebScrollPane;
+import com.alee.managers.notification.NotificationManager;
 
 public class PainelCozinha extends JPanel
 {
@@ -545,6 +547,9 @@ public class PainelCozinha extends JPanel
 						if(p.getStatus() == UtilCoffe.PEDIDO_EDITAR)
 							todosPedidos.get(i).getProduto().setQuantidade(pNovo.getQuantidade(), 0);
 						
+						if(p.getStatus() == UtilCoffe.PEDIDO_DELETADO || p.getStatus() == UtilCoffe.PEDIDO_EDITAR)
+							avisaPedido(p, p.getStatus());
+						
 						todosPedidos.get(i).setUltimaEdicao(new Date());
 						todosPedidos.get(i).setHeader(p.getHeader());
 						todosPedidos.get(i).setStatus(p.getStatus());
@@ -581,6 +586,38 @@ public class PainelCozinha extends JPanel
 						
 						break;
 					}
+				}
+			}
+		}
+	}
+	
+	public void avisaPedido(Pedido p, int tipo) 
+	{
+		if(isVisible())
+		{
+			NotificationManager.setLocation(2);
+			String local = "";
+			
+			if(p.getLocal() == 0) {
+				local = "Balcão";
+			}
+			else {
+				local = Configuracao.INSTANCE.getTipoNome() + " " + p.getLocal();
+			}
+			
+			switch(tipo)
+			{
+				case UtilCoffe.PEDIDO_DELETADO:
+				{
+					NotificationManager.showNotification(this, "Pedido Deletado (" + local + " - " 
+								+ p.getProduto().getNome() + ")", new ImageIcon(getClass().getClassLoader().getResource("imgs/notifications_cancel.png"))).setDisplayTime(5000);
+					break;
+				}
+				case UtilCoffe.PEDIDO_EDITAR:
+				{
+					NotificationManager.showNotification(this, "Pedido Alterado (" + local + " - " 
+							+ p.getProduto().getNome() + ")", new ImageIcon(getClass().getClassLoader().getResource("imgs/notifications_warning.png"))).setDisplayTime(5000);
+					break;		
 				}
 			}
 		}
