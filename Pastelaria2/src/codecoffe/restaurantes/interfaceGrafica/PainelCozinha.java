@@ -1,7 +1,15 @@
 package codecoffe.restaurantes.interfaceGrafica;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -10,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -22,29 +31,35 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 
+import net.miginfocom.swing.MigLayout;
 import codecoffe.restaurantes.mysql.Query;
+import codecoffe.restaurantes.primitivas.Categoria;
 import codecoffe.restaurantes.primitivas.Pedido;
 import codecoffe.restaurantes.primitivas.Produto;
 import codecoffe.restaurantes.primitivas.ProdutoVenda;
 import codecoffe.restaurantes.sockets.CacheTodosPedidos;
+import codecoffe.restaurantes.sockets.CacheTodosProdutos;
 import codecoffe.restaurantes.sockets.Server;
 import codecoffe.restaurantes.utilitarios.Bartender;
 import codecoffe.restaurantes.utilitarios.CompararTempo;
 import codecoffe.restaurantes.utilitarios.Configuracao;
 import codecoffe.restaurantes.utilitarios.UtilCoffe;
 
+import com.alee.extended.window.WebPopOver;
 import com.alee.laf.scroll.WebScrollPane;
 import com.alee.managers.notification.NotificationManager;
 
 public class PainelCozinha extends JPanel
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private JPanel pedidosCozinha;
 	private ArrayList<Pedido> todosPedidos;
@@ -52,9 +67,13 @@ public class PainelCozinha extends JPanel
 	private WebScrollPane scroll;
 	private boolean flag_refresh, flag_musica;
 	private URL musica;
+	private JPopupMenu popup;
+	private List<Integer> blacklist;
+	private CacheTodosProdutos todosProdutos;
 	
 	private PainelCozinha()
 	{
+		blacklist = new ArrayList<Integer>();
 		flag_refresh = false;
 		flag_musica = false;
 		musica = getClass().getClassLoader().getResource("imgs/novo_pedido.wav");
@@ -73,14 +92,35 @@ public class PainelCozinha extends JPanel
 		
 		add(scroll);
 		
+		ActionListener al = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				filtroCozinha();
+			}
+		};
+		
+        popup = new JPopupMenu();
+        JMenuItem menuItem = new JMenuItem("Filtrar pedidos");
+        menuItem.addActionListener(al);
+        popup.add(menuItem);
+        
+        pedidosCozinha.addMouseListener(new MouseAdapter()
+        {
+            public void mouseReleased(MouseEvent e)
+            {
+                if (e.isPopupTrigger()) {
+                    popup.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
+		
 		timer = new Timer();
 		timer.schedule(new UpdateTask(), 0, 8*1000);
 
 		timer2 = new Timer();
 		timer2.schedule(new VerificaTask(), 0, 5*1000);
 		
-		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER)
-		{
+		if(Configuracao.INSTANCE.getModo() == UtilCoffe.SERVER) {
 			atualizaTodosPedidos();
 		}
 	}
@@ -91,7 +131,140 @@ public class PainelCozinha extends JPanel
  
 	public static PainelCozinha getInstance() {
 		return CozinhaSingletonHolder.INSTANCE;
-	}	
+	}
+	
+	public void filtroCozinha() 
+	{
+		final WebPopOver popOver = new WebPopOver(PainelPrincipal.getInstance().getJanela());
+		popOver.setModal(true);
+		popOver.setMargin(10);
+		popOver.setMovable(false);
+		popOver.setLayout(new MigLayout());
+		
+		popOver.add(new JLabel("<html><b>Filtro de Categorias</b></html>"), "span, align center, wrap");
+		
+		final JPanel panelCategorias = new JPanel(new MigLayout());
+		panelCategorias.setFocusable(false);
+		
+		List<Categoria> categorias = todosProdutos.getCategorias();
+		
+		for(int i = 0; i < categorias.size() ; i ++)
+		{
+			CategoriaCheckBox checkbox = new CategoriaCheckBox(categorias.get(i).toString(), categorias.get(i).getIdCategoria());
+			checkbox.setPreferredSize(new Dimension(150, 30));
+			checkbox.setSelected(true);
+			
+			for(int x = 0; x < blacklist.size() ; x ++)
+			{
+				if(categorias.get(i).getIdCategoria() == blacklist.get(x))
+				{
+					checkbox.setSelected(false);
+					break;
+				}
+			}
+			
+			checkbox.addItemListener(new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					
+					CategoriaCheckBox checkbox = (CategoriaCheckBox) e.getSource();
+					if(checkbox.isSelected())
+					{
+						blacklist.remove((Object) checkbox.getCatID());
+						updateFiltro();
+					}
+					else
+					{						
+						blacklist.add(checkbox.getCatID());
+						updateFiltro();
+					}
+				}
+			});
+			
+			panelCategorias.add(checkbox, "wrap");
+		}
+		
+		JButton close = new JButton("Fechar");
+		close.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				popOver.dispose();
+			}
+		});
+		
+		WebScrollPane scroll = new WebScrollPane(panelCategorias, true);
+		scroll.setPreferredSize(new Dimension(220, 250));
+		scroll.getViewport().setBackground(new Color(237, 237, 237));
+		scroll.setFocusable(false);
+		
+		popOver.add(scroll, "gaptop 15px, align center, wrap");
+		popOver.add(close, "gaptop 15px, span, align right");
+		popOver.show(PainelPrincipal.getInstance().getJanela());
+	}
+	
+	class CategoriaCheckBox extends JCheckBox
+	{
+		private static final long serialVersionUID = 1L;
+		private int catID;
+		
+		public CategoriaCheckBox(String txt, int id)
+		{
+			super(txt);
+			this.catID = id;
+		}
+
+		public int getCatID() {
+			return catID;
+		}
+
+		public void setCatID(int catID) {
+			this.catID = catID;
+		}
+	}
+	
+	public void updateFiltro()	/* código mal otimizado, mas é o que tem pra agora */
+	{
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				for(int i = 0; i < pedidosCozinha.getComponentCount(); i++)
+				{
+					PainelPedido pp = (PainelPedido)pedidosCozinha.getComponent(i);
+					int idproduto = pp.getPedido().getProduto().getIdUnico();
+					List<Categoria> categorias = todosProdutos.getCategorias();
+					boolean flag_quit = false;
+					
+					for(int x = 0; x < categorias.size() ; x ++)
+					{
+						if(blacklist.contains((Object) categorias.get(x).getIdCategoria()))
+						{
+							for(int z = 0; z < categorias.get(x).getProdutos().size(); z++)
+							{
+								if(categorias.get(x).getProdutos().get(z).getIdUnico() == idproduto) {
+									flag_quit = true;
+									pp.setVisible(false);
+									break;
+								}
+							}
+							
+							if(flag_quit)
+								break;	
+						}
+						else
+						{
+							if(!pp.isVisible())
+								pp.setVisible(true);
+						}
+					}
+				}
+			}
+		});
+	}
+	
+	public void atualizaProdutos(CacheTodosProdutos categorias)
+	{
+		todosProdutos = categorias;
+	}
 	
 	class VerificaTask extends TimerTask 
 	{
@@ -167,7 +340,8 @@ public class PainelCozinha extends JPanel
 					for(int i = 0; i < pedidosCozinha.getComponentCount(); i++)
 					{
 						PainelPedido pp = (PainelPedido)pedidosCozinha.getComponent(i);
-						pp.atualizaTempo();
+						if(pp.isVisible())
+							pp.atualizaTempo();
 					}
 
 					if(flag_refresh)

@@ -12,6 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import codecoffe.restaurantes.interfaceGrafica.PainelCozinha;
 import codecoffe.restaurantes.interfaceGrafica.PainelPrincipal;
 import codecoffe.restaurantes.interfaceGrafica.PainelErro;
 import codecoffe.restaurantes.interfaceGrafica.PainelProdutos;
@@ -134,7 +135,8 @@ public class AbaCategorias extends JPanel
 									
 									PainelProdutos.getInstance().salvarCategoria(categoriaEditando);
 									NotificationManager.setLocation(2);
-									NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Categoria Salva!").setDisplayTime(2000);
+									NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Categoria Salva!", 
+											new ImageIcon(getClass().getClassLoader().getResource("imgs/notifications_ok.png"))).setDisplayTime(2000);
 								}
 								
 								pega.fechaConexao();
@@ -142,6 +144,7 @@ public class AbaCategorias extends JPanel
 								CacheTodosProdutos todosP = new CacheTodosProdutos(PainelProdutos.getInstance().getModel().getTodosProdutos());
 								PainelVendaMesa.getInstance().atualizaProdutos(todosP);
 								PainelVendaRapida.getInstance().atualizaProdutos(todosP);
+								PainelCozinha.getInstance().atualizaProdutos(todosP);
 								Server.getInstance().enviaTodos(todosP);
 							} catch (ClassNotFoundException | SQLException e1) {
 								e1.printStackTrace();
@@ -187,7 +190,11 @@ public class AbaCategorias extends JPanel
 								
 								PainelProdutos.getInstance().removerCategoria(categoriaEditando);
 								NotificationManager.setLocation(2);
-								NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Categoria Deletada!").setDisplayTime(2000);
+								NotificationManager.showNotification(PainelPrincipal.getInstance().getJanela(), "Categoria Deletada!", 
+										new ImageIcon(getClass().getClassLoader().getResource("imgs/notifications_ok.png"))).setDisplayTime(2000);
+								
+								CacheTodosProdutos todosP = new CacheTodosProdutos(PainelProdutos.getInstance().getModel().getTodosProdutos());
+								Server.getInstance().enviaTodos(todosP);
 							} catch (ClassNotFoundException | SQLException e1) {
 								e1.printStackTrace();
 								new PainelErro(e1);

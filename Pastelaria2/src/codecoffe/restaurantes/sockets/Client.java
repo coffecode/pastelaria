@@ -262,7 +262,8 @@ public class Client implements Runnable
 								CacheTodosProdutos produtosAtualizados = (CacheTodosProdutos)dataRecebida;
 								
 								PainelVendaMesa.getInstance().atualizaProdutos(produtosAtualizados);
-								PainelVendaRapida.getInstance().atualizaProdutos(produtosAtualizados);						
+								PainelVendaRapida.getInstance().atualizaProdutos(produtosAtualizados);	
+								PainelCozinha.getInstance().atualizaProdutos(produtosAtualizados);		
 							}
 							else if(dataRecebida instanceof CacheTodasMesas)
 							{

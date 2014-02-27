@@ -64,7 +64,8 @@ public class PainelPrincipal
         	todosP.atualizarProdutos();
         	
         	PainelVendaMesa.getInstance().atualizaProdutos(todosP);
-			PainelVendaRapida.getInstance().atualizaProdutos(todosP);	
+			PainelVendaRapida.getInstance().atualizaProdutos(todosP);
+			PainelCozinha.getInstance().atualizaProdutos(todosP);
 		}
 		else
 		{

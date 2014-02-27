@@ -389,6 +389,7 @@ public class PainelProdutos extends JPanel implements ActionListener{
 						CacheTodosProdutos todosP = new CacheTodosProdutos(getModel().getTodosProdutos());
 						PainelVendaMesa.getInstance().atualizaProdutos(todosP);
 						PainelVendaRapida.getInstance().atualizaProdutos(todosP);
+						PainelCozinha.getInstance().atualizaProdutos(todosP);
 						Server.getInstance().enviaTodos(todosP);
 						
 					} catch (ClassNotFoundException | SQLException e) {

@@ -83,7 +83,7 @@ public class PainelPedido extends WebPanel
 		if(!UtilCoffe.vaziu(p.getProduto().getComentario()))
 			formataNome += " (" + p.getProduto().getComentario() + ")";
 		
-		labelProduto = new JLabel(formataNome + ".");
+		labelProduto = new JLabel("<html><b>" + formataNome + ".</b></html>");
 		labelProduto.setPreferredSize(new Dimension(400, 30));
 		
 		labelTempo = new JLabel("0 segundos atrás.");
