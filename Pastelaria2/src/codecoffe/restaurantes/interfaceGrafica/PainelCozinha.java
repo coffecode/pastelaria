@@ -355,21 +355,53 @@ public class PainelCozinha extends JPanel
 						gbc.weightx = 1.0;
 						gbc.gridx = 1;	// colunas
 						int linha = 1;
-
+						
+						int blacklists = 0;
+						int totalnew = 0;
 						Collections.sort(todosPedidos, new CompararTempo());
 						pedidosCozinha.removeAll();
 						for(int x = 0; x < todosPedidos.size(); x++)
 						{
 							if(todosPedidos.get(x).getHeader() != UtilCoffe.PEDIDO_ADICIONA)
 							{
+								totalnew++;
 								gbc.gridy = linha;
 								pedidosCozinha.add(new PainelPedido(todosPedidos.get(x)), gbc);
 								linha++;
+								boolean flag_quit = false;
+								if(blacklist.size() > 0)
+								{
+									for(int a = 0; a < todosProdutos.getCategorias().size(); a++)
+									{
+										if(blacklist.contains((Object) todosProdutos.getCategorias().get(a).getIdCategoria()))
+										{
+											for(int b = 0; b < todosProdutos.getCategorias().get(a).getProdutos().size(); b++)
+											{
+												if(todosProdutos.getCategorias().get(a).getProdutos().get(b).getIdUnico() == todosPedidos.get(x).getProduto().getIdUnico())
+												{
+													pedidosCozinha.getComponent((pedidosCozinha.getComponentCount()-1)).setVisible(false);
+													flag_quit = true;
+													blacklists++;
+													break;
+												}
+											}
+										}
+										
+										if(flag_quit)
+											break;
+									}
+								}
 							}
 						}
 
 						pedidosCozinha.revalidate();
 						pedidosCozinha.repaint();
+						
+						if(flag_musica)
+						{
+							if(blacklists >= totalnew)
+								flag_musica = false;
+						}
 						
 						if(flag_musica && Configuracao.INSTANCE.isSomCozinha() && isVisible())
 						{
