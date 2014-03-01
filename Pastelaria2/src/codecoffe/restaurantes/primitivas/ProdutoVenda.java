@@ -5,9 +5,6 @@ import java.util.ArrayList;
 
 public class ProdutoVenda extends Produto implements Serializable 
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private ArrayList<Produto> adicionais = new ArrayList<Produto>();
 	private int quantidade, pagos;
@@ -116,6 +113,7 @@ public class ProdutoVenda extends Produto implements Serializable
 	public int getQuantidade() {
 		return quantidade;
 	}
+	
 	public void setQuantidade(int quantidade, int tipo) {
 		//O = Substitue
 		//1 = Soma
@@ -143,21 +141,27 @@ public class ProdutoVenda extends Produto implements Serializable
 			break;
 		}
 	}
+	
 	public void setTotalProduto(double totalProduto) {
 		this.totalProduto = totalProduto;
 	}
+	
 	public double getTotalProduto() {
 		return (this.preco + this.totalProduto);
 	}
+	
 	public void setPagos(int setar) {
 		this.pagos += setar;
 	}
+	
 	public int getPagos() {
 		return this.pagos;
 	}
+	
 	public String getComentario() {
 		return comentario;
 	}
+	
 	public void setComentario(String comentario) {
 		this.comentario = comentario;
 	}

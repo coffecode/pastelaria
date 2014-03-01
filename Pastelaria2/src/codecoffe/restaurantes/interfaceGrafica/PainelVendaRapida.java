@@ -710,6 +710,9 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		formataRecibo += ("===========================\n");
 		formataRecibo += ("INFORMACOES PARA FECHAMENTO DE CONTA    \n");
 		formataRecibo += ("===========================\n");
+		
+		formataRecibo += (String.format("%-18.18s", "Local: "));
+		formataRecibo += ("Balcão \n");
 
 		formataRecibo += (String.format("%-18.18s", "Atendido por: "));
 		formataRecibo += (campoFuncionario.getSelectedItem().toString() + "\n");
@@ -736,7 +739,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 		formataRecibo += ("                     -------------------\n");
 		formataRecibo += ("Total                            R$" + UtilCoffe.doubleToPreco(vendaRapida.getTotal() + taxaEntrega) + "\n");
 		
-		if(Configuracao.INSTANCE.isDezPorcentoRapida() && adicionarDezPorcento.isSelected())
+		if(Configuracao.INSTANCE.isDezPorcentoRapida() && taxaEntrega <= 0)
 		{
 			formataRecibo += ("                     ----------------------\n");
 			formataRecibo += ("10% Opcional                     R$" + UtilCoffe.doubleToPreco(vendaRapida.getTotal() + taxaOpcional) + "\n");            	  
@@ -1255,7 +1258,7 @@ public class PainelVendaRapida extends JPanel implements ActionListener, FocusLi
 			else
 			{
 				campoTotal.setText(UtilCoffe.doubleToPreco((UtilCoffe.precoToDouble(campoTotal.getText()) - taxaOpcional)));
-				taxaOpcional = 0.0;
+				//taxaOpcional = 0.0;
 				atualizarCampoRecibo();
 			}
 		}

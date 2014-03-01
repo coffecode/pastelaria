@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import codecoffe.restaurantes.interfaceGrafica.PainelClientes;
 import codecoffe.restaurantes.interfaceGrafica.PainelCozinha;
@@ -154,9 +155,10 @@ public enum Bartender
 				try {
 					String formatacao;
 					Query envia = new Query();
-					formatacao = "INSERT INTO mesas(mesas_id, produto, quantidade, pago, adicionais, comentario) VALUES("
+					formatacao = "INSERT INTO mesas(mesas_id, produto, quantidade, pago, adicionais, comentario, data) VALUES("
 					+ m.getMesaId() + ", " + m.getProdutoMesa().getIdUnico() + ", " + m.getHeaderExtra() + ", 0, '" 
-					+ m.getProdutoMesa().getAllAdicionaisId() + "', '" + m.getProdutoMesa().getComentario() + "');";
+					+ m.getProdutoMesa().getAllAdicionaisId() + "', '" + m.getProdutoMesa().getComentario() + "', '"
+					+ m.getMesaVenda().getDataString() + "');";
 					envia.executaUpdate(formatacao);
 					envia.fechaConexao();
 					
@@ -380,6 +382,46 @@ public enum Bartender
 				linhasTxt.println("===========================================");
 				linhasTxt.println("   INFORMACOES PARA FECHAMENTO DE CONTA    ");
 				linhasTxt.println("===========================================");
+				
+				if(v.classe != 2) {
+					linhasTxt.print(String.format("%-18.18s", "Local: "));
+					linhasTxt.println(Configuracao.INSTANCE.getTipoNome() + " " + v.caixa);
+				}
+				else {
+					linhasTxt.print(String.format("%-18.18s", "Local: "));
+					linhasTxt.println("Balcão");
+				}
+				
+				if(v.classe != 2) {
+					linhasTxt.print(String.format("%-18.18s", "Permanência: "));
+					
+            		long duration = System.currentTimeMillis() - v.vendaFeita.getData().getTime();
+            		long minutes = TimeUnit.MILLISECONDS.toMinutes(duration);
+            		
+            		String formatap = "";
+            		
+            		if((minutes/60) > 0)
+            		{
+            			formatap += (minutes/60) + " hora";
+            			
+            			if((minutes/60) > 1) {
+            				formatap += "s";
+            			}
+            			
+            			if((minutes % 60) > 1) {
+            				formatap += " e " + (minutes % 60) + " minutos";
+            			}
+            		}
+            		else
+            		{
+            			if((minutes % 60) > 1)
+            				formatap += (minutes % 60) + " minutos";
+            			else
+            				formatap += (minutes % 60) + " minuto";
+            		}
+					
+            		linhasTxt.println(formatap);
+				}
 
 				linhasTxt.print(String.format("%-18.18s", "Atendido por: "));
 				linhasTxt.println(v.atendente);
@@ -484,7 +526,7 @@ public enum Bartender
 				/////////////////////////////////////////////////////////////////////////////////////
 				
 				linhasTxt.println("===========================================");
-				linhasTxt.println("       Sistema CodeCoffe V2.0    		  ");
+				linhasTxt.println("         Sistema CodeCoffe V2.0    		");
 
 				int i = 0;
 				while(i < 10){
@@ -524,7 +566,8 @@ public enum Bartender
 				try {
 					String formatacao;
 					Query envia = new Query();
-					formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id, caixa, delivery, dezporcento, data) VALUES('"
+					formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, "
+							+ "fiado_id, caixa, delivery, dezporcento, data, permanencia) VALUES('"
 					+ v.total +
 					"', '" + v.atendente +
 					"', " + v.ano + ", "
@@ -532,7 +575,7 @@ public enum Bartender
 					+ v.dia_mes + ", "
 					+ v.dia_semana +
 					", '" + v.horario + "', '" + v.forma_pagamento + "', '" + v.valor_pago + "', '" + v.troco + 
-					"', " + v.fiado_id + ", 0, '" + v.delivery + "', '" + v.dezporcento + "', CURDATE());";
+					"', " + v.fiado_id + ", 0, '" + v.delivery + "', '" + v.dezporcento + "', CURDATE(), '0');";
 					envia.executaUpdate(formatacao);
 					
 					Query pega = new Query();
@@ -589,9 +632,13 @@ public enum Bartender
 				int venda_id = 0;
 				
 				try {
+            		long duration = System.currentTimeMillis() - v.vendaFeita.getData().getTime();
+            		long minutes = TimeUnit.MILLISECONDS.toMinutes(duration);  
+					
 					String formatacao;
 					Query envia = new Query();
-					formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, troco, fiado_id, caixa, delivery, dezporcento, data) VALUES('"
+					formatacao = "INSERT INTO vendas(total, atendente, ano, mes, dia_mes, dia_semana, horario, forma_pagamento, valor_pago, "
+							+ "troco, fiado_id, caixa, delivery, dezporcento, data, permanencia) VALUES('"
 					+ v.total +
 					"', '" + v.atendente +
 					"', " + v.ano + ", "
@@ -599,7 +646,8 @@ public enum Bartender
 					+ v.dia_mes + ", "
 					+ v.dia_semana +
 					", '" + v.horario + "', '" + v.forma_pagamento+ "', '" + v.valor_pago + "', '" + v.troco
-					+ "', " + v.fiado_id + ", " + (v.vendaMesa.getMesaId()+1) + ", '0,00', '" + v.dezporcento + "', CURDATE());";
+					+ "', " + v.fiado_id + ", " + (v.vendaMesa.getMesaId()+1) + ", '0,00', '" + v.dezporcento 
+					+ "', CURDATE(), '" + minutes + "');";
 					envia.executaUpdate(formatacao);				
 					
 					Query pega = new Query();

@@ -1,15 +1,16 @@
 package codecoffe.restaurantes.primitivas;
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class Venda implements Serializable 
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private ArrayList<ProdutoVenda> produtos = new ArrayList<ProdutoVenda>();
 	private double total;
+	private Date data;
 
 	public Venda() {}
 
@@ -102,5 +103,29 @@ public class Venda implements Serializable
 
 	public void setTotal(double preco) {
 		this.total = preco;
+	}
+
+	public Date getData() {
+		return data;
+	}
+
+	public void setData(Date data) {
+		this.data = data;
+	}
+	
+	public String getDataString()
+	{
+		SimpleDateFormat formataData = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss a");
+		return formataData.format(this.data);
+	}
+	
+	public void setDataString(String texto)
+	{
+		SimpleDateFormat formataData = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss a");
+		try {
+			this.data = formataData.parse(texto);
+		} catch (ParseException e) {
+			this.data = new Date();
+		}
 	}
 }

@@ -5,9 +5,6 @@ import codecoffe.restaurantes.primitivas.Venda;
 
 public class CacheMesaHeader implements Serializable
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private Venda vendaMesa;
 	private ProdutoVenda produtoMesa;

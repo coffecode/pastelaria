@@ -14,9 +14,6 @@ import com.alee.laf.text.WebTextField;
 
 public class PainelLegenda extends WebStatusBar
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private WebStatusLabel leg;
 	protected TimerThread timerThread;
@@ -35,7 +32,9 @@ public class PainelLegenda extends WebStatusBar
         dateLabel.setHorizontalAlignment(JLabel.CENTER);
         dateLabel.setBackground(new Color(236, 236, 236));
         add(dateLabel, ToolbarLayout.END);
-
+        
+        setFocusable(false);
+        
         timerThread = new TimerThread(dateLabel);
         timerThread.start();
 	}

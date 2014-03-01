@@ -18,13 +18,13 @@ import com.alee.laf.scroll.WebScrollPane;
 
 import java.awt.event.*;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class PainelMesas extends JPanel
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private JPanel mesasPainel;
 	private ArrayList<Venda> vendaMesas;
@@ -70,6 +70,7 @@ public class PainelMesas extends JPanel
 	
 	public void gerarMesas()
 	{
+		SimpleDateFormat formataData = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss a");
 		GridBagConstraints gbc = new GridBagConstraints();
 		int colunas = 0;
 		int linhas  = 0;
@@ -102,6 +103,7 @@ public class PainelMesas extends JPanel
 			try {
 				Venda vd = new Venda();
 				ProdutoVenda p = null;
+				Date data = null;
 				pega.executaQuery("SELECT * FROM mesas WHERE mesas_id = " + i +";");
 				
 				while(pega.next())
@@ -111,6 +113,26 @@ public class PainelMesas extends JPanel
 					p.setQuantidade(pega.getInt("quantidade"), 0);
 					p.setPagos(pega.getInt("pago"));
 					p.setComentario(pega.getString("comentario"));
+					
+					if(data == null) {
+						try {
+							data = formataData.parse(pega.getString("data"));
+						} catch (ParseException e) {
+							e.printStackTrace();
+							data = new Date();
+						}
+					}
+					else {
+						try {
+							if(data.after(formataData.parse(pega.getString("data"))))
+							{
+								data = formataData.parse(pega.getString("data"));
+							}
+						} catch (ParseException e) {
+							e.printStackTrace();
+						}
+					}
+					
 					String[] adcArray = pega.getString("adicionais").split("\\s+");
 					Query pega1 = new Query();
 					pega1.executaQuery("SELECT * FROM produtos_new WHERE id = " + p.getIdUnico());
@@ -167,6 +189,11 @@ public class PainelMesas extends JPanel
 				
 				gbc.gridx = colunas;
 				gbc.gridy = linhas;
+				
+				if(data != null)
+					vd.setData(data);
+				else
+					vd.setData(new Date());
 				
 				mesasPainel.add(mesa, gbc);
 				vendaMesas.add(vd);
@@ -289,9 +316,6 @@ public class PainelMesas extends JPanel
 	
 	private class BotaoMesa extends WebButton
 	{
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 		public String legendaBotao;
 		public int idMesa;

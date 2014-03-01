@@ -47,9 +47,11 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 public class PainelVendaMesa extends JPanel implements ActionListener, FocusListener, ItemListener
 {
@@ -110,6 +112,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		campoValor.setEditable(false);
 		campoValor.setHorizontalAlignment(SwingConstants.CENTER);
 		campoValor.setPreferredSize(new Dimension(85, 35));
+		campoValor.setFocusable(false);
 		campoQuantidade = new JTextField("1");
 		campoQuantidade.setHorizontalAlignment(SwingConstants.CENTER);
 		campoQuantidade.setPreferredSize(new Dimension(40, 35));
@@ -852,7 +855,39 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		formataRecibo += ("===========================\n");
 		formataRecibo += ("INFORMACOES PARA FECHAMENTO DE CONTA    \n");
 		formataRecibo += ("===========================\n");
-
+		
+		formataRecibo += (String.format("%-18.18s", "Local: "));
+		formataRecibo += (Configuracao.INSTANCE.getTipoNome() + " " + (mesaID+1) + "\n");
+		
+		formataRecibo += (String.format("%-18.18s", "Permanência: "));
+		
+		long duration = System.currentTimeMillis() - vendaRapida.getData().getTime();
+		long minutes = TimeUnit.MILLISECONDS.toMinutes(duration);
+		
+		String formatap = "";
+		
+		if((minutes/60) > 0)
+		{
+			formatap += (minutes/60) + " hora";
+			
+			if((minutes/60) > 1) {
+				formatap += "s";
+			}
+			
+			if((minutes % 60) > 1) {
+				formatap += " e " + (minutes % 60) + " minutos";
+			}
+		}
+		else
+		{
+			if((minutes % 60) > 1)
+				formatap += (minutes % 60) + " minutos";
+			else
+				formatap += (minutes % 60) + " minuto";
+		}
+		
+		formataRecibo += (formatap) + "\n";
+		
 		formataRecibo += (String.format("%-18.18s", "Atendido por: "));
 		formataRecibo += (campoFuncionario.getSelectedItem().toString() + "\n");
 
@@ -893,6 +928,7 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 		vendaAgora.calculaTotal();
 
 		CacheVendaFeita criaImpressao		= new CacheVendaFeita(vendaAgora);
+		criaImpressao.vendaFeita.setData(vendaRapida.getData());
 		criaImpressao.total 				= UtilCoffe.doubleToPreco(vendaAgora.getTotal());
 		criaImpressao.atendente 			= campoFuncionario.getSelectedItem().toString();
 		criaImpressao.fiado_id 				= fiadorIDSalvo;
@@ -1154,13 +1190,14 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 							vendaMesaFeita.fiado_id 			= fiadorIDSalvo;
 							vendaMesaFeita.caixa 				= (mesaID+1);
 							vendaMesaFeita.delivery 			= "0,00";
+							vendaMesaFeita.vendaFeita.setData(vendaRapida.getData());
 
 							if(adicionarDezPorcento.isSelected())
 								vendaMesaFeita.dezporcento			= UtilCoffe.doubleToPreco(taxaOpcional);
 							else
 								vendaMesaFeita.dezporcento			= UtilCoffe.doubleToPreco(0.0);
 
-							vendaMesaFeita.classe				= UtilCoffe.CLASSE_VENDA_MESA;
+							vendaMesaFeita.classe					= UtilCoffe.CLASSE_VENDA_MESA;
 							Bartender.INSTANCE.enviarVenda(vendaMesaFeita, -1);	// agora aguarda a resposta.
 						}							
 					}
@@ -1235,6 +1272,9 @@ public class PainelVendaMesa extends JPanel implements ActionListener, FocusList
 
 					if(Integer.parseInt(limpeza) > 0)
 					{
+						if(vendaRapida.getQuantidadeProdutos() <= 0)
+							vendaRapida.setData(new Date());
+						
 						produto.setQuantidade(Integer.parseInt(limpeza), 0);
 						ultimaIndex = vendaRapida.adicionarProduto(produto);
 						dragAdicionaProduto(produto);
